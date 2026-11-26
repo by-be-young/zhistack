@@ -3,7 +3,7 @@ import { computed, onMounted } from 'vue'
 import { archive, save } from '../storage/archive.js'
 import { useApp } from '../stores/app.js'
 import { claim, achievementList, ensurePeriods } from '../core/tasks.js'
-import { weekLabel } from '../core/time.js'
+import { weekKey, weekLabel } from '../core/time.js'
 import { toast } from '../core/toast.js'
 import AppIcon from '../components/AppIcon.vue'
 import ProgressRing from '../components/ProgressRing.vue'
@@ -14,6 +14,7 @@ const { tasks } = app
 const achievements = computed(() => achievementList(archive))
 const unlockedCount = computed(() => achievements.value.filter(a => a.at).length)
 const dailyDone = computed(() => tasks.value.daily.filter(t => t.state.claimed).length)
+const weekName = computed(() => weekLabel(weekKey()))
 
 function claimOne(id) {
   const r = claim(archive, id)
@@ -88,7 +89,7 @@ onMounted(() => { ensurePeriods(archive); save() })
         <section class="card card-pad">
           <div class="spread" style="margin-bottom: 12px">
             <div>
-              <div class="card-label">WEEKLY · {{ weekLabel() }}</div>
+              <div class="card-label">WEEKLY · {{ weekName }}</div>
               <h2 style="font-size: 18px">本周任务</h2>
             </div>
             <span class="tiny dim">{{ app.claimedCount('weekly') }} / {{ tasks.weekly.length }}</span>

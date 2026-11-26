@@ -19,9 +19,12 @@ const app = useApp()
 const days = computed(() => app.trend(21))
 const maxAnswered = computed(() => Math.max(1, ...days.value.map(d => d.answered)))
 const radarData = computed(() => app.radar())
-const weakItems = computed(() => app.weak.coldStart ? [] : app.weak.items)
+const weakItems = computed(() => {
+  const w = app.weak.value
+  return w.coldStart ? [] : w.items
+})
 const mistakeTop = computed(() => app.mistakeTop(8))
-const agg = computed(() => app.subjectAgg)
+const agg = computed(() => app.subjectAgg.value)
 const week = computed(() => weekSummary(archive))
 
 const totals = computed(() => archive.profile.totals)
@@ -33,7 +36,7 @@ const firmCount = computed(() => Object.values(archive.knowledge).filter(s => {
 }).length)
 
 function practiceWeak(kid) {
-  const k = app.weak.items.find(x => x.knowledge.id === kid)?.knowledge
+  const k = app.weak.value.items.find(x => x.knowledge.id === kid)?.knowledge
   const s = createSession({ mode: 'weak', subjects: [k.subject], count: 8, knowledgeIds: [kid], title: '薄弱专项' })
   if (s) router.push(`/practice/session/${s.id}`)
 }

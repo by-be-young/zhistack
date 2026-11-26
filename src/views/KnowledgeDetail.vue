@@ -14,7 +14,7 @@ import EmptyState from '../components/EmptyState.vue'
 
 const route = useRoute()
 const router = useRouter()
-const k = computed(() => knowledgeById[route.params.id])
+const k = computed(() => knowledgeById[route.params.kid])
 const m = computed(() => k.value ? masteryOf(archive, k.value.id) : null)
 const stats = computed(() => k.value ? knowledgeStats(archive, k.value.id) : null)
 const qs = computed(() => k.value ? (questionsByKnowledge[k.value.id] || []) : [])
