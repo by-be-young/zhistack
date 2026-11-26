@@ -36,6 +36,15 @@ const titleShort = computed(() => {
 })
 const qid = computed(() => s.value?.qids[s.value.index])
 const current = computed(() => qid.value ? questionById[qid.value] : null)
+const inkKey = computed(() => {
+  if (!s.value) return ''
+  const cur = current.value
+  if (!cur) return ''
+  const pid = cur.paperId || s.value.paperId || 'practice'
+  // 共用同一材料的小题共用一张草稿；材料不同（含无材料题目）各自一张
+  return cur.material?.key ? `${pid}:m:${cur.material.key}` : `${pid}:q:${cur.id}`
+})
+const inkDisabled = computed(() => showSubmit.value || showGrade.value || showQuit.value || showCard.value)
 const selected = computed(() => (qid.value && s.value?.answers[qid.value]) || [])
 const subjectiveList = computed(() => (s.value?.qids || []).map(id => questionById[id]).filter(q => q?.type === 'subjective'))
 const answeredCount = computed(() => s.value ? Object.values(s.value.answers).filter(a => (typeof a === 'string' ? a.trim() : a.length)).length : 0)
@@ -220,7 +229,6 @@ onBeforeUnmount(() => {
           </button>
           <button v-else class="btn btn-primary btn-sm" @click="showSubmit = true">完成并交卷</button>
         </div>
-        <InkPad :reset-key="qid || ''" />
       </div>
 
       <aside class="s-side card card-pad">
@@ -233,6 +241,8 @@ onBeforeUnmount(() => {
         <button class="btn btn-primary btn-block btn-sm" style="margin-top: 12px" @click="showSubmit = true">交卷</button>
       </aside>
     </main>
+
+    <InkPad :layer-key="inkKey" :disabled="inkDisabled" />
 
     <ModalDialog :open="showSubmit" title="确认交卷" width="420" @close="showSubmit = false">
       <div class="tiny dim" style="line-height: 1.9">

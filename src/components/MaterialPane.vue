@@ -93,10 +93,11 @@ function zoom(delta) {
       </div>
     </header>
 
-    <div ref="scrollEl" class="mp-body" :style="{ fontSize: fontSize + 'px' }">
+    <div ref="scrollEl" class="mp-body" data-ink-scroll="material" :style="{ fontSize: fontSize + 'px' }">
       <article
         v-for="(b, i) in blocks" v-show="active === i" :key="i"
         class="mp-block"
+        :data-ink-anchor="`m-${material.key || 'mat'}-${i}`"
       >
         <RichText :text="b.text" />
       </article>

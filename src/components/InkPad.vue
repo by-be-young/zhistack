@@ -1,254 +1,651 @@
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import AppIcon from './AppIcon.vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { toast } from '../core/toast.js'
 
-const props = defineProps({ resetKey: { type: String, default: '' } })
+/**
+ * 全屏草稿层（答题界面专用）
+ *
+ * 规则：
+ * 1. 不设“草稿”入口按钮：手写笔（pointerType = 'pen'）碰到屏幕任意位置即进入草稿模式，默认黑色画笔。
+ * 2. 整个视口都可书写；笔迹层 pointer-events: none，手指的点击 / 滚动 / 翻页完全不受影响。
+ * 3. 草稿以“材料”为单位：同一材料下的多道小题共用一张画布；换材料切到空白画布；
+ *    同一场答题内切回原材料，笔迹原样恢复；交卷 / 退出后组件销毁，不落盘、不随答卷上传。
+ * 4. 笔迹坐标系锚定在滚动内容上（页面滚动、材料栏内部滚动都不跑位）。
+ */
 
-const active = ref(false)
-const penOnly = ref(false)
-const eraser = ref(false)
-const wrap = ref(null)
-const canvas = ref(null)
+const props = defineProps({
+  layerKey: { type: String, default: '' },
+  disabled: { type: Boolean, default: false }
+})
+
 const palette = [
   { name: '墨', css: '--text' },
   { name: '朱', css: '--rose' },
-  { name: '青', css: '--mint' },
-  { name: '紫', css: '--sub-math' },
+  { name: '青', css: '--sky' },
+  { name: '翠', css: '--mint' },
   { name: '金', css: '--amber' }
 ]
+
+const canvas = ref(null)
+const armed = ref(false)   // 笔已接触过屏幕，草稿模式常驻
+const idle = ref(false)    // 久未书写，工具栏淡出
+const eraser = ref(false)
 const color = ref('--text')
 const width = ref(3)
-const strokes = ref([])
-const drawing = ref(false)
+const count = ref(0)
+
+// 每个 layerKey 一张画布；只在内存里，组件销毁即消失（＝交卷销毁、不存档）
+const store = new Map()
+let layer = []
+
 let ctx = null
 let dpr = 1
-let ro = null
+let drawing = false
+let pointerId = null
+let current = null
+let lastPos = null
+let idleTimer = 0
+let raf = 0
+let colorMemo = new Map()
+let guard = { x: 0, y: 0, t: 0 }
+let themeObserver = null
+let domObserver = null
 
-function cssColor(name) {
-  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
-  return v || '#333'
-}
+/* ---------------- 画布与坐标 ---------------- */
 
-function resize() {
-  if (!wrap.value || !canvas.value) return
-  const w = wrap.value.clientWidth
-  const h = wrap.value.scrollHeight
-  if (!w || !h) return
-  dpr = Math.min(window.devicePixelRatio || 1, 2.5)
-  canvas.value.width = Math.round(w * dpr)
-  canvas.value.height = Math.round(h * dpr)
-  canvas.value.style.width = w + 'px'
-  canvas.value.style.height = h + 'px'
-  ctx = canvas.value.getContext('2d')
+function fitCanvas() {
+  const el = canvas.value
+  if (!el) return
+  const w = window.innerWidth
+  const h = window.innerHeight
+  dpr = Math.min(window.devicePixelRatio || 1, 2)
+  el.width = Math.round(w * dpr)
+  el.height = Math.round(h * dpr)
+  el.style.width = w + 'px'
+  el.style.height = h + 'px'
+  ctx = el.getContext('2d')
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
   redraw()
 }
 
-function redraw() {
-  if (!ctx || !canvas.value) return
-  ctx.clearRect(0, 0, canvas.value.width / dpr, canvas.value.height / dpr)
-  for (const st of strokes.value) paintStroke(st)
+function cssColor(name) {
+  if (colorMemo.has(name)) return colorMemo.get(name)
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  const out = v || '#E8EDE9'
+  colorMemo.set(name, out)
+  return out
 }
 
-function paintStroke(st) {
-  if (!ctx || !st.points.length) return
-  ctx.save()
+// 找到笔尖下方最近的滚动容器：材料栏内部滚动、其他可滚动面板都要跟着字走
+function scrollHostOf(target) {
+  let node = target instanceof Element ? target : null
+  while (node && node !== document.body && node !== document.documentElement) {
+    const tag = node.dataset && node.dataset.inkScroll
+    if (tag) return node
+    const style = getComputedStyle(node)
+    if (/(auto|scroll|overlay)/.test(style.overflowY) && node.scrollHeight > node.clientHeight + 2) {
+      return node
+    }
+    node = node.parentElement
+  }
+  return null
+}
+
+function pathOf(el) {
+  const seg = []
+  let node = el
+  while (node && node.nodeType === 1 && node !== document.body) {
+    let i = 1
+    let sib = node.previousElementSibling
+    while (sib) {
+      if (sib.tagName === node.tagName) i++
+      sib = sib.previousElementSibling
+    }
+    seg.unshift(`${node.tagName.toLowerCase()}${node.id ? '#' + node.id : ''}:nth-of-type(${i})`)
+    node = node.parentElement
+  }
+  return seg.length ? seg.join(' > ') : 'body'
+}
+
+// 优先锚定在带 data-ink-anchor 的内容块上（材料分块），字走笔迹走
+function anchorOf(target) {
+  let node = target instanceof Element ? target : null
+  while (node && node !== document.body && node !== document.documentElement) {
+    const tag = node.dataset && node.dataset.inkAnchor
+    if (tag) return { el: node, sel: `[data-ink-anchor="${tag}"]` }
+    node = node.parentElement
+  }
+  return null
+}
+
+function frameOf(target) {
+  const anchor = anchorOf(target)
+  if (anchor) return anchor
+  const host = scrollHostOf(target)
+  if (!host) return { el: null, sel: '' }
+  const tag = host.dataset && host.dataset.inkScroll
+  return { el: host, sel: tag ? `[data-ink-scroll="${tag}"]` : pathOf(host) }
+}
+
+// 组件重建（材料栏收起 / 展开）后，按选择器把锚点找回
+function hostOf(frame) {
+  if (!frame) return null
+  if (frame.el && frame.el.isConnected) return frame.el
+  frame.el = frame.sel ? document.querySelector(frame.sel) : null
+  return frame.el
+}
+
+/**
+ * 内容坐标 ↔ 屏幕坐标的换算量：
+ * screen = content + offset，其中 offset = 容器位置 - 容器滚动量
+ */
+function frameOffset(frame) {
+  const host = hostOf(frame)
+  if (host) {
+    const r = host.getBoundingClientRect()
+    return { ox: r.left - host.scrollLeft, oy: r.top - host.scrollTop }
+  }
+  return { ox: -(window.scrollX || 0), oy: -(window.scrollY || 0) }
+}
+
+function pointOf(e, frame) {
+  const o = frameOffset(frame)
+  return { x: e.clientX - o.ox, y: e.clientY - o.oy, p: pressureOf(e) }
+}
+
+function pressureOf(e) {
+  const p = e.pressure
+  return p && p > 0 ? Math.min(1, Math.max(0.12, p)) : 0.5
+}
+
+/* ---------------- 绘制 ---------------- */
+
+function lineWidthOf(st, p) {
+  const base = st.erase ? st.width * 5 : st.width
+  return Math.max(1, base * (0.55 + 0.9 * p))
+}
+
+function applyBrush(st) {
   ctx.globalCompositeOperation = st.erase ? 'destination-out' : 'source-over'
-  ctx.strokeStyle = st.erase ? 'rgba(0,0,0,1)' : cssColor(st.color)
-  ctx.lineWidth = st.width
+  const c = st.erase ? '#000' : cssColor(st.color)
+  ctx.strokeStyle = c
+  ctx.fillStyle = c
   ctx.lineCap = 'round'
   ctx.lineJoin = 'round'
-  ctx.beginPath()
-  const p0 = st.points[0]
-  ctx.moveTo(p0.x, p0.y)
-  for (let i = 1; i < st.points.length; i++) {
-    const p = st.points[i]
-    ctx.lineTo(p.x, p.y)
-  }
-  ctx.stroke()
-  ctx.restore()
 }
 
-function localPoint(e) {
-  const r = canvas.value.getBoundingClientRect()
-  return { x: e.clientX - r.left, y: e.clientY - r.top }
+function dotRadius(st, p) {
+  return Math.max(0.6, lineWidthOf(st, p) / 2)
 }
 
-function down(e) {
-  if (!active.value) return
-  if (penOnly.value && e.pointerType !== 'pen') return
-  e.preventDefault()
-  drawing.value = true
-  canvas.value.setPointerCapture?.(e.pointerId)
-  const st = { color: color.value, width: width.value, erase: eraser.value, points: [localPoint(e)] }
-  strokes.value.push(st)
-  paintStroke(st)
-}
-
-function move(e) {
-  if (!drawing.value) return
-  const st = strokes.value[strokes.value.length - 1]
-  if (!st) return
-  const p = localPoint(e)
-  const last = st.points[st.points.length - 1]
-  if (Math.abs(p.x - last.x) + Math.abs(p.y - last.y) < 1.2) return
-  st.points.push(p)
+// 实时绘制：直接用屏幕坐标，避免每帧换算
+function drawDot(st, x, y, p) {
   if (!ctx) return
   ctx.save()
-  ctx.globalCompositeOperation = st.erase ? 'destination-out' : 'source-over'
-  ctx.strokeStyle = st.erase ? 'rgba(0,0,0,1)' : cssColor(st.color)
-  ctx.lineWidth = st.width
-  ctx.lineCap = 'round'
-  ctx.lineJoin = 'round'
+  applyBrush(st)
   ctx.beginPath()
-  ctx.moveTo(last.x, last.y)
-  ctx.lineTo(p.x, p.y)
+  ctx.arc(x, y, dotRadius(st, p), 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+}
+
+function drawSeg(st, x1, y1, x2, y2, p) {
+  if (!ctx) return
+  ctx.save()
+  applyBrush(st)
+  ctx.lineWidth = lineWidthOf(st, p)
+  ctx.beginPath()
+  ctx.moveTo(x1, y1)
+  ctx.lineTo(x2, y2)
   ctx.stroke()
   ctx.restore()
 }
 
-function up(e) {
-  drawing.value = false
-  try { canvas.value?.releasePointerCapture?.(e.pointerId) } catch {}
+// 整层重绘：滚动、切材料、撤销、换主题都走这里
+function redraw() {
+  const el = canvas.value
+  if (!ctx || !el) return
+  ctx.clearRect(0, 0, el.width / dpr, el.height / dpr)
+  colorMemo = new Map()
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+  for (const st of layer) {
+    const host = hostOf(st.frame)
+    // 锚点所在面板已卸载（材料栏收起）或标签页被隐藏时，先不画，等它回来再画
+    if (st.frame.sel && !host) continue
+    if (host && host.getClientRects().length === 0) continue
+    const o = frameOffset(st.frame)
+    // 视口外的笔迹直接跳过，长卷也只重绘看得见的部分
+    if (st.box) {
+      if (st.box.x2 + o.ox < -12 || st.box.x1 + o.ox > vw + 12) continue
+      if (st.box.y2 + o.oy < -12 || st.box.y1 + o.oy > vh + 12) continue
+    }
+    paintStroke(st, o)
+  }
+}
+
+function paintStroke(st, o) {
+  const pts = st.points
+  if (!pts.length) return
+  ctx.save()
+  applyBrush(st)
+  const p0 = pts[0]
+  ctx.beginPath()
+  ctx.arc(p0.x + o.ox, p0.y + o.oy, dotRadius(st, p0.p), 0, Math.PI * 2)
+  ctx.fill()
+  for (let i = 1; i < pts.length; i++) {
+    const prev = pts[i - 1]
+    const p = pts[i]
+    ctx.beginPath()
+    ctx.lineWidth = lineWidthOf(st, (prev.p + p.p) / 2)
+    ctx.moveTo(prev.x + o.ox, prev.y + o.oy)
+    ctx.lineTo(p.x + o.ox, p.y + o.oy)
+    ctx.stroke()
+  }
+  ctx.restore()
+}
+
+function bboxOf(st) {
+  let x1 = Infinity
+  let y1 = Infinity
+  let x2 = -Infinity
+  let y2 = -Infinity
+  for (const p of st.points) {
+    if (p.x < x1) x1 = p.x
+    if (p.x > x2) x2 = p.x
+    if (p.y < y1) y1 = p.y
+    if (p.y > y2) y2 = p.y
+  }
+  const pad = lineWidthOf(st, 1) * 2 + 6
+  return { x1: x1 - pad, y1: y1 - pad, x2: x2 + pad, y2: y2 + pad }
+}
+
+function scheduleRedraw() {
+  if (raf) return
+  raf = requestAnimationFrame(() => {
+    raf = 0
+    redraw()
+  })
+}
+
+// 布局变化（收起材料、切材料分块）后补一次重绘，避开过渡动画中途的中间态
+let lateTimer = 0
+function bumpRedraw() {
+  scheduleRedraw()
+  clearTimeout(lateTimer)
+  lateTimer = setTimeout(() => redraw(), 90)
+}
+
+/* ---------------- 输入 ---------------- */
+
+function arm() {
+  if (!armed.value) {
+    armed.value = true
+    toast('草稿已随笔开启：笔尖书写，手指照常点选', 'info', 3200)
+  }
+  idle.value = false
+  clearTimeout(idleTimer)
+}
+
+function restIdle() {
+  clearTimeout(idleTimer)
+  idleTimer = setTimeout(() => { idle.value = true }, 9000)
+}
+
+function onDown(e) {
+  if (props.disabled) return
+  // 只认手写笔：手指、鼠标、手掌一律不画，保证按钮照常可点
+  if (e.pointerType !== 'pen') return
+  if (e.button !== 0 && e.button !== -1) return
+  e.preventDefault()
+  e.stopPropagation()
+  arm()
+
+  const frame = frameOf(e.target)
+  const pt = pointOf(e, frame)
+  const st = {
+    frame,
+    color: color.value,
+    width: width.value,
+    erase: eraser.value,
+    points: [pt],
+    box: null
+  }
+  layer.push(st)
+  count.value = layer.length
+
+  current = st
+  pointerId = e.pointerId
+  drawing = true
+  lastPos = { x: e.clientX, y: e.clientY }
+  drawDot(st, e.clientX, e.clientY, pt.p)
+}
+
+function onMove(e) {
+  if (!drawing || e.pointerId !== pointerId) return
+  if (e.pointerType !== 'pen') return
+  if (!current) return
+  e.preventDefault()
+
+  const o = frameOffset(current.frame)
+  const batch = typeof e.getCoalescedEvents === 'function' ? e.getCoalescedEvents() : []
+  const events = batch.length ? batch : [e]
+
+  for (const ev of events) {
+    const p = { x: ev.clientX - o.ox, y: ev.clientY - o.oy, p: pressureOf(ev) }
+    const last = current.points[current.points.length - 1]
+    if (Math.abs(p.x - last.x) + Math.abs(p.y - last.y) < 1) continue
+    current.points.push(p)
+    drawSeg(current, lastPos.x, lastPos.y, ev.clientX, ev.clientY, (last.p + p.p) / 2)
+    lastPos = { x: ev.clientX, y: ev.clientY }
+  }
+}
+
+function onUp(e) {
+  if (!drawing || e.pointerId !== pointerId) return
+  drawing = false
+  pointerId = null
+  lastPos = null
+  if (current) {
+    current.box = bboxOf(current)
+    current = null
+  }
+  guard = { x: e.clientX, y: e.clientY, t: Date.now() }
+  restIdle()
+}
+
+// 笔尖在窗口外抬起等异常中断：结束当前笔画，避免下笔接在上一条后面
+function abortStroke() {
+  if (!drawing) return
+  drawing = false
+  pointerId = null
+  lastPos = null
+  if (current) {
+    current.box = bboxOf(current)
+    current = null
+  }
+  restIdle()
+}
+
+// 笔尖不触发任何点击：按钮只给手指用；弹窗打开（禁用草稿）时笔恢复成普通指针
+function onClick(e) {
+  if (props.disabled) return
+  if (typeof PointerEvent !== 'undefined' && e instanceof PointerEvent && e.pointerType === 'pen') {
+    e.preventDefault()
+    e.stopPropagation()
+    return
+  }
+  if (guard.t && Date.now() - guard.t < 320) {
+    const dx = Math.abs((e.clientX || 0) - guard.x)
+    const dy = Math.abs((e.clientY || 0) - guard.y)
+    if (dx < 6 && dy < 6) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+  }
+}
+
+/* ---------------- 工具 ---------------- */
+
+function useColor(css) {
+  color.value = css
+  eraser.value = false
+}
+
+function useWidth(w) {
+  width.value = w
 }
 
 function undo() {
-  strokes.value.pop()
+  if (!layer.length) return
+  layer.pop()
+  count.value = layer.length
   redraw()
 }
 
 function clearAll() {
-  strokes.value = []
+  if (!layer.length) return
+  layer.length = 0
+  count.value = 0
   redraw()
 }
 
-async function toggle() {
-  active.value = !active.value
-  if (active.value) {
-    await nextTick()
-    resize()
-    if (wrap.value) {
-      ro = new ResizeObserver(() => resize())
-      ro.observe(wrap.value)
-    }
-  } else {
-    ro?.disconnect()
-    ro = null
+/* ---------------- 图层切换 ---------------- */
+
+function layerOf(key) {
+  const k = key || '_'
+  let arr = store.get(k)
+  if (!arr) {
+    arr = []
+    store.set(k, arr)
   }
+  return arr
 }
 
-watch(() => props.resetKey, () => {
-  strokes.value = []
-  drawing.value = false
-  active.value = false
-  ro?.disconnect()
-  ro = null
-})
+watch(
+  () => props.layerKey,
+  key => {
+    layer = layerOf(key)
+    count.value = layer.length
+    drawing = false
+    current = null
+    lastPos = null
+    redraw()
+  },
+  { immediate: true }
+)
+
+/* ---------------- 生命周期 ---------------- */
+
+function onScroll() {
+  scheduleRedraw()
+}
 
 function onResize() {
-  if (active.value) resize()
+  fitCanvas()
 }
 
 onMounted(() => {
+  fitCanvas()
+  window.addEventListener('pointerdown', onDown, { capture: true, passive: false })
+  window.addEventListener('pointermove', onMove, { capture: true, passive: false })
+  window.addEventListener('pointerup', onUp, true)
+  window.addEventListener('pointercancel', onUp, true)
+  window.addEventListener('blur', abortStroke)
+  window.addEventListener('click', onClick, true)
+  window.addEventListener('scroll', onScroll, { capture: true, passive: true })
   window.addEventListener('resize', onResize)
+
+  // 主题切换后笔迹颜色要跟着变
+  if (typeof MutationObserver !== 'undefined') {
+    themeObserver = new MutationObserver(() => bumpRedraw())
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    // 材料栏收起 / 展开、材料分块切页、题干重排都会让锚点位移，重绘一次对位
+    domObserver = new MutationObserver(() => bumpRedraw())
+    const scope = document.querySelector('.s-main') || document.body
+    domObserver.observe(scope, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['style', 'class']
+    })
+  }
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('pointerdown', onDown, true)
+  window.removeEventListener('pointermove', onMove, true)
+  window.removeEventListener('pointerup', onUp, true)
+  window.removeEventListener('pointercancel', onUp, true)
+  window.removeEventListener('blur', abortStroke)
+  window.removeEventListener('click', onClick, true)
+  window.removeEventListener('scroll', onScroll, true)
   window.removeEventListener('resize', onResize)
-  ro?.disconnect()
-  ro = null
-  strokes.value = []
+  clearTimeout(idleTimer)
+  clearTimeout(lateTimer)
+  if (raf) cancelAnimationFrame(raf)
+  themeObserver?.disconnect()
+  themeObserver = null
+  domObserver?.disconnect()
+  domObserver = null
+  // 交卷 / 退出：草稿随组件一起销毁，不落盘
+  store.clear()
+  layer = []
+  current = null
+  drawing = false
+  ctx = null
 })
 </script>
 
 <template>
   <div class="ink-root">
-    <div v-if="active" ref="wrap" class="ink-layer">
-      <canvas
-        ref="canvas"
-        class="ink-canvas"
-        @pointerdown="down" @pointermove="move" @pointerup="up" @pointercancel="up"
-      />
-    </div>
+    <canvas ref="canvas" class="ink-canvas" aria-hidden="true" />
 
-    <button v-if="!active" class="ink-fab" aria-label="打开草稿层" @click="toggle">
-      <AppIcon name="pencil" :size="15" /><span>草稿</span>
-    </button>
-
-    <div v-else class="ink-bar">
-      <span class="ink-tag"><i class="ink-dot" />草稿中</span>
-      <div class="ink-colors">
+    <div v-if="armed" class="ink-bar" :class="{ idle }" role="toolbar" aria-label="草稿工具">
+      <span class="ink-tag"><i class="ink-dot" />草稿</span>
+      <div class="ink-swatches">
         <button
           v-for="c in palette" :key="c.css"
-          class="ink-color" :class="{ on: color === c.css && !eraser }"
+          class="ink-swatch" :class="{ on: color === c.css && !eraser }"
           :style="{ background: `var(${c.css})` }"
-          :aria-label="`${c.name}色`"
-          @click="color = c.css; eraser = false"
+          :aria-label="`${c.name}色`" :title="`${c.name}色`"
+          @click="useColor(c.css)"
         />
       </div>
-      <button class="ink-btn" :class="{ on: eraser }" @click="eraser = !eraser">橡皮</button>
-      <button class="ink-btn" :class="{ on: penOnly }" @click="penOnly = !penOnly">仅笔</button>
+      <span class="ink-sep" />
       <div class="ink-widths">
-        <button v-for="w in [2, 4, 7]" :key="w" class="ink-width" :class="{ on: width === w }" @click="width = w">
-          <i :style="{ width: w + 'px', height: w + 'px' }" />
-        </button>
+        <button
+          v-for="w in [2, 3.5, 6]" :key="w"
+          class="ink-width" :class="{ on: width === w }"
+          :aria-label="`笔宽 ${w}`" @click="useWidth(w)"
+        ><i :style="{ width: Math.max(4, w * 2) + 'px', height: Math.max(4, w * 2) + 'px' }" /></button>
       </div>
-      <button class="ink-btn" @click="undo">撤销</button>
-      <button class="ink-btn" @click="clearAll">清空</button>
-      <button class="ink-btn ink-close" @click="toggle">收起</button>
+      <span class="ink-sep" />
+      <button class="ink-btn" :class="{ on: eraser }" @click="eraser = !eraser">橡皮</button>
+      <button class="ink-btn" :disabled="!count" @click="undo">撤销</button>
+      <button class="ink-btn" :disabled="!count" @click="clearAll">清空</button>
+      <span class="ink-tip">手指照常点选</span>
     </div>
   </div>
 </template>
 
 <style scoped>
-.ink-root { position: absolute; inset: 0; pointer-events: none; z-index: 30; }
-.ink-layer { position: absolute; inset: 0; pointer-events: none; }
+.ink-root {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
 .ink-canvas {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  pointer-events: auto; touch-action: none; cursor: crosshair;
-  background: transparent;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
-.ink-fab {
-  position: fixed; right: 22px; bottom: 90px; z-index: 60;
-  display: inline-flex; align-items: center; gap: 6px;
-  height: 40px; padding: 0 14px; border-radius: 999px;
-  border: 1px solid var(--line-strong);
-  background: color-mix(in srgb, var(--bg-1) 88%, transparent);
-  backdrop-filter: blur(12px); color: var(--text-2);
-  font-size: 12px; font-weight: 600; cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0,0,0,.12);
-  pointer-events: auto;
-}
-.ink-fab:hover { color: var(--text); border-color: var(--mint); }
 .ink-bar {
-  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 70;
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; max-width: min(94vw, 780px);
-  padding: 8px 10px; border-radius: 12px;
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 44;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-width: min(94vw, 760px);
+  padding: 7px 10px;
+  border-radius: 12px;
   border: 1px solid var(--line-strong);
   background: color-mix(in srgb, var(--bg-1) 92%, transparent);
   backdrop-filter: blur(14px);
-  box-shadow: 0 10px 30px rgba(0,0,0,.16);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
   pointer-events: auto;
+  font-size: 11px;
+  color: var(--text-2);
+  transition: opacity 0.28s var(--ease);
 }
-.ink-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--text-3); font-family: var(--font-mono); }
-.ink-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--mint); }
-.ink-colors { display: flex; gap: 5px; }
-.ink-color { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--bg-1); outline: 1px solid var(--line); cursor: pointer; }
-.ink-color.on { outline: 2px solid var(--mint); }
+.ink-bar.idle { opacity: 0.16; }
+.ink-bar.idle:hover { opacity: 0.9; }
+
+.ink-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-3);
+}
+.ink-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mint);
+}
+
+.ink-swatches { display: flex; gap: 5px; }
+.ink-swatch {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--bg-1);
+  outline: 1px solid var(--line);
+  cursor: pointer;
+}
+.ink-swatch.on { outline: 2px solid var(--mint); }
+
+.ink-sep { width: 1px; height: 16px; background: var(--line); }
+
+.ink-widths { display: flex; gap: 3px; }
+.ink-width {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--bg-2);
+  cursor: pointer;
+}
+.ink-width.on { border-color: var(--mint); }
+.ink-width i {
+  display: block;
+  border-radius: 50%;
+  background: currentColor;
+  color: var(--text-2);
+}
+
 .ink-btn {
-  height: 26px; padding: 0 8px; border-radius: 6px; font-size: 11px;
-  border: 1px solid var(--line); background: var(--bg-2); color: var(--text-2); cursor: pointer;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  color: var(--text-2);
+  font-size: 11px;
+  cursor: pointer;
 }
 .ink-btn.on { border-color: var(--mint); color: var(--mint); }
-.ink-close { color: var(--text-3); }
-.ink-widths { display: flex; gap: 3px; }
-.ink-width { width: 24px; height: 24px; border: 1px solid var(--line); background: var(--bg-2); border-radius: 6px; display: grid; place-items: center; cursor: pointer; }
-.ink-width.on { border-color: var(--mint); }
-.ink-width i { display: block; border-radius: 50%; background: currentColor; color: var(--text-3); }
-@media (max-width: 700px) {
-  .ink-bar { bottom: calc(70px + env(safe-area-inset-bottom)); gap: 5px; padding: 7px 8px; max-width: 94vw; }
-  .ink-tag { display: none; }
-  .ink-fab { width: 38px; height: 38px; padding: 0; justify-content: center; border-radius: 50%; bottom: calc(78px + env(safe-area-inset-bottom)); right: 12px; }
-  .ink-fab span { display: none; }
+.ink-btn:disabled { opacity: 0.35; cursor: default; }
+
+.ink-tip {
+  font-size: 10px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .ink-bar {
+    bottom: calc(64px + env(safe-area-inset-bottom));
+    gap: 6px;
+    padding: 6px 8px;
+    max-width: 94vw;
+  }
+  .ink-tag, .ink-tip { display: none; }
+  .ink-sep { display: none; }
 }
 </style>
