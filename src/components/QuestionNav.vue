@@ -45,7 +45,7 @@ const items = computed(() => props.qids.map((qid, i) => ({
   background: transparent; color: var(--text-2); font-family: var(--font-mono); font-size: 12px;
   position: relative; cursor: pointer; transition: 0.15s var(--ease);
 }
-.cell:hover { border-color: var(--line-strong); color: var(--text); }
+body:not(.ink-pen-lock) .cell:hover { border-color: var(--line-strong); color: var(--text); }
 .cell.answered { background: color-mix(in srgb, var(--mint) 16%, transparent); border-color: color-mix(in srgb, var(--mint) 35%, transparent); color: var(--mint); }
 .cell.current { box-shadow: 0 0 0 2px var(--bg-1), 0 0 0 3px var(--mint); border-color: var(--mint); }
 .flag { position: absolute; top: 3px; right: 3px; width: 5px; height: 5px; border-radius: 2px; background: var(--amber); }

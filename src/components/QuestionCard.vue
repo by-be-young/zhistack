@@ -217,7 +217,7 @@ function onSelect(key) {
   transition: 0.15s var(--ease);
   line-height: 1.7;
 }
-.option:hover:not(:disabled) { border-color: var(--line-strong); background: var(--bg-3); }
+body:not(.ink-pen-lock) .option:hover:not(:disabled) { border-color: var(--line-strong); background: var(--bg-3); }
 .option:disabled { cursor: default; }
 .option.picked { border-color: var(--mint); background: color-mix(in srgb, var(--mint) 9%, var(--bg-2)); }
 .option.picked::before { content: ''; position: absolute; left: -1px; top: 12px; bottom: 12px; width: 3px; background: var(--mint); border-radius: 2px; }

@@ -234,7 +234,7 @@ onMounted(async () => {
   padding: 9px 8px; border-radius: 8px; border: 1px solid transparent;
   background: transparent; color: var(--text); cursor: pointer; text-align: left;
 }
-.ch-row:hover { background: var(--bg-2); }
+body:not(.ink-pen-lock) .ch-row:hover { background: var(--bg-2); }
 .ch-row.active { border-color: var(--line); background: var(--bg-2); }
 .ch-title { flex: 1; font-size: 14px; }
 .children { margin-left: 18px; border-left: 1px dashed var(--line); padding-left: 8px; }
@@ -243,14 +243,14 @@ onMounted(async () => {
   padding: 7px 8px; border-radius: 6px; background: transparent; border: 0;
   color: var(--text-2); font-size: 12.5px; cursor: pointer; text-align: left;
 }
-.sub-row:hover { background: var(--bg-2); color: var(--text); }
+body:not(.ink-pen-lock) .sub-row:hover { background: var(--bg-2); color: var(--text); }
 .sub-row.active { color: var(--mint); }
 .k-list { display: flex; flex-direction: column; gap: 4px; }
 .k-row { display: flex; align-items: center; gap: 12px; padding: 12px 4px; border-bottom: 1px dashed var(--line); }
 .k-row:last-child { border-bottom: 0; }
 .k-main { flex: 1; min-width: 0; }
 .k-title { font-size: 14.5px; color: var(--text); }
-.k-title:hover { color: var(--mint); }
+body:not(.ink-pen-lock) .k-title:hover { color: var(--mint); }
 @media (max-width: 900px) {
   .split-book { grid-template-columns: minmax(0, 1fr) !important; }
 }

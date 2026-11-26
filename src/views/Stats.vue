@@ -228,7 +228,7 @@ function startAllWeak() {
 .wk-row:last-child { border-bottom: 0; }
 .rank { color: var(--text-3); font-size: 11px; }
 .wk-title { font-size: 13.5px; color: var(--text); }
-.wk-title:hover { color: var(--mint); }
+body:not(.ink-pen-lock) .wk-title:hover { color: var(--mint); }
 @media (max-width: 640px) {
   .big-num { font-size: 28px; }
   .radar-card :deep(svg) { max-width: 100%; height: auto; }

@@ -27,7 +27,7 @@ body::before {
 }
 
 a { color: var(--mint); text-decoration: none; }
-a:hover { color: var(--mint-deep); }
+body:not(.ink-pen-lock) a:hover { color: var(--mint-deep); }
 
 button, input, select, textarea { font: inherit; color: inherit; }
 
@@ -79,7 +79,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
   position: relative;
   transition: color 0.15s var(--ease), background 0.15s var(--ease);
 }
-.nav-item:hover { color: var(--text); background: var(--bg-2); }
+body:not(.ink-pen-lock) .nav-item:hover { color: var(--text); background: var(--bg-2); }
 .nav-item.router-link-active { color: var(--mint); background: color-mix(in srgb, var(--mint) 8%, transparent); }
 .nav-item.router-link-active::before {
   content: '';
@@ -136,7 +136,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
   cursor: pointer;
   transition: 0.15s var(--ease);
 }
-.icon-btn:hover { color: var(--text); border-color: var(--line-strong); background: var(--bg-2); }
+body:not(.ink-pen-lock) .icon-btn:hover { color: var(--text); border-color: var(--line-strong); background: var(--bg-2); }
 
 .page {
   width: 100%;
@@ -171,7 +171,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
 }
 .card-pad { padding: 20px; }
 .card-hover { transition: transform 0.18s var(--ease), border-color 0.18s var(--ease), background 0.18s var(--ease); }
-.card-hover:hover { transform: translateY(-2px); border-color: var(--line-strong); background: var(--bg-2); }
+body:not(.ink-pen-lock) .card-hover:hover { transform: translateY(-2px); border-color: var(--line-strong); background: var(--bg-2); }
 
 .card-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -217,18 +217,18 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
   transition: 0.15s var(--ease);
   white-space: nowrap;
 }
-.btn:hover { background: var(--bg-3); }
+body:not(.ink-pen-lock) .btn:hover { background: var(--bg-3); }
 .btn-primary { background: var(--mint); color: #0B0D10; font-weight: 600; }
-.btn-primary:hover { background: var(--mint-deep); }
+body:not(.ink-pen-lock) .btn-primary:hover { background: var(--mint-deep); }
 .btn-ghost { background: transparent; border-color: var(--line-strong); color: var(--text); }
-.btn-ghost:hover { background: var(--bg-2); }
+body:not(.ink-pen-lock) .btn-ghost:hover { background: var(--bg-2); }
 .btn-text { background: transparent; height: auto; padding: 4px 2px; color: var(--text-2); border: 0; }
-.btn-text:hover { color: var(--mint); background: transparent; }
+body:not(.ink-pen-lock) .btn-text:hover { color: var(--mint); background: transparent; }
 .btn-sm { height: 34px; padding: 0 14px; font-size: 13px; border-radius: 8px; }
 .btn-block { width: 100%; }
 .btn:disabled, .btn[disabled] { opacity: 0.42; cursor: not-allowed; }
-.btn:disabled:hover { background: var(--bg-2); }
-.btn-primary:disabled:hover { background: var(--mint); }
+body:not(.ink-pen-lock) .btn:disabled:hover { background: var(--bg-2); }
+body:not(.ink-pen-lock) .btn-primary:disabled:hover { background: var(--mint); }
 
 /* ---------- 标签 ---------- */
 .chip {
@@ -246,7 +246,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
 }
 .chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); }
 .chip.clickable { cursor: pointer; }
-.chip.clickable:hover { border-color: var(--line-strong); color: var(--text); }
+body:not(.ink-pen-lock) .chip.clickable:hover { border-color: var(--line-strong); color: var(--text); }
 .chip.active { border-color: var(--mint); color: var(--mint); background: color-mix(in srgb, var(--mint) 10%, transparent); }
 .chip.rose { border-color: color-mix(in srgb, var(--rose) 45%, transparent); color: var(--rose); }
 .chip.amber { border-color: color-mix(in srgb, var(--amber) 45%, transparent); color: var(--amber); }
@@ -301,7 +301,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
 .table th { text-align: left; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); font-weight: 500; padding: 10px 12px; border-bottom: 1px solid var(--line); }
 .table td { padding: 11px 12px; border-bottom: 1px solid var(--line); color: var(--text-2); }
 .table tr:last-child td { border-bottom: 0; }
-.table tr:hover td { background: var(--bg-2); }
+body:not(.ink-pen-lock) .table tr:hover td { background: var(--bg-2); }
 
 /* ---------- 提示 ---------- */
 .toast-host { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }

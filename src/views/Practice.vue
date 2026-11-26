@@ -261,7 +261,7 @@ onMounted(() => {
 .rec-title { font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hist-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px dashed var(--line); color: var(--text-2); }
 .hist-row:last-child { border-bottom: 0; }
-.hist-row:hover { color: var(--text); }
+body:not(.ink-pen-lock) .hist-row:hover { color: var(--text); }
 @media (max-width: 700px) {
   .mode-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
   .mode-card { flex-direction: column; align-items: flex-start; gap: 6px; padding: 10px 8px; }

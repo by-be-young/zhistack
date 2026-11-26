@@ -621,7 +621,7 @@ onBeforeUnmount(() => {
   transition: opacity 0.28s var(--ease);
 }
 .ink-bar.idle { opacity: 0.16; }
-.ink-bar.idle:hover { opacity: 0.9; }
+body:not(.ink-pen-lock) .ink-bar.idle:hover { opacity: 0.9; }
 
 .ink-tag {
   display: inline-flex;

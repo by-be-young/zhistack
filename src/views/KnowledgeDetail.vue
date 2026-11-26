@@ -203,7 +203,7 @@ onMounted(() => {
 .q-stem { font-size: 13.5px; line-height: 1.7; color: var(--text-2); }
 .rel-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .rel-card { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; color: var(--text-2); }
-.rel-card:hover { border-color: var(--line-strong); color: var(--text); }
+body:not(.ink-pen-lock) .rel-card:hover { border-color: var(--line-strong); color: var(--text); }
 .parts { display: flex; flex-direction: column; gap: 9px; }
 .reasons-box { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); display: flex; flex-direction: column; gap: 4px; }
 .bookref { padding: 10px 0; border-bottom: 1px dashed var(--line); }

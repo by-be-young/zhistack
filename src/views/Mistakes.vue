@@ -171,7 +171,7 @@ function clearAllMastered() {
 .ss b { font-size: 24px; font-variant-numeric: tabular-nums; }
 .m-list { display: flex; flex-direction: column; gap: 10px; }
 .m-stem { margin-top: 12px; font-size: 14px; line-height: 1.7; color: var(--text-2); cursor: pointer; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.m-stem:hover { color: var(--text); }
+body:not(.ink-pen-lock) .m-stem:hover { color: var(--text); }
 .sep { margin: 0 6px; }
 .m-actions { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
 @media (max-width: 640px) {

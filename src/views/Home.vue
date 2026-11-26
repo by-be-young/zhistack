@@ -301,7 +301,7 @@ onMounted(() => {
 .weak-row:first-child { padding-top: 10px; }
 .weak-main { flex: 1; min-width: 0; }
 .weak-title { font-size: 15px; color: var(--text); font-weight: 500; }
-.weak-title:hover { color: var(--mint); }
+body:not(.ink-pen-lock) .weak-title:hover { color: var(--mint); }
 .reasons { margin-top: 5px; gap: 10px; }
 .reasons span::before { content: '·'; margin-right: 6px; color: var(--text-3); }
 .weak-side { display: flex; align-items: center; gap: 10px; }
