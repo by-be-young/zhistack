@@ -28,9 +28,14 @@ function scrollToFocus(n) {
   const el = scrollEl.value
   if (!el || !n) return
   const text = blocks.value[active.value]?.text || ''
-  const idx = text.indexOf(`__${n}__`)
+  const mark = text.includes(`__${n}__`) ? `__${n}__` : `(${n})`
+  const idx = text.indexOf(mark)
   if (idx < 0) return
   const range = Math.max(0, el.scrollHeight - el.clientHeight)
+  if (n <= 1) {
+    el.scrollTop = 0
+    return
+  }
   el.scrollTop = Math.max(0, range * (idx / Math.max(1, text.length)) - 16)
 }
 
@@ -93,7 +98,6 @@ function zoom(delta) {
         v-for="(b, i) in blocks" v-show="active === i" :key="i"
         class="mp-block"
       >
-        <div v-if="blocks.length > 1" class="mp-label">{{ b.label || `材料 ${i + 1}` }}</div>
         <RichText :text="b.text" />
       </article>
     </div>

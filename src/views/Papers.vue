@@ -27,9 +27,8 @@ const list = computed(() => papers
   .sort((a, b) => (b.year - a.year) || (groupOrder[a.group] - groupOrder[b.group])))
 
 const byYear = computed(() => {
-  const map = {}
-  for (const p of list.value) (map[p.year] ||= []).push(p)
-  return map
+  const years = [...new Set(list.value.map(p => p.year))].sort((a, b) => b - a)
+  return years.map(year => ({ year, rows: list.value.filter(p => p.year === year) }))
 })
 
 function attempts(p) {
@@ -84,15 +83,15 @@ function subjectiveOf(p) {
       >{{ g.name }}</button>
     </div>
 
-    <div v-for="(rows, year) in byYear" :key="year" class="year-block">
+    <div v-for="block in byYear" :key="block.year" class="year-block">
       <div class="year-head">
-        <span class="year-num">{{ year }}</span>
+        <span class="year-num">{{ block.year }}</span>
         <span class="year-line" />
-        <span class="tiny dim">{{ rows.length }} 套</span>
+        <span class="tiny dim">{{ block.rows.length }} 套</span>
       </div>
 
       <div class="paper-grid">
-        <article v-for="p in rows" :key="p.id" class="paper-card card card-pad card-hover"
+        <article v-for="p in block.rows" :key="p.id" class="paper-card card card-pad card-hover"
           :style="{ '--accent': p.group === '408' ? 'var(--sub-ds)' : p.group === 'math' ? 'var(--sub-math)' : p.group === 'en' ? 'var(--sub-en)' : 'var(--sub-pol)' }">
           <div class="spread" style="align-items: flex-start">
             <div class="row" style="gap: 8px; flex-wrap: wrap">

@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import RichText from './RichText.vue'
 import AppIcon from './AppIcon.vue'
 import { knowledgeById } from '../data/index.js'
@@ -13,6 +13,7 @@ const props = defineProps({
   total: { type: Number, default: 0 }
 })
 const emit = defineEmits(['select', 'text'])
+const zoomSrc = ref('')
 
 const isSubjective = computed(() => props.q.type === 'subjective')
 const selKeys = computed(() => Array.isArray(props.selected) ? props.selected : [])
@@ -81,8 +82,11 @@ function onSelect(key) {
       <span>{{ q.figureNote }}</span>
     </div>
 
+    <div v-if="zoomSrc" class="zoom-mask" @click="zoomSrc = ''">
+      <img :src="zoomSrc" alt="题图" />
+    </div>
     <div v-if="q.figures?.length" class="figures">
-      <figure v-for="(f, fi) in q.figures" :key="fi">
+      <figure v-for="(f, fi) in q.figures" :key="fi" @click="zoomSrc = f.src">
         <img :src="f.src" :alt="f.alt || '题目配图'" loading="lazy" />
         <figcaption v-if="f.caption">{{ f.caption }}</figcaption>
       </figure>
@@ -179,7 +183,9 @@ function onSelect(key) {
 .figure-note { display: flex; align-items: center; gap: 6px; padding: 8px 10px; margin-bottom: 14px; border: 1px dashed var(--line); border-radius: 8px; }
 .figures { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 .figures figure { margin: 0; text-align: center; }
-.figures img { max-width: 100%; border-radius: 10px; border: 1px solid var(--line); background: var(--bg-2); }
+.figures img { max-width: 100%; border-radius: 10px; border: 1px solid var(--line); background: var(--bg-2); cursor: zoom-in; }
+.zoom-mask { position: fixed; inset: 0; z-index: 1200; background: rgba(8, 10, 9, 0.94); display: flex; align-items: flex-start; justify-content: flex-start; overflow: auto; padding: 8px; }
+.zoom-mask img { max-width: none; max-height: none; flex: 0 0 auto; border-radius: 4px; background: #fff; }
 .figures figcaption { font-size: 12px; color: var(--text-3); margin-top: 4px; }
 .subjective-box { margin-bottom: 4px; }
 .answer-input {

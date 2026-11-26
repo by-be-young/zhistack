@@ -5,6 +5,10 @@ import { questionsCn } from './cn.js'
 import { questionsMath } from './math.js'
 import { questionsEn } from './en.js'
 import { questionsPol } from './pol.js'
+import { questions2025_408 } from '../papers/2025-408.js'
+import { questions2025_math1 } from '../papers/2025-math1.js'
+import { questions2025_en1 } from '../papers/2025-en1.js'
+import { questions2025_pol } from '../papers/2025-pol.js'
 import { questions2024_408 } from '../papers/2024-408.js'
 import { questions2024_pol } from '../papers/2024-pol.js'
 import { questions2024_math1 } from '../papers/2024-math1.js'
@@ -20,7 +24,7 @@ export const questions = [
   ...questionsMath, ...questionsEn, ...questionsPol
 ]
 
-export const paperQuestions = [...questions2024_408, ...questions2024_pol.map(withMaterial), ...questions2024_math1, ...questions2024_en1, ...questions2023_en1, ...questions2023_pol.map(withMaterial), ...questions2023_math1, ...questions2023_408]
+export const paperQuestions = [...questions2025_408, ...questions2025_math1, ...questions2025_en1, ...questions2025_pol.map(withMaterial), ...questions2024_408, ...questions2024_pol.map(withMaterial), ...questions2024_math1, ...questions2024_en1, ...questions2023_en1, ...questions2023_pol.map(withMaterial), ...questions2023_math1, ...questions2023_408]
 
 export const allQuestions = [...questions, ...paperQuestions]
 
