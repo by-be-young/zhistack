@@ -61,9 +61,9 @@ export function recordSession(archive, session, graded) {
     if (item.correct) stats.correct += 1
     stats.lastAt = nowISO()
 
-    // 错题状态机
+    // 错题状态机：主观题需要人工自评，不进入客观错题重练池
     const mk = archive.mistakes[q.id]
-    if (!item.correct) {
+    if (!item.correct && q.type !== 'subjective') {
       if (!mk) {
         archive.mistakes[q.id] = {
           qid: q.id,
@@ -159,6 +159,8 @@ export function recordSession(archive, session, graded) {
   const summary = {
     id: session.id,
     mode: session.mode,
+    paperId: session.paperId || null,
+    paperTitle: session.paperTitle || '',
     title: session.title || '',
     subjects: sessionSubjects,
     count: graded.total,
@@ -166,6 +168,8 @@ export function recordSession(archive, session, graded) {
     correct: graded.correctCount,
     accuracy: graded.accuracy,
     score: graded.score,
+    rawPoints: graded.rawPoints,
+    totalPoints: graded.totalPoints,
     durationSec,
     startedAt: session.startedAt,
     endedAt: nowISO(),

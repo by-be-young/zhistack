@@ -1,7 +1,8 @@
 import { subjects, subjectMap } from './subjects.js'
 import { books, bookMap, chaptersByBook } from './books.js'
 import { knowledge, knowledgeById, knowledgeByChapter, knowledgeBySubject } from './knowledge/index.js'
-import { questions, questionById, questionsByKnowledge, questionsBySubject } from './questions/index.js'
+import { questions, allQuestions, questionById, questionsByKnowledge, questionsBySubject, paperQuestions } from './questions/index.js'
+import { papers, paperById, papersByYear, papersBySubject } from './papers/index.js'
 import { cards, cardById, cardsBySubject, rarityMeta, rarityOrder } from './cards.js'
 import { dailyTasks, weeklyTasks, achievementDefs } from './tasks.js'
 
@@ -25,7 +26,8 @@ export const dataVersion = '1.0.0'
 export {
   subjects, subjectMap, books, bookMap, chaptersByBook,
   knowledge, knowledgeById, knowledgeByChapter, knowledgeBySubject, chapterKnowledge, chapterQuestions,
-  questions, questionById, questionsByKnowledge, questionsBySubject,
+  questions, allQuestions, questionById, questionsByKnowledge, questionsBySubject, paperQuestions,
+  papers, paperById, papersByYear, papersBySubject,
   cards, cardById, cardsBySubject, rarityMeta, rarityOrder,
   dailyTasks, weeklyTasks, achievementDefs
 }

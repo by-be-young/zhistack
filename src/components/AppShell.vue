@@ -17,6 +17,7 @@ const navs = [
   { to: '/library', name: '书库', icon: 'book' },
   { to: '/knowledge', name: '知识点', icon: 'search' },
   { to: '/practice', name: '练习', icon: 'pencil' },
+  { to: '/papers', name: '真题', icon: 'trophy' },
   { to: '/mistakes', name: '错题', icon: 'alert' },
   { to: '/gacha', name: '卡册', icon: 'cards' },
   { to: '/tasks', name: '任务', icon: 'tasks' },
@@ -26,6 +27,7 @@ const navs = [
 const mobileNavs = [
   { to: '/', name: '总览', icon: 'home' },
   { to: '/practice', name: '练习', icon: 'pencil' },
+  { to: '/papers', name: '真题', icon: 'trophy' },
   { to: '/mistakes', name: '错题', icon: 'alert' },
   { to: '/gacha', name: '卡册', icon: 'cards' },
   { to: '/stats', name: '统计', icon: 'chart' }

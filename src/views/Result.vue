@@ -21,8 +21,11 @@ const summary = computed(() => archive.sessions.find(x => x.id === route.params.
 const graded = computed(() => full.value?.graded || null)
 const breakdown = computed(() => graded.value ? subjectBreakdown(graded.value.items) : {})
 
-const wrongItems = computed(() => (graded.value?.items || []).filter(i => !i.correct))
+const wrongItems = computed(() => (graded.value?.items || []).filter(i => i.type !== 'subjective' && !i.correct))
 const scored = computed(() => full.value?.graded?.score ?? summary.value?.score ?? 0)
+const rawPoints = computed(() => full.value?.graded?.rawPoints ?? summary.value?.rawPoints ?? null)
+const totalPoints = computed(() => full.value?.graded?.totalPoints ?? summary.value?.totalPoints ?? null)
+const isPaper = computed(() => !!(full.value?.paperId || summary.value?.paperId))
 const accuracy = computed(() => graded.value?.accuracy ?? summary.value?.accuracy ?? 0)
 const duration = computed(() => {
   const sec = full.value?.durationSecUsed ?? summary.value?.durationSec ?? 0
@@ -58,11 +61,12 @@ onMounted(() => {})
         <h1 class="page-title">{{ summary?.title || '练习复盘' }}</h1>
         <p class="page-sub">
           {{ summary?.count }} 题 · 用时 {{ duration }} · {{ summary?.subjects?.map(x => subjectMap[x]?.short).join(' / ') }}
+          <span v-if="isPaper"> · 主观题已按自评比例计分</span>
         </p>
       </div>
       <div style="flex: 1" />
       <div class="row">
-        <router-link to="/practice" class="btn btn-ghost">再练一套</router-link>
+        <router-link :to="isPaper ? '/papers' : '/practice'" class="btn btn-ghost">{{ isPaper ? '再选一套' : '再练一套' }}</router-link>
         <button v-if="wrongItems.length" class="btn btn-primary" @click="retryWrong">
           <AppIcon name="alert" :size="14" /> 重练错题 {{ wrongItems.length }}
         </button>
@@ -71,9 +75,9 @@ onMounted(() => {})
 
     <section class="hero card">
       <div class="hero-score">
-        <div class="mono tiny dim">得分</div>
-        <div class="score-num">{{ scored }}</div>
-        <div class="tiny dim">满分 100</div>
+        <div class="mono tiny dim">{{ isPaper ? '卷面得分' : '得分' }}</div>
+        <div class="score-num">{{ isPaper ? rawPoints : scored }}</div>
+        <div class="tiny dim">{{ isPaper ? `/ ${totalPoints} 分 · 折合 ${scored}%` : '满分 100' }}</div>
       </div>
       <div class="hero-stats">
         <div class="hs">
@@ -141,7 +145,7 @@ onMounted(() => {})
       <div class="review-list">
         <QuestionCard
           v-for="(it, i) in graded.items" :key="it.qid"
-          :q="questionById[it.qid]" :selected="it.keys" show-result :result="it" :index="i" :total="graded.total"
+          :q="questionById[it.qid]" :selected="it.type === 'subjective' ? it.text : it.keys" show-result :result="it" :index="i" :total="graded.total"
         />
       </div>
     </section>

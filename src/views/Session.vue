@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { practice, resumeDraft, pickAnswer, clearAnswer, toggleMark, goTo, next, prev, tick, submitSession, discardDraft, persistDraft } from '../stores/practice.js'
+import { practice, resumeDraft, pickAnswer, setTextAnswer, clearAnswer, toggleMark, goTo, next, prev, tick, submitSession, discardDraft, persistDraft, setSelfGrades } from '../stores/practice.js'
 import { archive } from '../storage/archive.js'
 import { questionById, subjectMap } from '../data/index.js'
 import { toast } from '../core/toast.js'
@@ -11,21 +11,25 @@ import TimerRing from '../components/TimerRing.vue'
 import ModalDialog from '../components/ModalDialog.vue'
 import AppIcon from '../components/AppIcon.vue'
 import EmptyState from '../components/EmptyState.vue'
+import RichText from '../components/RichText.vue'
 
 const route = useRoute()
 const router = useRouter()
 
 const error = ref('')
 const showSubmit = ref(false)
+const showGrade = ref(false)
 const showCard = ref(false)
 const showQuit = ref(false)
 const autoSubmitting = ref(false)
+const selfGrades = ref({})
 
 const s = computed(() => practice.session)
 const qid = computed(() => s.value?.qids[s.value.index])
 const current = computed(() => qid.value ? questionById[qid.value] : null)
 const selected = computed(() => (qid.value && s.value?.answers[qid.value]) || [])
-const answeredCount = computed(() => s.value ? Object.values(s.value.answers).filter(a => a.length).length : 0)
+const subjectiveList = computed(() => (s.value?.qids || []).map(id => questionById[id]).filter(q => q?.type === 'subjective'))
+const answeredCount = computed(() => s.value ? Object.values(s.value.answers).filter(a => (typeof a === 'string' ? a.trim() : a.length)).length : 0)
 const unanswered = computed(() => (s.value?.count || 0) - answeredCount.value)
 
 let timer = null
@@ -33,6 +37,38 @@ let timer = null
 function onSelect(key) {
   if (!current.value) return
   pickAnswer(current.value.id, key, current.value.type)
+}
+
+function onText(text) {
+  if (!current.value) return
+  setTextAnswer(current.value.id, text)
+}
+
+function beginSubmit() {
+  showSubmit.value = false
+  if (!subjectiveList.value.length) { doSubmit(false); return }
+  const init = {}
+  for (const q of subjectiveList.value) {
+    init[q.id] = s.value.selfGrades?.[q.id] ?? 0
+  }
+  selfGrades.value = init
+  showGrade.value = true
+}
+
+function gradeRatio(qid) {
+  const v = Number(selfGrades.value[qid])
+  return Number.isFinite(v) ? v : 0
+}
+
+function setRatio(qid, pct) {
+  selfGrades.value[qid] = pct / 100
+  setSelfGrades(selfGrades.value)
+}
+
+function confirmGrades() {
+  setSelfGrades(selfGrades.value)
+  showGrade.value = false
+  doSubmit(false)
 }
 
 function doSubmit(auto = false) {
@@ -132,8 +168,8 @@ onBeforeUnmount(() => {
     <main class="s-main">
       <div class="s-question" v-if="current">
         <QuestionCard
-          :q="current" :selected="selected" :index="s.index" :total="s.count"
-          @select="onSelect"
+          :q="current" :selected="current.type === 'subjective' ? (s.answers[qid] || '') : selected" :index="s.index" :total="s.count"
+          @select="onSelect" @text="onText"
         />
         <div class="s-actions">
           <button class="btn btn-ghost btn-sm" :disabled="s.index === 0" @click="prev">
@@ -174,7 +210,37 @@ onBeforeUnmount(() => {
       </div>
       <template #footer>
         <button class="btn btn-text" @click="showSubmit = false">继续答题</button>
-        <button class="btn btn-primary" @click="doSubmit(false)">确认交卷</button>
+        <button class="btn btn-primary" @click="beginSubmit">确认交卷</button>
+      </template>
+    </ModalDialog>
+
+    <ModalDialog :open="showGrade" title="主观题自评" width="760" @close="showGrade = false">
+      <p class="small muted" style="margin-bottom: 14px">
+        对照参考答案，为每道主观题选择得分比例。系统按“满分 × 比例”计分，60% 及以上计入答对；未作答或 0% 计 0 分。
+      </p>
+      <div class="grade-list">
+        <div v-for="q in subjectiveList" :key="q.id" class="grade-item">
+          <div class="spread" style="align-items: flex-start; gap: 12px">
+            <div>
+              <div class="mono tiny dim">第 {{ q.number }} 题 · 满分 {{ q.score }} 分</div>
+              <div style="font-weight: 600; margin-top: 2px">{{ q.title || '主观题' }}</div>
+            </div>
+            <span class="chip" :class="gradeRatio(q.id) >= 0.6 ? 'active' : 'rose'">{{ Math.round(gradeRatio(q.id) * 100) }}%</span>
+          </div>
+          <div class="grade-ref"><RichText :text="q.referenceAnswer" /></div>
+          <div class="grade-actions">
+            <button
+              v-for="p in [0, 20, 40, 60, 80, 100]" :key="p"
+              class="chip clickable" :class="{ active: Math.round(gradeRatio(q.id) * 100) === p }"
+              @click="setRatio(q.id, p)"
+            >{{ p }}%</button>
+            <span class="tiny dim">本题得分 {{ Math.round(q.score * gradeRatio(q.id) * 10) / 10 }} / {{ q.score }}</span>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <button class="btn btn-text" @click="showGrade = false">返回修改</button>
+        <button class="btn btn-primary" @click="confirmGrades">完成自评并交卷</button>
       </template>
     </ModalDialog>
 
@@ -221,6 +287,10 @@ onBeforeUnmount(() => {
 .s-question { min-width: 0; }
 .s-actions { display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
 .keyboard-tip { margin-top: 12px; text-align: center; }
+.grade-list { display: flex; flex-direction: column; gap: 14px; max-height: 58vh; overflow-y: auto; padding-right: 4px; }
+.grade-item { padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-0); }
+.grade-ref { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--bg-2); font-size: 12.5px; line-height: 1.7; max-height: 180px; overflow-y: auto; }
+.grade-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
 .s-side { position: sticky; top: 84px; }
 .side-legend { display: flex; gap: 12px; margin-top: 12px; }
 .side-legend span { display: inline-flex; align-items: center; gap: 4px; }

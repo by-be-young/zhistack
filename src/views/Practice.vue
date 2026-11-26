@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { archive, save } from '../storage/archive.js'
-import { subjects, subjectMap, knowledgeById, questionsByKnowledge } from '../data/index.js'
+import { subjects, subjectMap, knowledgeById, questions } from '../data/index.js'
 import { diagnose } from '../core/diagnose.js'
 import { createSession } from '../stores/practice.js'
 import { relativeDay } from '../core/time.js'
@@ -20,7 +20,7 @@ const weak = ref(diagnose(archive))
 
 const modes = [
   { id: 'mock', icon: 'layers', name: '模拟组卷', desc: '按知识点分桶抽题，单点不超三成' },
-  { id: 'real', icon: 'trophy', name: '真题改编', desc: '按主观题变形训练，考点对齐' },
+  { id: 'paper', icon: 'trophy', name: '真题原卷', desc: '整套原卷计时作答，主观题按比例自评' },
   { id: 'weak', icon: 'target', name: '薄弱专项', desc: '按诊断结果定向补缺' },
   { id: 'mistake', icon: 'alert', name: '错题重练', desc: '未出本的错题优先' }
 ]
@@ -33,7 +33,7 @@ const weakList = computed(() => weak.value.coldStart ? [] : weak.value.items.sli
 const counts = computed(() => {
   const out = {}
   for (const s of subjects) {
-    out[s.id] = Object.values(questionsByKnowledge).flat().filter(q => q.subject === s.id).length
+    out[s.id] = questions.filter(q => !q.retired && q.subject === s.id).length
   }
   return out
 })
@@ -51,6 +51,7 @@ function toggleSubject(id) {
 }
 
 function start() {
+  if (mode.value === 'paper') { router.push('/papers'); return }
   if (!canStart.value) { toast('至少保留一个科目', 'warn'); return }
   const n = Number(count.value)
   const s = createSession({
@@ -93,7 +94,7 @@ onMounted(() => {
       <div>
         <div class="eyebrow">PRACTICE</div>
         <h1 class="page-title">练习中心</h1>
-        <p class="page-sub">题目全部原创或改写，答案判定在本地完成。可以随时中断，草稿保留 24 小时。</p>
+        <p class="page-sub">原创题用于日常组卷与薄弱补缺；历年原卷在「真题」中整套作答，主观题按自评比例计分。</p>
       </div>
     </div>
 
@@ -131,7 +132,7 @@ onMounted(() => {
           {{ modes.find(m => m.id === mode)?.name }}
         </h2>
 
-        <div class="field">
+        <div v-if="mode !== 'paper'" class="field">
           <div class="spread"><label class="label">科目</label><span class="tiny dim">已选 {{ picked.length }} 科 · 题库 {{ pool }} 题</span></div>
           <div class="row" style="margin-top: 8px">
             <button
@@ -146,7 +147,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="field">
+        <div v-if="mode !== 'paper'" class="field">
           <div class="label">题量</div>
           <div class="row" style="margin-top: 8px">
             <button
@@ -157,7 +158,7 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="field">
+        <div v-if="mode !== 'paper'" class="field">
           <div class="label">限时</div>
           <div class="row" style="margin-top: 8px">
             <button class="chip clickable" :class="{ active: duration === 0 }" @click="duration = 0">不限时</button>
@@ -167,16 +168,17 @@ onMounted(() => {
           </div>
         </div>
 
-        <div v-if="mode === 'real'" class="notice">
-          <AppIcon name="info" :size="14" />
-          <span>当前题库为原创改编，未标注原卷年份；真题模式按考点结构与难度分布组卷，可用于替代训练。</span>
+        <div v-if="mode === 'paper'" class="notice">
+          <AppIcon name="trophy" :size="14" />
+          <span>真题原卷按套发放，题量、限时与卷面分固定。主观题在交卷前弹出参考答案与评分要点，按 0–100% 自评，折算为卷面得分。</span>
         </div>
 
         <div class="row" style="margin-top: 22px">
-          <button class="btn btn-primary" :disabled="!canStart" @click="start">
-            <AppIcon name="play" :size="15" /> 开始 · {{ Math.min(count, pool) }} 题
+          <button class="btn btn-primary" :disabled="!canStart && mode !== 'paper'" @click="start">
+            <AppIcon :name="mode === 'paper' ? 'trophy' : 'play'" :size="15" />
+            {{ mode === 'paper' ? '去真题库选题' : `开始 · ${Math.min(count, pool)} 题` }}
           </button>
-          <span class="tiny dim">近 3 天做过的题会排到后面</span>
+          <span class="tiny dim">{{ mode === 'paper' ? '原卷不抽题，按年份整套作答' : '近 3 天做过的题会排到后面' }}</span>
         </div>
       </section>
 

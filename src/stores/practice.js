@@ -3,6 +3,7 @@ import { archive, save } from '../storage/archive.js'
 import { buildPaper, recentQuestionIds } from '../core/paper.js'
 import { gradeSession } from '../core/grade.js'
 import { recordSession, recordMistakeReview } from '../core/record.js'
+import { paperById } from '../data/index.js'
 import { toast } from '../core/toast.js'
 import { nowISO } from '../core/time.js'
 
@@ -19,12 +20,27 @@ function newId() {
 
 export function createSession({
   mode = 'mock', subjects = [], count = 10, durationMin = 0,
-  year = null, knowledgeIds = [], chapter = null, title = ''
+  year = null, knowledgeIds = [], chapter = null, title = '', paperId = null
 }) {
-  const recentQids = recentQuestionIds(archive.sessions)
-  const { qids, shortage, available } = buildPaper({
-    subjects, count, year, knowledgeIds, chapter, recentQids
-  })
+  const paper = paperId ? paperById[paperId] : null
+  let qids = []
+  let shortage = false
+  let available = 0
+
+  if (paper) {
+    qids = [...paper.qids]
+    subjects = [...paper.subjects]
+    count = qids.length
+    durationMin = paper.durationMin || durationMin
+    title = title || paper.title
+  } else {
+    const recentQids = recentQuestionIds(archive.sessions)
+    const built = buildPaper({ subjects, count, year, knowledgeIds, chapter, recentQids })
+    qids = built.qids
+    shortage = built.shortage
+    available = built.available
+  }
+
   if (!qids.length) {
     toast('该组合暂无可用题目，换一个筛选试试', 'error')
     return null
@@ -36,10 +52,13 @@ export function createSession({
   const s = {
     id: newId(),
     mode,
+    paperId: paper?.id || null,
+    paperTitle: paper?.title || '',
     title: title || modeLabel(mode),
     subjects,
     qids,
     answers: {},
+    selfGrades: {},
     marked: {},
     index: 0,
     startedAt: nowISO(),
@@ -59,7 +78,7 @@ export function createSession({
 
 function modeLabel(mode) {
   return {
-    mock: '模拟组卷', real: '真题改编', mistake: '错题重练', weak: '专项练习', free: '自由练习'
+    mock: '模拟组卷', real: '真题改编', paper: '真题原卷', mistake: '错题重练', weak: '专项练习', free: '自由练习'
   }[mode] || '练习'
 }
 
@@ -111,7 +130,25 @@ export function clearAnswer(qid) {
   const s = practice.session
   if (!s) return
   delete s.answers[qid]
+  delete s.selfGrades[qid]
   persistDraft()
+}
+
+export function setTextAnswer(qid, text) {
+  const s = practice.session
+  if (!s) return
+  if (!s.qids.includes(qid)) return
+  const v = String(text || '')
+  if (v.trim()) s.answers[qid] = v
+  else delete s.answers[qid]
+  persistDraft()
+}
+
+export function setSelfGrades(grades) {
+  const s = practice.session
+  if (!s) return
+  s.selfGrades = { ...(grades || {}) }
+  persistDraft(true)
 }
 
 export function toggleMark(qid) {

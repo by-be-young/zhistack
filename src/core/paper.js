@@ -11,7 +11,7 @@ function shuffle(arr) {
 
 export function availableCount({ subjects = [], year = null, knowledgeIds = [] }) {
   return questions.filter(q => {
-    if (q.retired) return false
+    if (q.retired || q.paperOnly) return false
     if (subjects.length && !subjects.includes(q.subject)) return false
     if (year && q.year !== year) return false
     if (knowledgeIds.length && !knowledgeIds.includes(q.knowledgeId)) return false
@@ -26,7 +26,7 @@ export function buildPaper({
   subjects = [], count = 10, year = null, knowledgeIds = [], recentQids = [], chapter = null
 }) {
   let pool = questions.filter(q => {
-    if (q.retired) return false
+    if (q.retired || q.paperOnly) return false
     if (subjects.length && !subjects.includes(q.subject)) return false
     if (year && q.year !== year) return false
     return true

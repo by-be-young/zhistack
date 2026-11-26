@@ -7,6 +7,7 @@ const routes = [
   { path: '/knowledge', name: 'knowledge', component: () => import('../views/Knowledge.vue'), meta: { title: '知识点', crumb: 'KNOWLEDGE' } },
   { path: '/knowledge/:kid', name: 'knowledge-detail', component: () => import('../views/KnowledgeDetail.vue'), meta: { title: '知识点', crumb: 'KNOWLEDGE / DETAIL' } },
   { path: '/practice', name: 'practice', component: () => import('../views/Practice.vue'), meta: { title: '练习', crumb: 'PRACTICE' } },
+  { path: '/papers', name: 'papers', component: () => import('../views/Papers.vue'), meta: { title: '真题原卷', crumb: 'PAPERS' } },
   { path: '/practice/session/:sid', name: 'session', component: () => import('../views/Session.vue'), meta: { title: '答题', crumb: 'PRACTICE / SESSION', bare: true } },
   { path: '/practice/result/:sid', name: 'result', component: () => import('../views/Result.vue'), meta: { title: '复盘', crumb: 'PRACTICE / RESULT', bare: true } },
   { path: '/mistakes', name: 'mistakes', component: () => import('../views/Mistakes.vue'), meta: { title: '错题', crumb: 'MISTAKES' } },

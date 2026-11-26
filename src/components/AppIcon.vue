@@ -44,7 +44,9 @@ const icons = {
   bolt: '<path d="M13 2 5 13h6l-1 9 8-11h-6z"/>',
   lock: '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8.5 10V7a3.5 3.5 0 0 1 7 0v3"/>',
   filter: '<path d="M4 5h16l-6 7v7l-4 2v-9z"/>',
-  bookopen: '<path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 0 4 21.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5A1.5 1.5 0 0 1 1.5 1.5z"/>'
+  bookopen: '<path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 0 4 21.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5A1.5 1.5 0 0 1 1.5 1.5z"/>',
+  trophy: '<path d="M8 4h8v4a4 4 0 0 1-8 0z"/><path d="M8 5H5v1a3 3 0 0 0 3 3"/><path d="M16 5h3v1a3 3 0 0 0-3 3"/><path d="M12 12v4"/><path d="M8 20h8"/><path d="M9 20c0-2 1-3 3-3s3 1 3 3"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4 18 5-5 4 4 3-3 4 4"/>'
 }
 </script>
 

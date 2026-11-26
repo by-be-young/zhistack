@@ -6,13 +6,17 @@ import { knowledgeById } from '../data/index.js'
 
 const props = defineProps({
   q: { type: Object, required: true },
-  selected: { type: Array, default: () => [] },
+  selected: { type: [Array, String], default: () => [] },
   showResult: Boolean,
   result: { type: Object, default: null },
   index: { type: Number, default: 0 },
   total: { type: Number, default: 0 }
 })
-const emit = defineEmits(['select'])
+const emit = defineEmits(['select', 'text'])
+
+const isSubjective = computed(() => props.q.type === 'subjective')
+const selKeys = computed(() => Array.isArray(props.selected) ? props.selected : [])
+const textValue = computed(() => typeof props.selected === 'string' ? props.selected : '')
 
 const opts = computed(() => {
   if (props.q.type === 'judge') {
@@ -23,6 +27,7 @@ const opts = computed(() => {
 
 const multi = computed(() => props.q.type === 'multiple')
 const knowledge = computed(() => knowledgeById[props.q.knowledgeId])
+const pct = computed(() => Math.round((props.result?.selfRatio ?? 0) * 100))
 
 function stateOf(key) {
   if (!props.showResult) return {}
@@ -34,7 +39,7 @@ function stateOf(key) {
 }
 
 function onSelect(key) {
-  if (props.showResult) return
+  if (props.showResult || isSubjective.value) return
   emit('select', key)
 }
 </script>
@@ -42,11 +47,13 @@ function onSelect(key) {
 <template>
   <div class="qcard card card-pad">
     <div class="qhead">
-      <div class="row" style="gap: 8px">
-        <span class="chip">{{ q.type === 'multiple' ? '多选' : q.type === 'judge' ? '判断' : '单选' }}</span>
-        <span class="chip" :class="{ lilac: q.difficulty === 3, amber: q.difficulty === 2 }">
-          难度 {{ q.difficulty }}
+      <div class="row" style="gap: 8px; flex-wrap: wrap">
+        <span class="chip" :class="{ lilac: isSubjective }">
+          {{ isSubjective ? '主观题' : q.type === 'multiple' ? '多选' : q.type === 'judge' ? '判断' : '单选' }}
         </span>
+        <span v-if="isSubjective" class="chip">{{ q.score || 10 }} 分</span>
+        <span v-if="q.source === 'real'" class="chip amber">真题 {{ q.year }} · 第 {{ q.number }} 题</span>
+        <span v-else class="chip" :class="{ lilac: q.difficulty === 3, amber: q.difficulty === 2 }">难度 {{ q.difficulty }}</span>
         <span v-if="q.source === 'adapted'" class="chip lilac">改编 · {{ q.year }}</span>
       </div>
       <span class="mono dim tiny" v-if="total">{{ index + 1 }} / {{ total }}</span>
@@ -54,12 +61,39 @@ function onSelect(key) {
 
     <div class="stem"><RichText :text="q.stem" /></div>
 
-    <div class="options" role="group" :aria-label="'第 ' + (index + 1) + ' 题选项'">
+    <div v-if="q.figureNote" class="figure-note tiny dim">
+      <AppIcon name="image" :size="13" />
+      <span>{{ q.figureNote }}</span>
+    </div>
+
+    <div v-if="q.figures?.length" class="figures">
+      <figure v-for="(f, fi) in q.figures" :key="fi">
+        <img :src="f.src" :alt="f.alt || '题目配图'" loading="lazy" />
+        <figcaption v-if="f.caption">{{ f.caption }}</figcaption>
+      </figure>
+    </div>
+
+    <div v-if="isSubjective" class="subjective-box">
+      <div class="spread" style="margin-bottom: 6px">
+        <label class="tiny dim">作答区 · 只保存在本机</label>
+        <span class="mono tiny dim">{{ textValue.length }} 字</span>
+      </div>
+      <textarea
+        class="answer-input"
+        :value="textValue"
+        :disabled="showResult"
+        rows="7"
+        placeholder="写下你的推导、关键步骤或答题要点；交卷后可对照参考答案自评得分比例。"
+        @input="emit('text', $event.target.value)"
+      />
+    </div>
+
+    <div v-else class="options" role="group" :aria-label="'第 ' + (index + 1) + ' 题选项'">
       <button
         v-for="o in opts" :key="o.key"
         class="option"
-        :class="[{ picked: selected.includes(o.key) }, stateOf(o.key)]"
-        :aria-pressed="selected.includes(o.key)"
+        :class="[{ picked: selKeys.includes(o.key) }, stateOf(o.key)]"
+        :aria-pressed="selKeys.includes(o.key)"
         :disabled="showResult"
         @click="onSelect(o.key)"
       >
@@ -72,7 +106,30 @@ function onSelect(key) {
 
     <div v-if="multi && !showResult" class="tiny dim mt-8">多选题：全部选对得满分，漏选得半分，错选不得分</div>
 
-    <div v-if="showResult" class="explain">
+    <div v-if="showResult && isSubjective" class="explain">
+      <div class="row" style="margin-bottom: 8px">
+        <span class="chip" :class="pct >= 60 ? 'active' : 'rose'">自评 {{ pct }}%</span>
+        <span class="mono tiny dim">得分 {{ result?.points ?? 0 }} / {{ result?.maxScore ?? (q.score || 10) }}</span>
+      </div>
+      <div class="tiny dim" style="margin-bottom: 4px">你的作答</div>
+      <div class="my-answer small">{{ result?.text || '未作答' }}</div>
+      <div class="tiny dim" style="margin: 14px 0 4px">参考答案</div>
+      <div class="ref-answer small"><RichText :text="q.referenceAnswer || '暂无参考答案'" /></div>
+      <div v-if="q.rubric?.length" class="rubric">
+        <div class="tiny dim" style="margin-bottom: 6px">评分要点（自评时逐条对照）</div>
+        <div v-for="(r, i) in q.rubric" :key="i" class="rubric-row">
+          <span class="mono tiny dim">{{ r.points }} 分</span>
+          <span class="small">{{ r.text }}</span>
+        </div>
+      </div>
+      <div v-if="knowledge" class="mt-8">
+        <router-link :to="`/knowledge/${knowledge.id}`" class="btn btn-text btn-sm" style="padding: 0">
+          <AppIcon name="arrow-right" :size="13" /> {{ knowledge.title }}
+        </router-link>
+      </div>
+    </div>
+
+    <div v-if="showResult && !isSubjective" class="explain">
       <div class="row" style="margin-bottom: 6px">
         <span class="chip" :class="result?.correct ? 'active' : 'rose'">
           {{ result?.correct ? '答对' : result?.answered ? '答错' : '未答' }}
@@ -94,6 +151,18 @@ function onSelect(key) {
 .qhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
 .stem { font-size: 15.5px; line-height: 1.85; margin-bottom: 18px; }
 .stem :deep(.codeblock) { font-size: 12.5px; }
+.figure-note { display: flex; align-items: center; gap: 6px; padding: 8px 10px; margin-bottom: 14px; border: 1px dashed var(--line); border-radius: 8px; }
+.figures { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.figures figure { margin: 0; text-align: center; }
+.figures img { max-width: 100%; border-radius: 10px; border: 1px solid var(--line); background: var(--bg-2); }
+.figures figcaption { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+.subjective-box { margin-bottom: 4px; }
+.answer-input {
+  width: 100%; resize: vertical; padding: 12px 14px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--bg-2); color: var(--text);
+  font-family: inherit; font-size: 14px; line-height: 1.75; outline: none;
+}
+.answer-input:focus { border-color: var(--mint); }
 .options { display: flex; flex-direction: column; gap: 10px; }
 .option {
   display: flex; align-items: flex-start; gap: 12px;
@@ -127,4 +196,10 @@ function onSelect(key) {
   margin-top: 18px; padding: 16px; border-radius: 12px;
   background: var(--bg-0); border: 1px dashed var(--line);
 }
+.my-answer, .ref-answer {
+  padding: 10px 12px; border-radius: 8px; background: var(--bg-2);
+  line-height: 1.75; white-space: pre-wrap;
+}
+.rubric { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+.rubric-row { display: flex; gap: 10px; align-items: baseline; padding-top: 6px; border-top: 1px dashed var(--line); }
 </style>
