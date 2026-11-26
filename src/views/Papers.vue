@@ -45,7 +45,13 @@ function start(p) {
 
 function subjectiveOf(p) {
   const rows = p.qids.map(id => questionById[id]).filter(q => q?.type === 'subjective')
-  return { count: rows.length, score: rows.reduce((s, q) => s + (q.score || 0), 0) }
+  const fill = rows.filter(q => q.subtype === 'fill').length
+  return {
+    count: rows.length,
+    fill,
+    score: rows.reduce((s, q) => s + (q.score || 0), 0),
+    label: fill ? `主观 ${rows.length - fill} 题 + 填空 ${fill} 题` : `主观 ${rows.length} 题`
+  }
 }
 
 function sourceHost(url) {
@@ -59,7 +65,7 @@ function sourceHost(url) {
       <div>
         <div class="eyebrow">REAL PAPERS</div>
         <h1 class="page-title">真题原卷</h1>
-        <p class="page-sub">按年份整套作答，不改编题干。主观题在交卷前对照参考答案自评百分比，按满分折算得分。</p>
+        <p class="page-sub">按年份整套作答，不改编题干。主观题与填空题在交卷前对照参考答案自评百分比，按满分折算得分。</p>
       </div>
       <div style="flex: 1" />
       <span class="chip">{{ papers.length }} 套原卷</span>
@@ -97,7 +103,7 @@ function sourceHost(url) {
           <div class="paper-meta">
             <span><AppIcon name="clock" :size="14" /> {{ p.durationMin }} 分钟</span>
             <span><AppIcon name="target" :size="14" /> 满分 {{ p.totalScore }}</span>
-            <span class="mono">主观 {{ subjectiveOf(p).count }} 题 · {{ subjectiveOf(p).score }} 分</span>
+            <span class="mono">{{ subjectiveOf(p).label }} · {{ subjectiveOf(p).score }} 分</span>
           </div>
 
           <div v-if="p.note" class="tiny dim paper-note">{{ p.note }}</div>
@@ -132,8 +138,8 @@ function sourceHost(url) {
       <h2 style="font-size: 16px; margin: 4px 0 8px">原卷与自评说明</h2>
       <ul class="notice-list tiny dim">
         <li>题干按公开网络版本录入，未做改写；带图题目保留原卷页码提示，图形以原卷为准。</li>
-        <li>客观题由本地判分；主观题在交卷前弹出参考答案与评分要点，按 0–100% 选择得分比例。</li>
-        <li>主观题得分 = 题目满分 × 自评比例，60% 及以上计入“答对”，但不进入客观错题重练池。</li>
+        <li>客观题由本地判分；主观题、填空题在交卷前弹出参考答案与评分要点，按 0–100% 选择得分比例。</li>
+        <li>非客观题得分 = 题目满分 × 自评比例，60% 及以上计入“答对”，但不进入客观错题重练池。</li>
         <li>原卷版权归权利人所有，平台仅用于个人复习；如权利人提出异议，将移除对应年份。</li>
       </ul>
     </section>

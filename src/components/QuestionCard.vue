@@ -49,8 +49,9 @@ function onSelect(key) {
     <div class="qhead">
       <div class="row" style="gap: 8px; flex-wrap: wrap">
         <span class="chip" :class="{ lilac: isSubjective }">
-          {{ isSubjective ? '主观题' : q.type === 'multiple' ? '多选' : q.type === 'judge' ? '判断' : '单选' }}
+          {{ isSubjective ? (q.subtype === 'fill' ? '填空' : '主观题') : q.type === 'multiple' ? '多选' : q.type === 'judge' ? '判断' : '单选' }}
         </span>
+        <span v-if="q.material" class="chip">材料题</span>
         <span v-if="isSubjective" class="chip">{{ q.score || 10 }} 分</span>
         <span v-if="q.source === 'real'" class="chip amber">真题 {{ q.year }} · 第 {{ q.number }} 题</span>
         <span v-else class="chip" :class="{ lilac: q.difficulty === 3, amber: q.difficulty === 2 }">难度 {{ q.difficulty }}</span>
@@ -105,6 +106,16 @@ function onSelect(key) {
     </div>
 
     <div v-if="multi && !showResult" class="tiny dim mt-8">多选题：全部选对得满分，漏选得半分，错选不得分</div>
+
+    <div v-if="showResult && q.material" class="material-review">
+      <details>
+        <summary>回顾材料原文（{{ q.material.blocks?.length || 1 }} 段）</summary>
+        <div v-for="(b, i) in q.material.blocks" :key="i" class="mr-block">
+          <div v-if="q.material.blocks.length > 1" class="tiny dim">{{ b.label }}</div>
+          <RichText :text="b.text" />
+        </div>
+      </details>
+    </div>
 
     <div v-if="showResult && isSubjective" class="explain">
       <div class="row" style="margin-bottom: 8px">
@@ -202,4 +213,7 @@ function onSelect(key) {
 }
 .rubric { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
 .rubric-row { display: flex; gap: 10px; align-items: baseline; padding-top: 6px; border-top: 1px dashed var(--line); }
+.material-review { margin-top: 16px; }
+.material-review summary { cursor: pointer; font-size: 12px; color: var(--text-3); }
+.mr-block { margin-top: 10px; padding: 10px 12px; border-left: 2px solid var(--line-strong); background: var(--bg-0); font-size: 13px; line-height: 1.85; }
 </style>

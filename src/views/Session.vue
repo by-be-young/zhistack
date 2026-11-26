@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { practice, resumeDraft, pickAnswer, setTextAnswer, clearAnswer, toggleMark, goTo, next, prev, tick, submitSession, discardDraft, persistDraft, setSelfGrades } from '../stores/practice.js'
 import { archive } from '../storage/archive.js'
@@ -12,6 +12,8 @@ import ModalDialog from '../components/ModalDialog.vue'
 import AppIcon from '../components/AppIcon.vue'
 import EmptyState from '../components/EmptyState.vue'
 import RichText from '../components/RichText.vue'
+import MaterialPane from '../components/MaterialPane.vue'
+import InkPad from '../components/InkPad.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -23,6 +25,7 @@ const showCard = ref(false)
 const showQuit = ref(false)
 const autoSubmitting = ref(false)
 const selfGrades = ref({})
+const materialOpen = ref(true)
 
 const s = computed(() => practice.session)
 const qid = computed(() => s.value?.qids[s.value.index])
@@ -31,6 +34,8 @@ const selected = computed(() => (qid.value && s.value?.answers[qid.value]) || []
 const subjectiveList = computed(() => (s.value?.qids || []).map(id => questionById[id]).filter(q => q?.type === 'subjective'))
 const answeredCount = computed(() => s.value ? Object.values(s.value.answers).filter(a => (typeof a === 'string' ? a.trim() : a.length)).length : 0)
 const unanswered = computed(() => (s.value?.count || 0) - answeredCount.value)
+
+watch(qid, () => { materialOpen.value = true })
 
 let timer = null
 
@@ -99,6 +104,11 @@ function onKey(e) {
   if (!s.value || showSubmit.value || showQuit.value) return
   const tag = document.activeElement?.tagName
   if (tag === 'INPUT' || tag === 'TEXTAREA') return
+  if (e.altKey && e.key.toLowerCase() === 'm' && current.value?.material) {
+    materialOpen.value = !materialOpen.value
+    e.preventDefault()
+    return
+  }
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { next(); return }
   if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { prev(); return }
   if (['1', '2', '3', '4'].includes(e.key) && current.value) {
@@ -154,6 +164,9 @@ onBeforeUnmount(() => {
       <div style="flex: 1" />
       <div class="row" style="gap: 14px">
         <TimerRing :left-sec="s.leftSec" :total-sec="s.durationMin * 60" :unlimited="!s.durationMin" />
+        <button v-if="current?.material" class="btn btn-ghost btn-sm" @click="materialOpen = !materialOpen">
+          <AppIcon name="bookopen" :size="14" /> {{ materialOpen ? '收起材料' : '看材料' }}
+        </button>
         <button class="btn btn-ghost btn-sm answer-card-btn" @click="showCard = true">
           <AppIcon name="grid" :size="14" /> 答题卡
         </button>
@@ -165,8 +178,21 @@ onBeforeUnmount(() => {
 
     <div class="s-progress"><i :style="{ width: ((s.index + 1) / s.count * 100) + '%' }" /></div>
 
-    <main class="s-main">
+    <main class="s-main" :class="{ 'has-material': current?.material && materialOpen }">
+      <MaterialPane
+        v-if="current?.material && materialOpen"
+        class="s-material"
+        :material="current.material"
+        :reset-key="qid"
+        @close="materialOpen = false"
+      />
+
       <div class="s-question" v-if="current">
+        <div v-if="current.material && !materialOpen" class="material-strip">
+          <span class="tiny dim">材料已收起，可展开后再作答</span>
+          <button class="btn btn-text btn-sm" @click="materialOpen = true">展开材料 <AppIcon name="arrow-right" :size="13" /></button>
+        </div>
+
         <QuestionCard
           :q="current" :selected="current.type === 'subjective' ? (s.answers[qid] || '') : selected" :index="s.index" :total="s.count"
           @select="onSelect" @text="onText"
@@ -188,7 +214,8 @@ onBeforeUnmount(() => {
           </button>
           <button v-else class="btn btn-primary btn-sm" @click="showSubmit = true">完成并交卷</button>
         </div>
-        <div class="tiny dim keyboard-tip">快捷键：1–4 选项 · ← → 切题 · M 标记</div>
+        <div class="tiny dim keyboard-tip">快捷键：1–4 选项 · ← → 切题 · M 标记 · 草稿层切题自动清空</div>
+        <InkPad :reset-key="qid || ''" />
       </div>
 
       <aside class="s-side card card-pad">
@@ -284,7 +311,17 @@ onBeforeUnmount(() => {
   max-width: 1180px; margin: 0 auto; padding: 24px 20px 60px;
   display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 20px; align-items: start;
 }
-.s-question { min-width: 0; }
+.s-main.has-material {
+  max-width: 1440px;
+  grid-template-columns: minmax(300px, .84fr) minmax(440px, 1.16fr) 220px;
+}
+.s-material { min-width: 0; }
+.material-strip {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-bottom: 10px; padding: 8px 12px;
+  border: 1px dashed var(--line); border-radius: 10px; background: var(--bg-1);
+}
+.s-question { position: relative; }
 .s-actions { display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
 .keyboard-tip { margin-top: 12px; text-align: center; }
 .grade-list { display: flex; flex-direction: column; gap: 14px; max-height: 58vh; overflow-y: auto; padding-right: 4px; }
@@ -297,9 +334,14 @@ onBeforeUnmount(() => {
 .lg { width: 8px; height: 8px; border-radius: 2px; border: 1px solid var(--line-strong); display: inline-block; }
 .lg.done { background: color-mix(in srgb, var(--mint) 40%, transparent); border-color: var(--mint); }
 .lg.flag { background: var(--amber); border-color: var(--amber); }
+@media (max-width: 1200px) {
+  .s-main.has-material { grid-template-columns: minmax(0, 1fr) 220px; }
+  .s-material { grid-column: 1 / -1; position: relative; top: 0; max-height: 40vh; }
+}
 @media (max-width: 900px) {
-  .s-main { grid-template-columns: minmax(0, 1fr); padding: 16px 14px 60px; }
+  .s-main, .s-main.has-material { grid-template-columns: minmax(0, 1fr); padding: 16px 14px 60px; }
   .s-side { display: none; }
+  .s-material { max-height: 38vh; }
   .answer-card-btn { display: inline-flex !important; }
   .s-top { padding: 0 14px; }
 }

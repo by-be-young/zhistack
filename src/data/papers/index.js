@@ -1,7 +1,8 @@
 import { paper2024_408 } from './2024-408.js'
 import { paper2024_pol } from './2024-pol.js'
+import { paper2024_math1 } from './2024-math1.js'
 
-export const papers = [paper2024_408, paper2024_pol]
+export const papers = [paper2024_408, paper2024_pol, paper2024_math1]
 
 export const paperById = Object.fromEntries(papers.map(p => [p.id, p]))
 

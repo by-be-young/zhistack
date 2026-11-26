@@ -49,7 +49,7 @@ for (const q of allQuestions) {
   if (!q.explain || q.explain.length < 20) err(`题目 ${q.id} 解析过短`)
   if (!q.stem || q.stem.length < 6) err(`题目 ${q.id} 题干过短`)
   if (q.type === 'subjective') {
-    if (!q.referenceAnswer || q.referenceAnswer.length < 20) err(`主观题 ${q.id} 缺参考答案`)
+    if (!q.referenceAnswer || q.referenceAnswer.length < (q.answerText ? 4 : 20)) err(`主观题 ${q.id} 缺参考答案`)
     if (!Number.isFinite(q.score) || q.score <= 0) err(`主观题 ${q.id} 分值非法`)
     if (!Array.isArray(q.rubric) || !q.rubric.length) err(`主观题 ${q.id} 缺评分要点`)
     const sum = (q.rubric || []).reduce((s, r) => s + (Number(r.points) || 0), 0)
