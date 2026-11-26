@@ -6,12 +6,16 @@ import { paper2023_en1 } from './2023-en1.js'
 import { paper2023_pol } from './2023-pol.js'
 import { paper2023_math1 } from './2023-math1.js'
 import { paper2023_408 } from './2023-408.js'
+import { paper2022_408 } from './2022-408.js'
+import { paper2022_pol } from './2022-pol.js'
+import { paper2022_math1 } from './2022-math1.js'
+import { paper2022_en1 } from './2022-en1.js'
 import { paper2025_408 } from './2025-408.js'
 import { paper2025_math1 } from './2025-math1.js'
 import { paper2025_en1 } from './2025-en1.js'
 import { paper2025_pol } from './2025-pol.js'
 
-export const papers = [paper2025_408, paper2025_math1, paper2025_en1, paper2025_pol, paper2024_408, paper2024_pol, paper2024_math1, paper2024_en1, paper2023_en1, paper2023_pol, paper2023_math1, paper2023_408]
+export const papers = [paper2025_408, paper2025_math1, paper2025_en1, paper2025_pol, paper2024_408, paper2024_pol, paper2024_math1, paper2024_en1, paper2023_en1, paper2023_pol, paper2023_math1, paper2023_408, paper2022_408, paper2022_math1, paper2022_en1, paper2022_pol]
 
 export const paperById = Object.fromEntries(papers.map(p => [p.id, p]))
 
