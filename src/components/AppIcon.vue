@@ -38,6 +38,8 @@ const icons = {
   moon: '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 10.5 20 8.6 8.6 0 0 0 9.5-5.5z"/>',
   menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
   info: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><circle cx="12" cy="8" r="0.9"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  flag: '<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
   play: '<path d="M7 4.5 19 12 7 19.5z"/>',
   layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
   star: '<path d="m12 3 2.8 5.8 6.2.9-4.5 4.4 1 6.2-5.6-3-5.6 3 1-6.2L7 8.7l6.2-.9z"/>',

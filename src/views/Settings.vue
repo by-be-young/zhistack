@@ -114,7 +114,7 @@ onMounted(() => {
       <div>
         <div class="eyebrow">SETTINGS</div>
         <h1 class="page-title">设置</h1>
-        <p class="page-sub">所有偏好与进度都保存在本机浏览器，不上传服务器。建议定期导出备份。</p>
+
       </div>
     </div>
 
@@ -172,7 +172,7 @@ onMounted(() => {
       <section class="card card-pad">
         <div class="card-label">PDF OFFSET</div>
         <h2 class="set-h">书页页码偏移</h2>
-        <p class="tiny dim" style="margin-bottom: 8px">若 PDF 的物理页比印刷页多出封面、目录等页数，填入偏移量：物理页 = 印刷页 + 偏移。</p>
+        <div class="tiny dim" style="margin-bottom: 8px">偏移 = 物理页 − 印刷页</div>
         <table class="table">
           <thead><tr><th>书目</th><th>科目</th><th style="width: 140px">偏移</th><th style="width: 90px" /></tr></thead>
           <tbody>
@@ -217,12 +217,8 @@ onMounted(() => {
           <div><span class="dim tiny">应用版本</span><span class="mono tiny">{{ appVersion }}</span></div>
           <div><span class="dim tiny">数据版本</span><span class="mono tiny">{{ dataVersion }}</span></div>
           <div><span class="dim tiny">存档结构</span><span class="mono tiny">v{{ archive.schemaVersion }}</span></div>
-          <div><span class="dim tiny">题库规模</span><span class="tiny">4 科 · 93 知识点 · 104 题 · 48 卡</span></div>
+          <div><span class="dim tiny">题库规模</span><span class="tiny">153 考点 · 482 题 · 84 卡</span></div>
         </div>
-        <p class="tiny dim" style="margin-top: 14px; line-height: 1.8">
-          本项目为非商业学习工具，题目与知识点均为原创整理，教材正文版权归原作者与出版社所有。
-          源码与文档托管在 GitHub，欢迎提交 Issue 反馈题目错误。
-        </p>
       </section>
     </div>
 

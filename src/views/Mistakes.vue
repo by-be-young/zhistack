@@ -96,7 +96,7 @@ function clearAllMastered() {
       <div>
         <div class="eyebrow">MISTAKES</div>
         <h1 class="page-title">错题本</h1>
-        <p class="page-sub">答错进本；连续两次答对自动出本。错题按考点聚合，优先补最薄弱的那一批。</p>
+
       </div>
       <div style="flex: 1" />
       <button class="btn btn-primary" :disabled="!openList.length" @click="practiceAll">
@@ -111,7 +111,7 @@ function clearAllMastered() {
       <div class="ss"><span class="mono tiny dim">累计出本</span><b>{{ archive.profile.clearedCount || 0 }}</b></div>
     </div>
 
-    <div class="row" style="margin: 14px 0">
+    <div class="row filter-row" style="margin: 14px 0">
       <button class="chip clickable" :class="{ active: stageTab === 'open' }" @click="stageTab = 'open'">未出本 {{ counts.open }}</button>
       <button class="chip clickable" :class="{ active: stageTab === 'mastered' }" @click="stageTab = 'mastered'">已出本 {{ counts.mastered }}</button>
       <span style="width: 1px; height: 18px; background: var(--line)" />
@@ -159,7 +159,7 @@ function clearAllMastered() {
     <div v-else class="card">
       <EmptyState
         icon="check" :title="stageTab === 'open' ? '错题本已清空' : '还没有出本记录'"
-        :text="stageTab === 'open' ? '保持这个状态，去练一套综合卷巩固。' : '连续两次答对同一道错题后，它会自动出现在这里。'"
+        :text="stageTab === 'open' ? '去练一套。' : '连对两次自动出本。'"
       />
     </div>
   </div>
@@ -174,4 +174,15 @@ function clearAllMastered() {
 .m-stem:hover { color: var(--text); }
 .sep { margin: 0 6px; }
 .m-actions { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+@media (max-width: 640px) {
+  .stat-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .ss { padding: 9px 12px; }
+  .ss b { font-size: 20px; }
+  .filter-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-row > * { flex: 0 0 auto; }
+  .filter-row > div[style*="flex: 1"] { display: none; }
+  .m-stem { font-size: 13px; }
+  .m-actions .btn { flex: 1; justify-content: center; }
+}
 </style>

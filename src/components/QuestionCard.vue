@@ -67,7 +67,7 @@ function onSelect(key) {
         </span>
         <span v-if="q.material" class="chip">材料题</span>
         <span v-if="isSubjective" class="chip">{{ q.score || 10 }} 分</span>
-        <span v-if="q.source === 'real'" class="chip amber">真题 {{ q.year }} · 第 {{ q.number }} 题</span>
+        <span v-if="q.source === 'real'" class="chip amber q-source-chip">真题 {{ q.year }} · 第 {{ q.number }} 题</span>
         <span v-else class="chip" :class="{ lilac: q.difficulty === 3, amber: q.difficulty === 2 }">难度 {{ q.difficulty }}</span>
         <span v-if="q.source === 'adapted'" class="chip lilac">改编 · {{ q.year }}</span>
       </div>
@@ -230,4 +230,8 @@ function onSelect(key) {
 .material-review { margin-top: 16px; }
 .material-review summary { cursor: pointer; font-size: 12px; color: var(--text-3); }
 .mr-block { margin-top: 10px; padding: 10px 12px; border-left: 2px solid var(--line-strong); background: var(--bg-0); font-size: 13px; line-height: 1.85; }
+@media (max-width: 640px) {
+  .q-source-chip { display: none; }
+  .qhead > .mono { white-space: nowrap; flex: 0 0 auto; }
+}
 </style>

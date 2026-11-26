@@ -55,7 +55,7 @@ function startAllWeak() {
       <div>
         <div class="eyebrow">STATS</div>
         <h1 class="page-title">学习统计</h1>
-        <p class="page-sub">所有数据都从本地存档推导，换浏览器需要手动导出迁移。</p>
+
       </div>
       <div style="flex: 1" />
       <button class="btn btn-ghost" @click="startAllWeak"><AppIcon name="target" :size="14" /> 薄弱综合练习</button>
@@ -124,7 +124,7 @@ function startAllWeak() {
     <section class="card card-pad" style="margin-bottom: 16px">
       <div class="card-label">BY SUBJECT</div>
       <h2 style="font-size: 18px; margin-bottom: 12px">科目面板</h2>
-      <table class="table">
+      <div class="table-scroll"><table class="table">
         <thead>
           <tr>
             <th>科目</th>
@@ -152,7 +152,7 @@ function startAllWeak() {
             <td class="num mono">{{ archive.profile.subjectStats[s.id]?.sessions || 0 }}</td>
           </tr>
         </tbody>
-      </table>
+      </table></div>
     </section>
 
     <div class="grid g-main" style="align-items: start">
@@ -162,7 +162,7 @@ function startAllWeak() {
             <div class="card-label">WEAKNESS</div>
             <h2 style="font-size: 18px">薄弱排行</h2>
           </div>
-          <span class="tiny dim">掌握度 &lt; 75% 才进入候选</span>
+
         </div>
         <div v-if="weakItems.length" class="weak-table">
           <div v-for="(w, i) in weakItems" :key="w.knowledge.id" class="wk-row">
@@ -180,7 +180,7 @@ function startAllWeak() {
             <button class="btn btn-ghost btn-sm" @click="practiceWeak(w.knowledge.id)">练</button>
           </div>
         </div>
-        <EmptyState v-else icon="target" title="还没有诊断数据" text="完成一套练习后，这里会按薄弱度排出前六名。" />
+        <EmptyState v-else icon="target" title="还没有诊断数据" text="先练一套。" />
       </section>
 
       <div class="stack">
@@ -207,6 +207,7 @@ function startAllWeak() {
 </template>
 
 <style scoped>
+.table-scroll { overflow-x: auto; }
 .big-num { font-size: 34px; line-height: 1.15; font-variant-numeric: tabular-nums; margin: 4px 0 6px; }
 .big-num span { margin-left: 4px; }
 .trend { display: flex; align-items: flex-end; gap: 3px; height: 150px; margin-top: 18px; }
@@ -228,6 +229,11 @@ function startAllWeak() {
 .rank { color: var(--text-3); font-size: 11px; }
 .wk-title { font-size: 13.5px; color: var(--text); }
 .wk-title:hover { color: var(--mint); }
+@media (max-width: 640px) {
+  .big-num { font-size: 28px; }
+  .radar-card :deep(svg) { max-width: 100%; height: auto; }
+  .wk-row { gap: 8px; }
+}
 .mt-list { display: flex; flex-direction: column; gap: 9px; }
 .mt-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
 </style>

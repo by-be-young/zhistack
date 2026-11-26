@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { archive, save } from '../storage/archive.js'
-import { subjects, subjectMap, knowledgeById, questions } from '../data/index.js'
+import { subjects, subjectMap, knowledgeById, questions, papers } from '../data/index.js'
 import { diagnose } from '../core/diagnose.js'
 import { createSession } from '../stores/practice.js'
 import { relativeDay } from '../core/time.js'
@@ -19,10 +19,10 @@ const duration = ref(0)
 const weak = ref(diagnose(archive))
 
 const modes = [
-  { id: 'mock', icon: 'layers', name: '模拟组卷', desc: '按知识点分桶抽题，单点不超三成' },
-  { id: 'paper', icon: 'trophy', name: '真题原卷', desc: '整套原卷计时作答，主观题按比例自评' },
-  { id: 'weak', icon: 'target', name: '薄弱专项', desc: '按诊断结果定向补缺' },
-  { id: 'mistake', icon: 'alert', name: '错题重练', desc: '未出本的错题优先' }
+  { id: 'mock', icon: 'layers', name: '模拟组卷', desc: '分桶抽题' },
+  { id: 'paper', icon: 'trophy', name: '真题原卷', desc: '整套计时' },
+  { id: 'weak', icon: 'target', name: '薄弱专项', desc: '定向补缺' },
+  { id: 'mistake', icon: 'alert', name: '错题重练', desc: '错题优先' }
 ]
 
 const draft = computed(() => archive.draft?.session || null)
@@ -94,19 +94,25 @@ onMounted(() => {
       <div>
         <div class="eyebrow">PRACTICE</div>
         <h1 class="page-title">练习中心</h1>
-        <p class="page-sub">原创题用于日常组卷与薄弱补缺；历年原卷在「真题」中整套作答，主观题按自评比例计分。</p>
+        <div class="head-stats">
+          <span><b>{{ questions.length }}</b> 题</span>
+          <span><b>{{ subjects.length }}</b> 科</span>
+          <span><b>{{ archive.sessions.length }}</b> 次练习</span>
+        </div>
       </div>
     </div>
 
     <div v-if="draft" class="card card-pad draft-banner">
-      <div class="row" style="gap: 14px">
+      <div class="draft-main">
         <div class="draft-icon"><AppIcon name="play" :size="18" /></div>
-        <div style="flex: 1">
-          <div style="font-weight: 600">{{ draft.title }} · {{ draft.count }} 题</div>
-          <div class="tiny dim">{{ relativeDay(archive.draft.at) }}开始，已答 {{ Object.values(draft.answers || {}).filter(a => a.length).length }} 题</div>
+        <div class="draft-info">
+          <div class="draft-title">{{ draft.title }}</div>
+          <div class="tiny dim">{{ draft.count }} 题 · 已答 {{ Object.values(draft.answers || {}).filter(a => a.length).length }} 题</div>
         </div>
-        <button class="btn btn-primary btn-sm" @click="resume">继续作答</button>
-        <router-link to="/practice" class="btn btn-text btn-sm" @click.prevent="archive.draft = null; save(true)">丢弃</router-link>
+      </div>
+      <div class="draft-actions">
+        <button class="btn btn-primary btn-sm" @click="resume">继续</button>
+        <button class="btn btn-text btn-sm" @click="archive.draft = null; save(true)">丢弃</button>
       </div>
     </div>
 
@@ -119,7 +125,7 @@ onMounted(() => {
         <div class="mode-icon"><AppIcon :name="m.icon" :size="18" /></div>
         <div>
           <div class="mode-name">{{ m.name }}</div>
-          <div class="tiny dim">{{ m.desc }}</div>
+          <div class="tiny dim mode-desc">{{ m.desc }}</div>
         </div>
         <AppIcon name="check" :size="14" class="mode-check" v-if="mode === m.id" />
       </button>
@@ -168,9 +174,10 @@ onMounted(() => {
           </div>
         </div>
 
-        <div v-if="mode === 'paper'" class="notice">
-          <AppIcon name="trophy" :size="14" />
-          <span>真题原卷按套发放，题量、限时与卷面分固定。主观题在交卷前弹出参考答案与评分要点，按 0–100% 自评，折算为卷面得分。</span>
+        <div v-if="mode === 'paper'" class="paper-mini">
+          <span><b>{{ papers.length }}</b> 套</span>
+          <span><b>{{ papers.reduce((n, p) => n + p.questionCount, 0) }}</b> 题</span>
+          <span><b>{{ papers.reduce((n, p) => n + p.durationMin, 0) }}</b> 分钟</span>
         </div>
 
         <div class="row" style="margin-top: 22px">
@@ -178,7 +185,7 @@ onMounted(() => {
             <AppIcon :name="mode === 'paper' ? 'trophy' : 'play'" :size="15" />
             {{ mode === 'paper' ? '去真题库选题' : `开始 · ${Math.min(count, pool)} 题` }}
           </button>
-          <span class="tiny dim">{{ mode === 'paper' ? '原卷不抽题，按年份整套作答' : '近 3 天做过的题会排到后面' }}</span>
+          <span class="tiny dim">{{ mode === 'paper' ? '整套发放' : '近期题后置' }}</span>
         </div>
       </section>
 
@@ -199,7 +206,7 @@ onMounted(() => {
               <button class="btn btn-ghost btn-sm" @click="startWeak(w.knowledge.id)">练</button>
             </div>
           </div>
-          <EmptyState v-else icon="target" title="暂无薄弱排行" text="先完成一轮练习，系统会按掌握度排序。" />
+          <EmptyState v-else icon="target" title="暂无诊断" text="先练一轮。" />
         </section>
 
         <section class="card card-pad">
@@ -219,7 +226,7 @@ onMounted(() => {
               <div class="mono" :style="{ color: s.accuracy >= 70 ? 'var(--mint)' : s.accuracy >= 45 ? 'var(--amber)' : 'var(--rose)' }">{{ s.accuracy }}%</div>
             </router-link>
           </div>
-          <div v-else class="tiny dim" style="padding: 14px 0">还没有练习记录。</div>
+          <div v-else class="tiny dim" style="padding: 14px 0">暂无记录</div>
         </section>
       </div>
     </div>
@@ -227,10 +234,16 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.draft-banner { border-color: color-mix(in srgb, var(--amber) 40%, var(--line)); background: color-mix(in srgb, var(--amber) 5%, var(--bg-1)); margin-bottom: 14px; }
+.draft-banner { border-color: color-mix(in srgb, var(--amber) 40%, var(--line)); background: color-mix(in srgb, var(--amber) 5%, var(--bg-1)); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.head-stats { display: flex; gap: 16px; margin-top: 4px; color: var(--text-3); font-size: 12px; }
+.head-stats b { font-family: var(--font-mono); font-size: 15px; color: var(--text); font-weight: 500; }
+.draft-main { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+.draft-info { min-width: 0; }
+.draft-title { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.draft-actions { display: flex; gap: 4px; flex: 0 0 auto; }
 .draft-icon { width: 38px; height: 38px; border-radius: 9px; display: grid; place-items: center; background: var(--bg-2); color: var(--amber); }
-.mode-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
-.mode-card { display: flex; align-items: center; gap: 10px; padding: 14px 16px; text-align: left; position: relative; }
+.mode-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+.mode-card { display: flex; align-items: center; gap: 9px; padding: 12px 12px; text-align: left; position: relative; min-width: 0; }
 .mode-card.active { border-color: var(--mint); background: color-mix(in srgb, var(--mint) 6%, var(--bg-1)); }
 .mode-icon { width: 34px; height: 34px; border-radius: 8px; background: var(--bg-2); display: grid; place-items: center; color: var(--text-2); flex: 0 0 auto; }
 .mode-name { font-size: 14px; font-weight: 600; }
@@ -240,7 +253,8 @@ onMounted(() => {
 .sub-toggle { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--text-2); cursor: pointer; font-size: 13px; }
 .sub-toggle.active { border-color: var(--sub); color: var(--text); background: color-mix(in srgb, var(--sub) 8%, transparent); }
 .sub-toggle .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--sub); }
-.notice { display: flex; gap: 8px; padding: 10px 12px; border-radius: 8px; border: 1px dashed var(--line); color: var(--text-3); font-size: 12px; line-height: 1.6; margin-top: 4px; }
+.paper-mini { display: flex; gap: 18px; padding: 10px 0 0; color: var(--text-3); font-size: 12px; }
+.paper-mini b { font-family: var(--font-mono); font-size: 16px; color: var(--text); font-weight: 500; }
 .rec-list, .hist-list { display: flex; flex-direction: column; }
 .rec-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
 .rec-row:last-child { border-bottom: 0; }
@@ -248,5 +262,18 @@ onMounted(() => {
 .hist-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px dashed var(--line); color: var(--text-2); }
 .hist-row:last-child { border-bottom: 0; }
 .hist-row:hover { color: var(--text); }
-@media (max-width: 900px) { .mode-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) {
+  .mode-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .mode-card { flex-direction: column; align-items: flex-start; gap: 6px; padding: 10px 8px; }
+  .mode-icon { width: 30px; height: 30px; border-radius: 8px; }
+  .mode-name { font-size: 12px; white-space: nowrap; }
+  .mode-desc { display: none; }
+  .mode-check { top: 6px; right: 6px; }
+  .draft-title { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .draft-banner { align-items: flex-start; }
+  .draft-actions { flex-direction: column; gap: 2px; }
+  .head-stats { gap: 12px; }
+  .head-stats b { font-size: 13px; }
+  .sub-toggle { flex: 1 1 46%; justify-content: center; }
+}
 </style>

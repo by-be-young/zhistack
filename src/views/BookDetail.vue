@@ -130,7 +130,7 @@ onMounted(async () => {
       <div>
         <div class="eyebrow">{{ subjectMap[book.subject]?.name }} · {{ book.edition }}</div>
         <h1 class="page-title">{{ book.title }}</h1>
-        <p class="page-sub">{{ book.author }} · {{ book.publisher }} · 共 {{ book.pages }} 页</p>
+        <div class="head-stats"><span>{{ book.author }}</span><span>{{ book.publisher }}</span><span><b>{{ book.pages }}</b> 页</span></div>
       </div>
       <div style="flex: 1" />
       <div class="row">

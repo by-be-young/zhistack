@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { practice, resumeDraft, pickAnswer, setTextAnswer, clearAnswer, toggleMark, goTo, next, prev, tick, submitSession, discardDraft, persistDraft, setSelfGrades } from '../stores/practice.js'
 import { archive } from '../storage/archive.js'
-import { questionById, subjectMap } from '../data/index.js'
+import { questionById, subjectMap, paperById } from '../data/index.js'
 import { toast } from '../core/toast.js'
 import QuestionCard from '../components/QuestionCard.vue'
 import QuestionNav from '../components/QuestionNav.vue'
@@ -28,6 +28,12 @@ const selfGrades = ref({})
 const materialOpen = ref(true)
 
 const s = computed(() => practice.session)
+const titleShort = computed(() => {
+  const cur = s.value
+  if (!cur) return ''
+  const raw = (cur.paperId && paperById[cur.paperId]?.short) || cur.title || '练习'
+  return raw.replace(' 原卷', '').replace('数学（一）', '数一').replace('英语（一）', '英一')
+})
 const qid = computed(() => s.value?.qids[s.value.index])
 const current = computed(() => qid.value ? questionById[qid.value] : null)
 const selected = computed(() => (qid.value && s.value?.answers[qid.value]) || [])
@@ -156,21 +162,20 @@ onBeforeUnmount(() => {
     <header class="s-top">
       <div class="row" style="gap: 10px; min-width: 0">
         <button class="icon-btn" aria-label="退出" @click="requestQuit"><AppIcon name="arrow-left" :size="16" /></button>
-        <div style="min-width: 0">
-          <div class="s-title">{{ s.title }}</div>
-          <div class="mono tiny dim">{{ s.count }} 题 · {{ s.subjects.map(x => subjectMap[x]?.short).join(' / ') }} · 已答 {{ answeredCount }}</div>
+        <div class="s-title-wrap">
+          <div class="s-title">{{ titleShort }}</div>
+          <div class="s-top-sub mono tiny dim">{{ s.count }} 题 · {{ s.subjects.map(x => subjectMap[x]?.short).join(' / ') }} · 已答 {{ answeredCount }}</div>
         </div>
       </div>
-      <div style="flex: 1" />
       <div class="row" style="gap: 14px">
         <TimerRing :left-sec="s.leftSec" :total-sec="s.durationMin * 60" :unlimited="!s.durationMin" />
-        <button v-if="current?.material" class="btn btn-ghost btn-sm" @click="materialOpen = !materialOpen">
-          <AppIcon name="bookopen" :size="14" /> {{ materialOpen ? '收起材料' : '看材料' }}
+        <button v-if="current?.material" class="btn btn-ghost btn-sm top-icon-btn" @click="materialOpen = !materialOpen">
+          <AppIcon name="bookopen" :size="14" /><span>{{ materialOpen ? '收起' : '材料' }}</span>
         </button>
-        <button class="btn btn-ghost btn-sm answer-card-btn" @click="showCard = true">
-          <AppIcon name="grid" :size="14" /> 答题卡
+        <button class="btn btn-ghost btn-sm answer-card-btn top-icon-btn" @click="showCard = true">
+          <AppIcon name="grid" :size="14" /><span>答题卡</span>
         </button>
-        <button class="btn btn-primary btn-sm" :disabled="autoSubmitting" @click="showSubmit = true">
+        <button class="btn btn-primary btn-sm top-submit" :disabled="autoSubmitting" @click="showSubmit = true">
           {{ autoSubmitting ? '提交中…' : '交卷' }}
         </button>
       </div>
@@ -190,7 +195,7 @@ onBeforeUnmount(() => {
 
       <div class="s-question" v-if="current">
         <div v-if="current.material && !materialOpen" class="material-strip">
-          <span class="tiny dim">材料已收起，可展开后再作答</span>
+          <span class="tiny dim">材料已收起</span>
           <button class="btn btn-text btn-sm" @click="materialOpen = true">展开材料 <AppIcon name="arrow-right" :size="13" /></button>
         </div>
 
@@ -215,7 +220,6 @@ onBeforeUnmount(() => {
           </button>
           <button v-else class="btn btn-primary btn-sm" @click="showSubmit = true">完成并交卷</button>
         </div>
-        <div class="tiny dim keyboard-tip">快捷键：1–8 选项 · ← → 切题 · M 标记 · 草稿层切题自动清空</div>
         <InkPad :reset-key="qid || ''" />
       </div>
 
@@ -273,7 +277,7 @@ onBeforeUnmount(() => {
     </ModalDialog>
 
     <ModalDialog :open="showQuit" title="退出本次练习" width="420" @close="showQuit = false">
-      <p class="small muted">退出会丢弃草稿，已答内容不会计入统计。也可以先退出、24 小时内回来继续。</p>
+      <p class="small muted">退出会丢弃草稿，已答不计入统计。</p>
       <template #footer>
         <button class="btn btn-text" @click="showQuit = false">留下继续</button>
         <button class="btn btn-ghost" @click="showQuit = false; router.push('/practice')">稍后继续</button>
@@ -306,6 +310,10 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(14px);
 }
 .s-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.s-top > .row:first-child { flex: 1; min-width: 0; flex-wrap: nowrap; }
+.s-title-wrap { flex: 1; min-width: 0; }
+.s-top > .row:last-child { flex: 0 0 auto; flex-wrap: nowrap; }
+.s-question { min-width: 0; }
 .s-progress { height: 2px; background: var(--line); }
 .s-progress i { display: block; height: 2px; background: var(--mint); transition: width .3s var(--ease); }
 .s-main {
@@ -327,7 +335,6 @@ onBeforeUnmount(() => {
 }
 .s-question { position: relative; }
 .s-actions { display: flex; align-items: center; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
-.keyboard-tip { margin-top: 12px; text-align: center; }
 .grade-list { display: flex; flex-direction: column; gap: 14px; max-height: 58vh; overflow-y: auto; padding-right: 4px; }
 .grade-item { padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-0); }
 .grade-ref { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--bg-2); font-size: 12.5px; line-height: 1.7; max-height: 180px; overflow-y: auto; }
@@ -343,10 +350,36 @@ onBeforeUnmount(() => {
   .s-material { grid-column: 1 / -1; position: relative; top: 0; max-height: 40vh; }
 }
 @media (max-width: 900px) {
-  .s-main, .s-main.has-material, .s-main.has-material.material-wide { grid-template-columns: minmax(0, 1fr); padding: 16px 14px 60px; }
+  .s-top { height: 52px; padding: 0 10px; gap: 8px; }
+  .s-top > .row:first-child { gap: 6px; }
+  .s-top > .row:last-child { gap: 4px; }
+  .s-top .icon-btn { width: 30px; height: 30px; }
+  .s-title { font-size: 13px; max-width: 100%; }
+  .s-top-sub { display: none; }
+  .top-icon-btn { width: 30px; height: 30px; padding: 0 !important; justify-content: center; border-radius: 8px; }
+  .top-icon-btn span { display: none; }
+  .top-submit { display: none !important; }
+  .s-main, .s-main.has-material, .s-main.has-material.material-wide {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 10px 12px calc(76px + env(safe-area-inset-bottom));
+    gap: 10px;
+  }
   .s-side { display: none; }
-  .s-material { max-height: 38vh; }
+  .s-material { position: static !important; height: 36vh !important; max-height: 36vh !important; border-radius: 11px; }
+  .s-top :deep(.timer) { gap: 4px; }
+  .s-top :deep(.timer svg) { width: 34px; height: 34px; }
+  .s-top :deep(.timer .t span) { font-size: 13px; }
+  .s-top :deep(.timer .t small) { display: none; }
+  .s-actions {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
+    margin: 0; padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;
+    background: color-mix(in srgb, var(--bg-1) 94%, transparent);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--line);
+  }
+  .s-actions > div[style*="flex: 1"] { display: none; }
+  .s-actions .btn { width: 100%; justify-content: center; padding: 8px 2px; font-size: 11px; white-space: nowrap; gap: 2px; }
   .answer-card-btn { display: inline-flex !important; }
-  .s-top { padding: 0 14px; }
 }
 </style>

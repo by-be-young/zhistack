@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { knowledgeById, subjectMap } from '../data/index.js'
 import { rarityMeta } from '../data/cards.js'
+import AppIcon from './AppIcon.vue'
 
 const props = defineProps({
   card: { type: Object, required: true },
@@ -25,8 +26,9 @@ const accent = computed(() => `var(--sub-${props.card.subject})`)
       <span class="rail" :class="card.rarity.toLowerCase()">{{ card.rarity }}</span>
     </div>
     <div class="cf-mid">
-      <div class="cf-name">{{ owned ? card.name : '未获得' }}</div>
-      <div class="cf-line">{{ owned ? card.line : '在卡池中可抽取' }}</div>
+      <div v-if="!owned" class="cf-lock"><AppIcon name="lock" :size="18" /></div>
+      <div class="cf-name">{{ owned ? card.name : '???' }}</div>
+      <div v-if="owned" class="cf-line">{{ card.line }}</div>
     </div>
     <div class="cf-bottom">
       <span class="cf-kn">{{ owned ? knowledge?.title : '???' }}</span>
@@ -54,7 +56,10 @@ const accent = computed(() => `var(--sub-${props.card.subject})`)
 .cardface.r { border-color: color-mix(in srgb, var(--sky) 40%, transparent); }
 .cardface.sr { border-color: color-mix(in srgb, var(--lilac) 50%, transparent); }
 .cardface.ssr { border-color: color-mix(in srgb, var(--amber) 60%, transparent); }
-.cardface.locked { filter: saturate(0.25); opacity: 0.62; }
+.cardface.locked { filter: saturate(0.18); opacity: .82; border-style: dashed; background-image: repeating-linear-gradient(135deg, color-mix(in srgb, var(--bg-2) 88%, transparent) 0 8px, var(--bg-1) 8px 16px); }
+.cardface.locked .motif { opacity: .22; }
+.cf-lock { width: 34px; height: 34px; border-radius: 50%; border: 1px dashed var(--line-strong); display: grid; place-items: center; color: var(--text-3); margin-bottom: 10px; background: color-mix(in srgb, var(--bg-2) 60%, transparent); }
+.cardface.small .cf-lock { width: 28px; height: 28px; margin-bottom: 6px; }
 
 .motif {
   position: absolute; inset: 0; opacity: 0.5; z-index: -1;
@@ -90,5 +95,6 @@ const accent = computed(() => `var(--sub-${props.card.subject})`)
 .cardface.small .cf-line { font-size: 9.5px; }
 .cf-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 6px; border-top: 1px solid var(--line); padding-top: 7px; }
 .cf-kn { font-size: 10px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cardface.locked .cf-kn { letter-spacing: .1em; }
 .cf-count { font-size: 10px; color: var(--amber); }
 </style>

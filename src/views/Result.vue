@@ -59,10 +59,12 @@ onMounted(() => {})
       <div>
         <div class="eyebrow">RESULT · {{ (summary?.mode || 'practice').toUpperCase() }}</div>
         <h1 class="page-title">{{ summary?.title || '练习复盘' }}</h1>
-        <p class="page-sub">
-          {{ summary?.count }} 题 · 用时 {{ duration }} · {{ summary?.subjects?.map(x => subjectMap[x]?.short).join(' / ') }}
-          <span v-if="isPaper"> · 主观题已按自评比例计分</span>
-        </p>
+        <div class="head-stats">
+          <span><b>{{ summary?.count }}</b> 题</span>
+          <span>用时 {{ duration }}</span>
+          <span>{{ summary?.subjects?.map(x => subjectMap[x]?.short).join(' / ') }}</span>
+          <span v-if="isPaper">自评计分</span>
+        </div>
       </div>
       <div style="flex: 1" />
       <div class="row">

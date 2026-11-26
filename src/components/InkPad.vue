@@ -172,7 +172,7 @@ onBeforeUnmount(() => {
     </div>
 
     <button v-if="!active" class="ink-fab" aria-label="打开草稿层" @click="toggle">
-      <AppIcon name="pencil" :size="15" /> 草稿
+      <AppIcon name="pencil" :size="15" /><span>草稿</span>
     </button>
 
     <div v-else class="ink-bar">
@@ -246,7 +246,9 @@ onBeforeUnmount(() => {
 .ink-width.on { border-color: var(--mint); }
 .ink-width i { display: block; border-radius: 50%; background: currentColor; color: var(--text-3); }
 @media (max-width: 700px) {
-  .ink-bar { bottom: 70px; gap: 5px; padding: 7px 8px; }
+  .ink-bar { bottom: calc(70px + env(safe-area-inset-bottom)); gap: 5px; padding: 7px 8px; max-width: 94vw; }
   .ink-tag { display: none; }
+  .ink-fab { width: 38px; height: 38px; padding: 0; justify-content: center; border-radius: 50%; bottom: calc(78px + env(safe-area-inset-bottom)); right: 12px; }
+  .ink-fab span { display: none; }
 }
 </style>

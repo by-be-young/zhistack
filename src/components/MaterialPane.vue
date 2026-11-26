@@ -85,8 +85,6 @@ function zoom(delta) {
         <button class="mp-tool" aria-label="缩小字号" @click="zoom(-1)">A−</button>
         <span class="mono tiny dim">{{ fontSize }}px</span>
         <button class="mp-tool" aria-label="放大字号" @click="zoom(1)">A＋</button>
-        <div style="flex: 1" />
-        <span class="tiny dim">独立滚动</span>
       </div>
     </header>
 
@@ -100,9 +98,6 @@ function zoom(delta) {
       </article>
     </div>
 
-    <footer class="mp-foot tiny dim">
-      材料原文按公开原卷录入，未改写；滚动本栏不影响右侧作答。
-    </footer>
   </section>
 </template>
 
@@ -134,6 +129,5 @@ function zoom(delta) {
   color: var(--text-3); text-transform: uppercase;
   margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed var(--line);
 }
-.mp-foot { padding: 8px 16px 10px; border-top: 1px solid var(--line); background: var(--bg-1); }
 .mp-body :deep(.rich) { white-space: pre-wrap; }
 </style>

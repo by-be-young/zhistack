@@ -11,6 +11,7 @@ const { archive, level } = app
 
 const theme = ref(archive.settings.theme || 'light')
 const isDark = computed(() => document.documentElement.dataset.theme !== 'light')
+const isSession = computed(() => route.path.startsWith('/practice/session'))
 
 const navs = [
   { to: '/', name: '总览', icon: 'home', exact: true },
@@ -95,7 +96,7 @@ onMounted(() => app.applyTheme(theme.value))
       </main>
     </div>
 
-    <nav class="mobile-nav" aria-label="移动端导航">
+    <nav v-if="!isSession" class="mobile-nav" aria-label="移动端导航">
       <router-link
         v-for="n in mobileNavs" :key="n.to" :to="n.to"
         :class="{ 'router-link-active': route.path === n.to || (n.to !== '/' && route.path.startsWith(n.to)) }"

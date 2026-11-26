@@ -17,10 +17,14 @@ const groups = [
   { id: 'pol', name: '政治' }
 ]
 
+const totalQuestions = computed(() => papers.reduce((n, p) => n + p.questionCount, 0))
+const totalMinutes = computed(() => papers.reduce((n, p) => n + p.durationMin, 0))
+
+const groupOrder = { 408: 0, math: 1, en: 2, pol: 3 }
 const list = computed(() => papers
   .filter(p => filter.value === 'all' || p.group === filter.value || p.subjects.includes(filter.value))
   .slice()
-  .sort((a, b) => b.year - a.year))
+  .sort((a, b) => (b.year - a.year) || (groupOrder[a.group] - groupOrder[b.group])))
 
 const byYear = computed(() => {
   const map = {}
@@ -54,9 +58,6 @@ function subjectiveOf(p) {
   }
 }
 
-function sourceHost(url) {
-  try { return new URL(url).host } catch { return '原卷' }
-}
 </script>
 
 <template>
@@ -65,10 +66,14 @@ function sourceHost(url) {
       <div>
         <div class="eyebrow">REAL PAPERS</div>
         <h1 class="page-title">真题原卷</h1>
-        <p class="page-sub">按年份整套作答，不改编题干。主观题与填空题在交卷前对照参考答案自评百分比，按满分折算得分。</p>
+        <div class="head-stats">
+          <span><b>{{ papers.length }}</b> 套</span>
+          <span><b>{{ totalQuestions }}</b> 题</span>
+          <span><b>{{ totalMinutes }}</b> 分钟</span>
+        </div>
       </div>
       <div style="flex: 1" />
-      <span class="chip">{{ papers.length }} 套原卷</span>
+
     </div>
 
     <div class="paper-filter">
@@ -82,11 +87,13 @@ function sourceHost(url) {
     <div v-for="(rows, year) in byYear" :key="year" class="year-block">
       <div class="year-head">
         <span class="year-num">{{ year }}</span>
-        <span class="tiny dim">{{ rows.length }} 套 · 点击开始整套计时作答</span>
+        <span class="year-line" />
+        <span class="tiny dim">{{ rows.length }} 套</span>
       </div>
 
       <div class="paper-grid">
-        <article v-for="p in rows" :key="p.id" class="paper-card card card-pad card-hover">
+        <article v-for="p in rows" :key="p.id" class="paper-card card card-pad card-hover"
+          :style="{ '--accent': p.group === '408' ? 'var(--sub-ds)' : p.group === 'math' ? 'var(--sub-math)' : p.group === 'en' ? 'var(--sub-en)' : 'var(--sub-pol)' }">
           <div class="spread" style="align-items: flex-start">
             <div class="row" style="gap: 8px; flex-wrap: wrap">
               <span class="chip amber">{{ p.year }} 原卷</span>
@@ -110,19 +117,19 @@ function sourceHost(url) {
             <span v-for="sec in p.sections" :key="sec.name">{{ sec.short }}</span>
           </div>
 
-          <div v-if="p.note" class="tiny dim paper-note">{{ p.note }}</div>
-
           <div class="paper-foot">
-            <div class="tiny dim">
-              <template v-if="best(p)">已做 {{ attempts(p).length }} 次 · 最高 {{ best(p).rawPoints ?? best(p).score }} 分</template>
-              <template v-else>尚未作答</template>
+            <div class="paper-score">
+              <template v-if="best(p)">
+                <b>{{ best(p).rawPoints ?? best(p).score }}</b><span>/ {{ p.totalScore }} 分</span>
+              </template>
+              <template v-else><span class="dim">未作答</span></template>
             </div>
-            <div class="row" style="gap: 8px">
-              <a :href="p.sourceUrl" target="_blank" rel="noopener" class="btn btn-text btn-sm">
-                原卷来源 <AppIcon name="arrow-right" :size="12" />
+            <div class="row" style="gap: 6px">
+              <a :href="p.sourceUrl" target="_blank" rel="noopener" class="btn btn-text btn-sm src-link" title="查看原卷">
+                <AppIcon name="arrow-right" :size="13" /><span>原卷</span>
               </a>
               <button class="btn btn-primary btn-sm" @click="start(p)">
-                <AppIcon name="play" :size="14" /> 开始作答
+                <AppIcon name="play" :size="13" /> 开始
               </button>
             </div>
           </div>
@@ -137,34 +144,45 @@ function sourceHost(url) {
       </div>
     </div>
 
-    <section class="card card-pad notice-card">
-      <div class="card-label">ABOUT</div>
-      <h2 style="font-size: 16px; margin: 4px 0 8px">原卷与自评说明</h2>
-      <ul class="notice-list tiny dim">
-        <li>题干按公开网络版本录入，未做改写；带图题目保留原卷页码提示，图形以原卷为准。</li>
-        <li>客观题由本地判分；主观题、填空题在交卷前弹出参考答案与评分要点，按 0–100% 选择得分比例。</li>
-        <li>非客观题得分 = 题目满分 × 自评比例，60% 及以上计入“答对”，但不进入客观错题重练池。</li>
-        <li>原卷版权归权利人所有，平台仅用于个人复习；如权利人提出异议，将移除对应年份。</li>
-      </ul>
-    </section>
   </div>
 </template>
 
 <style scoped>
-.paper-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
-.year-block { margin-bottom: 22px; }
-.year-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
-.year-num { font-family: var(--font-display); font-size: 30px; letter-spacing: 0.02em; }
-.paper-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.paper-card { display: flex; flex-direction: column; }
-.paper-title { font-size: 16px; line-height: 1.5; margin: 12px 0 10px; }
-.paper-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); }
-.paper-meta span { display: inline-flex; align-items: center; gap: 5px; }
-.paper-sections { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-.paper-sections span { padding: 2px 7px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg-2); font-size: 10.5px; }
-.paper-note { margin-top: 10px; line-height: 1.65; }
-.paper-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); flex-wrap: wrap; }
-.notice-card { margin-top: 6px; }
-.notice-list { margin: 0; padding-left: 18px; line-height: 1.9; }
-@media (max-width: 900px) { .paper-grid { grid-template-columns: minmax(0, 1fr); } }
+.paper-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.head-stats { display: flex; gap: 16px; margin-top: 4px; color: var(--text-3); font-size: 12px; }
+.head-stats b { font-family: var(--font-mono); font-size: 15px; color: var(--text); font-weight: 500; }
+.year-block { margin-bottom: 20px; }
+.year-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.year-num { font-family: var(--font-display); font-size: 26px; letter-spacing: 0.02em; line-height: 1; }
+.year-line { flex: 1; height: 1px; background: var(--line); }
+.paper-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.paper-card { display: flex; flex-direction: column; position: relative; overflow: hidden; padding-left: 18px; }
+.paper-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); }
+.paper-card::after { content: ''; position: absolute; right: -30px; top: -50px; width: 130px; height: 130px; border-radius: 50%; background: color-mix(in srgb, var(--accent) 7%, transparent); pointer-events: none; }
+.paper-stamp { position: absolute; right: 14px; top: 14px; font-family: var(--font-display); font-size: 13px; letter-spacing: 0.06em; color: color-mix(in srgb, var(--accent) 78%, var(--text)); opacity: 0.9; z-index: 1; }
+.paper-title { font-size: 15px; line-height: 1.5; margin: 10px 0 8px; padding-right: 38px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.paper-meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11.5px; color: var(--text-2); }
+.paper-meta span { display: inline-flex; align-items: center; gap: 4px; }
+.paper-sections { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+.paper-sections span { padding: 2px 6px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg-2); font-size: 10px; }
+.paper-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 12px; border-top: 1px dashed var(--line); }
+.paper-score b { font-family: var(--font-mono); font-size: 18px; font-weight: 500; color: var(--text); }
+.paper-score span { font-size: 11px; color: var(--text-3); margin-left: 2px; }
+@media (max-width: 900px) {
+  .paper-grid { grid-template-columns: minmax(0, 1fr); }
+  .paper-card { padding: 14px 14px 14px 17px !important; }
+  .paper-title { font-size: 14px; margin: 8px 0 7px; }
+  .paper-sections { display: none; }
+  .paper-filter { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .paper-filter::-webkit-scrollbar { display: none; }
+  .paper-filter .chip { flex: 0 0 auto; }
+}
+@media (max-width: 480px) {
+  .head-stats { gap: 12px; }
+  .head-stats b { font-size: 13px; }
+  .src-link { display: none; }
+  .paper-foot { padding-top: 10px; }
+  .paper-meta { gap: 8px; }
+}
 </style>
+

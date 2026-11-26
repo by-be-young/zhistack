@@ -36,7 +36,7 @@ onMounted(() => { ensurePeriods(archive); save() })
       <div>
         <div class="eyebrow">TASKS</div>
         <h1 class="page-title">任务与成就</h1>
-        <p class="page-sub">日任务每天 04:00 重置，周任务按 ISO 周结算。任务奖励不占每日积分上限。</p>
+
       </div>
       <div style="flex: 1" />
       <div class="streak-box">

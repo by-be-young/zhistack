@@ -86,7 +86,10 @@ function costOf(card) {
       <div>
         <div class="eyebrow">COLLECTION</div>
         <h1 class="page-title">知识卡册</h1>
-        <p class="page-sub">每张卡对应一个考点，抽到即点亮。重复卡自动转碎片，N/R 卡可用碎片补齐。</p>
+        <div class="head-stats">
+          <span><b>{{ collected }}</b>/{{ cards.length }} 张</span>
+          <span><b>{{ shards }}</b> 碎片</span>
+        </div>
       </div>
       <div style="flex: 1" />
       <button class="btn btn-ghost btn-sm" @click="showHistory = true">抽卡记录</button>
@@ -94,33 +97,43 @@ function costOf(card) {
 
     <section class="gacha-hero card">
       <div class="gh-left">
-        <div class="mono tiny dim">BALANCE</div>
-        <div class="bal"><b>{{ points }}</b><span class="tiny dim">积分</span></div>
-        <div class="tiny dim">碎片 <b class="mono" style="color: var(--lilac)">{{ shards }}</b> · 已收集 {{ collected }} / {{ cards.length }}</div>
-        <div class="pity">
-          <div class="tiny dim">SSR 保底 {{ pityLeft ? `还差 ${pityLeft} 抽` : '下一抽必出' }}</div>
+        <div class="gh-balance">
+          <span class="coin-orb"><AppIcon name="coin" :size="15" /></span>
+          <b>{{ points }}</b>
+          <span class="tiny dim">积分</span>
+        </div>
+        <div class="gh-chips">
+          <span class="chip"><AppIcon name="cards" :size="12" /> {{ collected }}/{{ cards.length }}</span>
+          <span class="chip lilac"><AppIcon name="sparkle" :size="12" /> {{ shards }}</span>
+        </div>
+        <div class="pity-mini" :title="pityLeft ? 'SSR 保底还差 ' + pityLeft + ' 抽' : '下一抽必出 SSR'">
+          <span class="tiny dim">SSR</span>
           <div class="bar thin"><i :style="{ width: (pitySsr / GACHA.pitySsr * 100) + '%', background: 'var(--lilac)' }" /></div>
-          <div class="tiny dim" style="margin-top: 6px">十连第 10 抽若全 N，自动提升为 R</div>
+          <b class="mono tiny">{{ pityLeft ? pityLeft + ' 抽' : '必出' }}</b>
         </div>
       </div>
-      <div class="gh-mid">
-        <div class="rates">
-          <div v-for="r in ['SSR', 'SR', 'R', 'N']" :key="r" class="rate">
-            <span class="rail" :class="r.toLowerCase()">{{ r }}</span>
-            <span class="mono tiny">{{ Math.round(GACHA.rates[r] * 1000) / 10 }}%</span>
-          </div>
+
+      <div class="gh-visual" aria-hidden="true">
+        <div class="deck">
+          <div class="deck-card d1" />
+          <div class="deck-card d2" />
+          <div class="deck-card d3"><AppIcon name="sparkle" :size="18" /></div>
         </div>
-        <div class="tiny dim">概率按单抽计，保底独立累计</div>
       </div>
+
       <div class="gh-actions">
-        <button class="btn btn-primary" :disabled="busy" @click="doPull(1)">
-          单抽 <span class="mono tiny">{{ GACHA.singleCost }}</span>
+        <button class="btn btn-primary pull-btn" :disabled="busy" @click="doPull(1)">
+          <span>单抽</span><span class="mono tiny">{{ GACHA.singleCost }}</span>
         </button>
-        <button class="btn btn-ghost" :disabled="busy" @click="doPull(10)">
-          十连 <span class="mono tiny">{{ GACHA.tenCost }}</span>
-          <span class="tiny" style="color: var(--amber)">省 {{ GACHA.singleCost * 10 - GACHA.tenCost }}</span>
+        <button class="btn btn-ghost pull-btn ten" :disabled="busy" @click="doPull(10)">
+          <span>十连</span><span class="mono tiny">{{ GACHA.tenCost }}</span>
         </button>
-        <router-link to="/practice" class="btn btn-text btn-sm">去赚积分 →</router-link>
+      </div>
+
+      <div class="rate-line">
+        <span v-for="r in ['SSR', 'SR', 'R', 'N']" :key="r">
+          <i :class="'dot-' + r.toLowerCase()" />{{ r }} {{ Math.round(GACHA.rates[r] * 1000) / 10 }}%
+        </span>
       </div>
     </section>
 
@@ -134,13 +147,13 @@ function costOf(card) {
       </div>
     </section>
 
-    <div class="row" style="margin: 18px 0 12px">
+    <div class="row gacha-filter" style="margin: 18px 0 12px">
       <div class="pill-tabs">
         <button
           v-for="s in subjects" :key="s.id"
           class="chip clickable" :class="{ active: tab === s.id }"
           @click="tab = s.id"
-        >{{ s.name }} <span class="mono tiny">{{ (cardsBySubject[s.id] || []).filter(c => owned[c.id]).length }}/{{ (cardsBySubject[s.id] || []).length }}</span></button>
+        >{{ s.short }} <span class="mono tiny">{{ (cardsBySubject[s.id] || []).filter(c => owned[c.id]).length }}/{{ (cardsBySubject[s.id] || []).length }}</span></button>
       </div>
       <div style="flex: 1" />
       <label class="row tiny dim" style="gap: 6px; cursor: pointer">
@@ -204,16 +217,41 @@ function costOf(card) {
 </template>
 
 <style scoped>
-.gacha-hero { display: grid; grid-template-columns: 1.1fr 1fr auto; gap: 24px; padding: 22px 26px; align-items: center; background: radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--lilac) 8%, transparent), transparent 60%), var(--bg-1); }
-.bal { display: flex; align-items: baseline; gap: 6px; margin: 4px 0 6px; }
-.bal b { font-size: 34px; font-variant-numeric: tabular-nums; }
-.pity { margin-top: 12px; max-width: 260px; }
-.rates { display: flex; gap: 14px; margin-bottom: 8px; }
-.rate { display: flex; align-items: center; gap: 6px; }
-.gh-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
-.stamps { display: flex; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+.head-stats { display: flex; gap: 16px; margin-top: 4px; color: var(--text-3); font-size: 12px; }
+.head-stats b { font-family: var(--font-mono); font-size: 15px; color: var(--text); font-weight: 500; }
+.gacha-hero {
+  display: grid; grid-template-columns: minmax(0, 1fr) 128px 210px; gap: 20px;
+  padding: 20px 22px; align-items: center;
+  background: radial-gradient(90% 140% at 80% 0%, color-mix(in srgb, var(--lilac) 10%, transparent), transparent 60%), var(--bg-1);
+}
+.gh-left { min-width: 0; }
+.gh-balance { display: flex; align-items: baseline; gap: 7px; }
+.gh-balance b { font-family: var(--font-display); font-size: 36px; line-height: 1; letter-spacing: 0.01em; }
+.coin-orb { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; color: var(--amber); background: color-mix(in srgb, var(--amber) 12%, var(--bg-2)); align-self: center; }
+.gh-chips { display: flex; gap: 6px; margin-top: 10px; }
+.chip.lilac { color: var(--lilac); border-color: color-mix(in srgb, var(--lilac) 30%, var(--line)); }
+.pity-mini { display: flex; align-items: center; gap: 8px; margin-top: 12px; max-width: 240px; }
+.pity-mini .bar { flex: 1; }
+.gh-visual { display: grid; place-items: center; }
+.deck { position: relative; width: 108px; height: 100px; }
+.deck-card { position: absolute; width: 54px; height: 72px; border-radius: 8px; border: 1px solid var(--line-strong); background: linear-gradient(150deg, var(--bg-2), var(--bg-1)); box-shadow: 0 8px 16px rgba(0,0,0,.18); }
+.deck-card::before { content: ''; position: absolute; inset: 7px; border-radius: 4px; border: 1px solid color-mix(in srgb, var(--lilac) 26%, transparent); }
+.d1 { left: 2px; top: 16px; transform: rotate(-12deg); }
+.d2 { left: 27px; top: 8px; transform: rotate(1deg); }
+.d3 { left: 52px; top: 14px; transform: rotate(12deg); display: grid; place-items: center; color: var(--lilac); border-color: color-mix(in srgb, var(--lilac) 50%, var(--line)); }
+.d3::before { border-color: color-mix(in srgb, var(--amber) 45%, transparent); box-shadow: 0 0 14px color-mix(in srgb, var(--amber) 16%, transparent); }
+.gh-actions { display: flex; flex-direction: column; gap: 8px; }
+.pull-btn { display: flex; justify-content: space-between; align-items: center; gap: 14px; }
+.pull-btn.ten { border-color: color-mix(in srgb, var(--amber) 35%, var(--line)); }
+.rate-line { grid-column: 1 / -1; display: flex; gap: 14px; flex-wrap: wrap; padding-top: 4px; color: var(--text-3); font-size: 10.5px; font-family: var(--font-mono); }
+.rate-line span { display: inline-flex; align-items: center; gap: 4px; }
+.rate-line i { width: 5px; height: 5px; border-radius: 50%; background: var(--text-3); }
+.rate-line .dot-ssr { background: var(--amber); }
+.rate-line .dot-sr { background: var(--lilac); }
+.rate-line .dot-r { background: var(--sky); }
+.stamps { display: flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
 .stamp { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.stamp-ring { width: 54px; height: 54px; border-radius: 50%; border: 1px dashed var(--line-strong); display: grid; place-items: center; color: var(--text-3); font-size: 11px; }
+.stamp-ring { width: 52px; height: 52px; border-radius: 50%; border: 1px dashed var(--line-strong); display: grid; place-items: center; color: var(--text-3); font-size: 11px; }
 .stamp.done .stamp-ring { border: 1px solid var(--sub); color: var(--sub); background: color-mix(in srgb, var(--sub) 8%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sub) 10%, transparent); font-family: var(--font-display); font-size: 18px; }
 .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
 .cell-wrap { position: relative; cursor: pointer; }
@@ -227,7 +265,29 @@ function costOf(card) {
 .hist { display: flex; flex-direction: column; max-height: 420px; overflow: auto; }
 .h-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 12.5px; }
 @media (max-width: 900px) {
-  .gacha-hero { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .gacha-hero { grid-template-columns: minmax(0, 1fr) 110px; gap: 12px 14px; padding: 16px; }
+  .gh-actions { grid-column: 1 / -1; flex-direction: row; }
+  .gh-actions .pull-btn { flex: 1; }
+  .rate-line { gap: 10px; }
   .reveal-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .stamps { flex-wrap: nowrap; overflow-x: auto; gap: 8px; padding-bottom: 4px; scrollbar-width: none; }
+  .stamps::-webkit-scrollbar { display: none; }
+  .stamp { flex: 0 0 auto; }
+  .gacha-filter { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .gacha-filter::-webkit-scrollbar { display: none; }
+  .gacha-filter > div[style*="flex: 1"], .gacha-filter label { display: none; }
+  .gacha-filter .pill-tabs { flex-wrap: nowrap; }
+}
+@media (max-width: 480px) {
+  .gh-balance b { font-size: 30px; }
+  .gh-chips { margin-top: 7px; }
+  .pity-mini { margin-top: 8px; }
+  .deck { width: 88px; height: 86px; transform: scale(.9); }
+  .stamps { gap: 10px; }
+  .stamp-ring { width: 46px; height: 46px; }
+  .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .head-stats { gap: 12px; }
 }
 </style>

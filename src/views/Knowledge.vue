@@ -108,7 +108,10 @@ onMounted(() => {
       <div>
         <div class="eyebrow">KNOWLEDGE</div>
         <h1 class="page-title">知识点检索</h1>
-        <p class="page-sub">{{ knowledge.length }} 个考点，支持标题、标签、考点编号与全文要点。空格分词为「与」关系。</p>
+        <div class="head-stats">
+          <span><b>{{ knowledge.length }}</b> 考点</span>
+          <span><b>{{ subjects.length }}</b> 科</span>
+        </div>
       </div>
     </div>
 
@@ -118,7 +121,7 @@ onMounted(() => {
       <span class="kbd">⌘K</span>
     </div>
 
-    <div class="row" style="margin-bottom: 10px">
+    <div class="row filter-row" style="margin-bottom: 10px">
       <button class="chip clickable" :class="{ active: !subject }" @click="subject = ''">全部 {{ counts.all }}</button>
       <button
         v-for="s in subjects" :key="s.id"
@@ -151,6 +154,7 @@ onMounted(() => {
         v-for="r in results" :key="r.k.id"
         :to="`/knowledge/${r.k.id}`"
         class="k-card card card-hover"
+        :style="{ '--accent': 'var(--sub-' + r.k.subject + ')' }"
       >
         <div class="row" style="justify-content: space-between; gap: 10px">
           <div class="row" style="gap: 8px">
@@ -168,19 +172,19 @@ onMounted(() => {
             <mark v-if="s.hit">{{ s.text }}</mark><span v-else>{{ s.text }}</span>
           </template>
         </h3>
-        <div class="k-card-sum small muted">
+        <div v-if="q" class="k-card-sum small muted">
           <template v-for="(s, i) in segs(r.k.summary)" :key="i">
             <mark v-if="s.hit">{{ s.text }}</mark><span v-else>{{ s.text }}</span>
           </template>
         </div>
         <div class="k-card-foot">
-          <span class="tiny dim">{{ chapterLabel(r.k) }}</span>
+          <span class="k-chapter tiny dim">{{ chapterLabel(r.k) }}</span>
           <span class="tiny dim">{{ qCount(r.k) }} 题</span>
         </div>
       </router-link>
     </div>
     <div v-else class="card">
-      <EmptyState icon="search" title="没有匹配的知识点" text="换个关键词，或清空筛选。也可以按考点编号搜索，如 OS-3.2-04。" />
+      <EmptyState icon="search" title="没有匹配" text="换个关键词。" />
       <div style="text-align: center; padding-bottom: 24px">
         <button class="btn btn-ghost btn-sm" @click="clearAll">清空筛选</button>
       </div>
@@ -189,11 +193,27 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.k-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.k-card { padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.head-stats { display: flex; gap: 16px; margin-top: 4px; color: var(--text-3); font-size: 12px; }
+.head-stats b { font-family: var(--font-mono); font-size: 15px; color: var(--text); font-weight: 500; }
+.k-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.k-card { padding: 14px 16px; display: flex; flex-direction: column; gap: 7px; border-left: 3px solid var(--accent); }
+.k-card-title { font-size: 15px; line-height: 1.4; }
 .k-card-title { font-size: 16px; line-height: 1.4; }
 .k-card-sum { font-size: 12.5px; line-height: 1.7; }
 .k-card-foot { display: flex; justify-content: space-between; border-top: 1px dashed var(--line); padding-top: 9px; margin-top: 2px; }
 mark { background: color-mix(in srgb, var(--mint) 26%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
-@media (max-width: 760px) { .k-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 900px) {
+  .k-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .k-card { padding: 12px 13px; gap: 6px; }
+  .k-card-title { font-size: 14px; }
+  .filter-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-row > * { flex: 0 0 auto; }
+  .filter-row > div[style*="flex: 1"] { display: none; }
+  .head-stats { gap: 12px; }
+  .head-stats b { font-size: 13px; }
+}
+@media (max-width: 480px) {
+  .k-chapter { max-width: 62%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
 </style>

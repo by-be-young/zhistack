@@ -6,13 +6,12 @@ import { useApp } from '../stores/app.js'
 import { createSession } from '../stores/practice.js'
 import { diagnose, coldStartPath } from '../core/diagnose.js'
 import { ensurePeriods, claim } from '../core/tasks.js'
-import { questionById, subjectMap } from '../data/index.js'
+import { questionById, subjectMap, paperById } from '../data/index.js'
 import { dayKey, relativeDay } from '../core/time.js'
 import { toast } from '../core/toast.js'
 import { POINTS } from '../core/config.js'
 import AppIcon from '../components/AppIcon.vue'
 import Heatmap from '../components/Heatmap.vue'
-import ModalDialog from '../components/ModalDialog.vue'
 import ProgressRing from '../components/ProgressRing.vue'
 
 const router = useRouter()
@@ -55,20 +54,6 @@ const weakItems = computed(() => {
 
 const weakEmpty = computed(() => !weak.value.coldStart && !weak.value.items.length)
 
-const guideStep = ref(0)
-const showGuide = ref(!archive.settings.guideDone)
-
-const guide = [
-  { title: '选科目', text: '公共课与 408 都在本地，先按当前复习重心保留要练的科目，随时可在设置里改。' },
-  { title: '做一题', text: '练习中心可组卷、刷错题；真题入口按年份整套原卷作答，主观题自评。答完自动结算积分，错题会进入错题本。' },
-  { title: '攒卡', text: '积分可抽知识卡，重复卡转碎片，集齐一科点亮一枚章。' }
-]
-
-function finishGuide() {
-  showGuide.value = false
-  archive.settings.guideDone = true
-  save(true)
-}
 
 function start(subjects, count = 10, mode = 'mock') {
   const s = createSession({ subjects, count, mode, durationMin: 0 })
@@ -99,6 +84,11 @@ function levelGain() {
   return level.value.toNext
 }
 
+function shortTitle(s) {
+  if (!s) return ''
+  return (s.paperId && paperById[s.paperId]?.short) || s.title || '练习'
+}
+
 onMounted(() => {
   ensurePeriods(archive)
   save()
@@ -111,10 +101,11 @@ onMounted(() => {
       <div>
         <div class="eyebrow">TODAY · {{ dayKey() }}</div>
         <h1 class="page-title">{{ greeting }}，今天补哪一块</h1>
-        <p class="page-sub">
-          已连续 {{ archive.profile.streak.current }} 天，累计 {{ archive.profile.totals.answered }} 题。
-          当前 Lv.{{ level.level }} {{ level.name }}<span v-if="level.next">，距下一级还差 {{ levelGain() }} 积分</span>。
-        </p>
+        <div class="head-meta">
+          <span class="chip flame"><AppIcon name="flame" :size="12" /> {{ archive.profile.streak.current }} 天</span>
+          <span class="chip">{{ archive.profile.totals.answered }} 题</span>
+          <span class="chip amber">Lv.{{ level.level }} {{ level.name }}</span>
+        </div>
       </div>
       <div style="flex: 1" />
       <div class="row">
@@ -123,7 +114,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="grid g-4" style="margin-bottom: 16px">
+    <div class="grid g-4 home-stats" style="margin-bottom: 16px">
       <div class="card card-pad">
         <div class="card-label">今日题量</div>
         <div class="stat-row"><b class="display">{{ today.answered }}</b><span class="dim tiny">题</span></div>
@@ -134,7 +125,7 @@ onMounted(() => {
         <div class="stat-row">
           <b class="display">{{ today.answered ? today.accuracy : '—' }}</b><span v-if="today.answered" class="dim tiny">%</span>
         </div>
-        <div class="tiny dim mt-8">{{ today.correct }} 题全对 / 共 {{ today.answered }} 题</div>
+        <div class="tiny dim mt-8 stat-detail">{{ today.correct }} / {{ today.answered }}</div>
       </div>
       <div class="card card-pad">
         <div class="card-label">本日积分</div>
@@ -160,7 +151,7 @@ onMounted(() => {
             <span v-else-if="lastSession" class="chip">最近一次 · {{ relativeDay(lastSession.endedAt) }}</span>
           </div>
           <template v-if="draftInfo">
-            <h2 class="continue-title">{{ draftInfo.title }}</h2>
+            <h2 class="continue-title">{{ shortTitle(draftInfo) }}</h2>
             <div class="row tiny dim" style="margin: 8px 0 14px">
               <span>{{ draftInfo.answered }} / {{ draftInfo.qids.length }} 题已答</span>
               <span>·</span>
@@ -189,7 +180,7 @@ onMounted(() => {
           </template>
           <template v-else>
             <h2 class="continue-title">还没有练习记录</h2>
-            <p class="muted small" style="margin: 6px 0 16px">先做 10 道基础题摸底，系统会据此给出薄弱点排行。</p>
+
             <button class="btn btn-primary" @click="start(archive.settings.subjects, 10)">开始摸底 10 题</button>
           </template>
         </section>
@@ -213,7 +204,7 @@ onMounted(() => {
                   <router-link :to="`/knowledge/${w.knowledge.id}`" class="weak-title">{{ w.knowledge.title }}</router-link>
                 </div>
                 <div class="row reasons">
-                  <span v-for="(r, i) in w.reasons.slice(0, 3)" :key="i" class="tiny dim">{{ r }}</span>
+                  <span v-for="(r, i) in w.reasons.slice(0, 2)" :key="i" class="tiny dim">{{ r }}</span>
                 </div>
               </div>
               <div class="weak-side">
@@ -227,7 +218,7 @@ onMounted(() => {
           </div>
           <div v-else-if="weakEmpty" class="empty" style="padding: 24px 0">
             <h4>暂无薄弱点</h4>
-            <p>各科掌握度都在 75 以上，可以试试综合难度。</p>
+
             <button class="btn btn-ghost btn-sm" @click="start(archive.settings.subjects, 10)">挑战 10 题</button>
           </div>
           <div v-else class="tiny dim" style="padding: 20px 0">正在计算诊断结果…</div>
@@ -294,22 +285,12 @@ onMounted(() => {
       <Heatmap :columns="app.heatmap(12).columns" />
     </section>
 
-    <ModalDialog :open="showGuide" title="三步开始" width="480" @close="finishGuide">
-      <div class="guide-step">
-        <div class="mono tiny dim">STEP {{ guideStep + 1 }} / 3</div>
-        <h3 style="margin: 8px 0 10px">{{ guide[guideStep].title }}</h3>
-        <p class="muted">{{ guide[guideStep].text }}</p>
-      </div>
-      <template #footer>
-        <button class="btn btn-text" @click="finishGuide">跳过</button>
-        <button v-if="guideStep < 2" class="btn btn-primary" @click="guideStep++">下一步</button>
-        <button v-else class="btn btn-primary" @click="finishGuide">开始</button>
-      </template>
-    </ModalDialog>
   </div>
 </template>
 
 <style scoped>
+.head-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.chip.flame { color: var(--amber); border-color: color-mix(in srgb, var(--amber) 30%, var(--line)); }
 .stat-row { display: flex; align-items: baseline; gap: 6px; margin-top: 4px; }
 .display { font-size: 32px; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .continue-card { background: linear-gradient(150deg, var(--bg-1), color-mix(in srgb, var(--mint) 5%, var(--bg-1))); }
@@ -330,5 +311,17 @@ onMounted(() => {
 .task-body { flex: 1; min-width: 0; }
 .task-title { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .level-badge { width: 48px; height: 48px; border-radius: 10px; border: 1px solid var(--line-strong); display: grid; place-items: center; font-family: var(--font-mono); font-size: 12px; color: var(--mint); background: var(--bg-2); }
-.guide-step { min-height: 110px; }
+@media (max-width: 640px) {
+  .home-stats .card { padding: 12px 13px; }
+  .home-stats .display { font-size: 26px; }
+  .home-stats .card-label { font-size: 10px; letter-spacing: .1em; }
+  .home-stats .stat-row { margin-top: 2px; }
+  .home-stats .bar, .home-stats .stat-detail { display: none; }
+  .home-stats .card { min-height: 86px; }
+  .continue-card { padding: 14px; }
+  .continue-title { font-size: 17px; margin-top: 6px; line-height: 1.35; }
+  .continue-card .bar { margin-bottom: 12px !important; }
+  .continue-card .btn { padding: 7px 12px; }
+}
 </style>
+
