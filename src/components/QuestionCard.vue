@@ -27,7 +27,10 @@ const opts = computed(() => {
 })
 
 const multi = computed(() => props.q.type === 'multiple')
-const knowledge = computed(() => knowledgeById[props.q.knowledgeId])
+const knowledges = computed(() => {
+  const ids = props.q.knowledgeIds?.length ? props.q.knowledgeIds : [props.q.knowledgeId]
+  return ids.map(id => knowledgeById[id]).filter(Boolean)
+})
 const pct = computed(() => Math.round((props.result?.selfRatio ?? 0) * 100))
 const isEn = computed(() => props.q.subject === 'en' || (props.q.subjects || []).includes('en'))
 const textCount = computed(() => {
@@ -151,10 +154,12 @@ function onSelect(key) {
           <span class="small">{{ r.text }}</span>
         </div>
       </div>
-      <div v-if="knowledge" class="mt-8">
-        <router-link :to="`/knowledge/${knowledge.id}`" class="btn btn-text btn-sm" style="padding: 0">
-          <AppIcon name="arrow-right" :size="13" /> {{ knowledge.title }}
-        </router-link>
+      <div v-if="knowledges.length" class="kp-links mt-8">
+        <span class="tiny dim">知识点</span>
+        <router-link
+          v-for="(k, i) in knowledges" :key="k.id" :to="`/knowledge/${k.id}`"
+          class="chip clickable kp-chip" :class="{ active: i === 0 }"
+        >{{ k.title }}</router-link>
       </div>
     </div>
 
@@ -166,10 +171,12 @@ function onSelect(key) {
         <span class="mono tiny dim">正确答案 {{ (q.answer || []).join(' / ') }}</span>
       </div>
       <div class="small muted"><RichText :text="q.explain" /></div>
-      <div v-if="knowledge" class="mt-8">
-        <router-link :to="`/knowledge/${knowledge.id}`" class="btn btn-text btn-sm" style="padding: 0">
-          <AppIcon name="arrow-right" :size="13" /> {{ knowledge.title }}
-        </router-link>
+      <div v-if="knowledges.length" class="kp-links mt-8">
+        <span class="tiny dim">知识点</span>
+        <router-link
+          v-for="(k, i) in knowledges" :key="k.id" :to="`/knowledge/${k.id}`"
+          class="chip clickable kp-chip" :class="{ active: i === 0 }"
+        >{{ k.title }}</router-link>
       </div>
     </div>
   </div>
@@ -181,6 +188,8 @@ function onSelect(key) {
 .stem { font-size: 15.5px; line-height: 1.85; margin-bottom: 18px; }
 .stem :deep(.codeblock) { font-size: 12.5px; }
 .figure-note { display: flex; align-items: center; gap: 6px; padding: 8px 10px; margin-bottom: 14px; border: 1px dashed var(--line); border-radius: 8px; }
+.kp-links { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.kp-chip { font-size: 11.5px; padding: 4px 9px; }
 .figures { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
 .figures figure { margin: 0; text-align: center; }
 .figures img { max-width: 100%; border-radius: 10px; border: 1px solid var(--line); background: var(--bg-2); cursor: zoom-in; }

@@ -44,6 +44,14 @@ for (const q of allQuestions) {
   if (qids.has(q.id)) err(`题目 id 重复：${q.id}`)
   qids.add(q.id)
   if (!knowledge.some(k => k.id === q.knowledgeId)) err(`题目 ${q.id} 主考点不存在：${q.knowledgeId}`)
+  if (!Array.isArray(q.knowledgeIds) || !q.knowledgeIds.length) {
+    err(`题目 ${q.id} 缺 knowledgeIds`)
+  } else {
+    if (q.knowledgeIds[0] !== q.knowledgeId) err(`题目 ${q.id} knowledgeIds 首项不是主考点`)
+    if (new Set(q.knowledgeIds).size !== q.knowledgeIds.length) err(`题目 ${q.id} knowledgeIds 有重复`)
+    if (q.knowledgeIds.length > 3) err(`题目 ${q.id} knowledgeIds 超过 3 个`)
+    for (const kid of q.knowledgeIds) if (!ids.has(kid)) err(`题目 ${q.id} 关联考点不存在：${kid}`)
+  }
   if (!['single', 'multiple', 'judge', 'subjective'].includes(q.type)) err(`题目 ${q.id} 题型非法`)
   if (![1, 2, 3].includes(q.difficulty)) err(`题目 ${q.id} 难度非法`)
   if (!q.explain || q.explain.length < 20) err(`题目 ${q.id} 解析过短`)

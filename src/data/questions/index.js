@@ -22,20 +22,47 @@ import { questions2022_math1 } from '../papers/2022-math1.js'
 import { questions2022_en1 } from '../papers/2022-en1.js'
 import { questions2022_pol } from '../papers/2022-pol.js'
 import { withMaterial } from '../papers/material.js'
+import { knowledgeById } from '../knowledge/index.js'
+
+// 英语真题按题型补辅助考点；其余题目先保留主考点，避免把“同章相关卡”误标成考点。
+const enSecondary = n => {
+  if (n <= 20) return ['k-en-002', 'k-en-005']
+  if (n <= 40) return ['k-en-019']
+  if (n <= 45) return ['k-en-010', 'k-en-019']
+  if (n <= 50) return ['k-en-003', 'k-en-020']
+  return ['k-en-017']
+}
+
+// 主考点 knowledgeId 保持不变；knowledgeIds 首位始终是主考点。
+const withKnowledgeIds = q => {
+  if (Array.isArray(q.knowledgeIds) && q.knowledgeIds.length) return q
+  const primary = q.knowledgeId
+  if (!primary) return { ...q, knowledgeIds: [] }
+  const extra = q.subject === 'en' && q.paperOnly && q.number
+    ? enSecondary(q.number) : []
+  const ids = [primary, ...extra]
+    .filter(id => knowledgeById[id])
+    .filter((id, i, arr) => arr.indexOf(id) === i)
+    .slice(0, 3)
+  return { ...q, knowledgeIds: ids }
+}
 
 export const questions = [
   ...questionsDs, ...questionsCo, ...questionsOs, ...questionsCn,
   ...questionsMath, ...questionsEn, ...questionsPol
-]
+].map(withKnowledgeIds)
 
-export const paperQuestions = [...questions2025_408, ...questions2025_math1, ...questions2025_en1, ...questions2025_pol.map(withMaterial), ...questions2024_408, ...questions2024_pol.map(withMaterial), ...questions2024_math1, ...questions2024_en1, ...questions2023_en1, ...questions2023_pol.map(withMaterial), ...questions2023_math1, ...questions2023_408, ...questions2022_408, ...questions2022_math1, ...questions2022_en1, ...questions2022_pol.map(withMaterial)]
+export const paperQuestions = [...questions2025_408, ...questions2025_math1, ...questions2025_en1, ...questions2025_pol.map(withMaterial), ...questions2024_408, ...questions2024_pol.map(withMaterial), ...questions2024_math1, ...questions2024_en1, ...questions2023_en1, ...questions2023_pol.map(withMaterial), ...questions2023_math1, ...questions2023_408, ...questions2022_408, ...questions2022_math1, ...questions2022_en1, ...questions2022_pol.map(withMaterial)].map(withKnowledgeIds)
 
 export const allQuestions = [...questions, ...paperQuestions]
 
 export const questionById = Object.fromEntries(allQuestions.map(q => [q.id, q]))
 
 export const questionsByKnowledge = allQuestions.reduce((acc, q) => {
-  (acc[q.knowledgeId] ||= []).push(q)
+  for (const kid of q.knowledgeIds || [q.knowledgeId]) {
+    if (!kid) continue
+    (acc[kid] ||= []).push(q)
+  }
   return acc
 }, {})
 
