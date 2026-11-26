@@ -292,13 +292,55 @@ function restIdle() {
   idleTimer = setTimeout(() => { idle.value = true }, 9000)
 }
 
+/* ---------- 笔在屏上时锁住原生滚动手势 ----------
+ * Windows 的 Direct Manipulation Stylus 会把笔按触摸手势处理：笔尖拖动会滚屏。
+ * pointerdown 的 preventDefault 在 Windows Chrome 上拦不住它，必须在手势开始前
+ * 把 touch-action 置为 none。笔悬停（buttons=0）时就提前上锁，落笔那一刻已经生效。
+ */
+let penLockOn = false
+let penLockTimer = 0
+let penLockAt = 0
+const PEN_LOCK_FALLBACK = 12000
+
+function penLockSet(on) {
+  if (penLockOn === on) return
+  penLockOn = on
+  document.body.classList.toggle('ink-pen-lock', on)
+}
+
+function keepPenLock() {
+  penLockSet(true)
+  const now = Date.now()
+  if (penLockTimer && now - penLockAt < 400) return
+  penLockAt = now
+  clearTimeout(penLockTimer)
+  penLockTimer = setTimeout(() => {
+    if (!drawing) penLockSet(false)
+  }, PEN_LOCK_FALLBACK)
+}
+
+// 笔离开感应范围（悬停指针 out 且没有进入其他元素）才解锁，保证悬停期间不上滚
+function onPenOut(e) {
+  if (e.pointerType !== 'pen' || e.relatedTarget || drawing) return
+  clearTimeout(penLockTimer)
+  penLockTimer = setTimeout(() => { if (!drawing) penLockSet(false) }, 260)
+}
+
+// 笔被系统当成触摸时还会走 touch 通道，绘制期间直接吞掉 touchmove，双保险
+function onTouchGuard(e) {
+  if (!drawing && !penLockOn) return
+  e.preventDefault()
+}
+
 function onDown(e) {
   if (props.disabled) return
   // 只认手写笔：手指、鼠标、手掌一律不画，保证按钮照常可点
   if (e.pointerType !== 'pen') return
-  if (e.button !== 0 && e.button !== -1) return
+  // 落笔即上锁：preventDefault 在 Windows 拦不住笔的原生滚屏，touch-action 才行
+  keepPenLock()
   e.preventDefault()
   e.stopPropagation()
+  if (e.button !== 0 && e.button !== -1) return
   arm()
 
   const frame = frameOf(e.target)
@@ -322,6 +364,11 @@ function onDown(e) {
 }
 
 function onMove(e) {
+  // 笔悬停阶段（未落笔）就维持手势锁，给落笔留下生效时间
+  if (e.pointerType === 'pen' && !drawing && e.buttons === 0) {
+    keepPenLock()
+    return
+  }
   if (!drawing || e.pointerId !== pointerId) return
   if (e.pointerType !== 'pen') return
   if (!current) return
@@ -352,6 +399,7 @@ function onUp(e) {
   }
   guard = { x: e.clientX, y: e.clientY, t: Date.now() }
   restIdle()
+  keepPenLock()
 }
 
 // 笔尖在窗口外抬起等异常中断：结束当前笔画，避免下笔接在上一条后面
@@ -451,6 +499,8 @@ onMounted(() => {
   window.addEventListener('pointermove', onMove, { capture: true, passive: false })
   window.addEventListener('pointerup', onUp, true)
   window.addEventListener('pointercancel', onUp, true)
+  window.addEventListener('pointerout', onPenOut, true)
+  window.addEventListener('touchmove', onTouchGuard, { capture: true, passive: false })
   window.addEventListener('blur', abortStroke)
   window.addEventListener('click', onClick, true)
   window.addEventListener('scroll', onScroll, { capture: true, passive: true })
@@ -477,12 +527,16 @@ onBeforeUnmount(() => {
   window.removeEventListener('pointermove', onMove, true)
   window.removeEventListener('pointerup', onUp, true)
   window.removeEventListener('pointercancel', onUp, true)
+  window.removeEventListener('pointerout', onPenOut, true)
+  window.removeEventListener('touchmove', onTouchGuard, true)
   window.removeEventListener('blur', abortStroke)
   window.removeEventListener('click', onClick, true)
   window.removeEventListener('scroll', onScroll, true)
   window.removeEventListener('resize', onResize)
   clearTimeout(idleTimer)
   clearTimeout(lateTimer)
+  clearTimeout(penLockTimer)
+  penLockSet(false)
   if (raf) cancelAnimationFrame(raf)
   themeObserver?.disconnect()
   themeObserver = null

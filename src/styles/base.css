@@ -407,6 +407,10 @@ h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
   .table::-webkit-scrollbar { height: 0; }
 }
 
+/* 手写笔在屏上（悬停 / 落笔）期间屏蔽原生滚动手势：
+   Windows 的 Direct Manipulation Stylus 会把笔当触摸处理，只有 touch-action 能拦住它滚屏 */
+body.ink-pen-lock { touch-action: none; }
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
