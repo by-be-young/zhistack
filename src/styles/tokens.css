@@ -1,0 +1,54 @@
+:root {
+  --bg-0: #0B0D10;
+  --bg-1: #11141A;
+  --bg-2: #171B22;
+  --bg-3: #1E232B;
+  --line: rgba(232, 237, 233, 0.09);
+  --line-strong: rgba(232, 237, 233, 0.18);
+  --text: #E8EDE9;
+  --text-2: #A7B0AC;
+  --text-3: #6B7472;
+  --mint: #9FE8C7;
+  --mint-deep: #5FBF97;
+  --amber: #F3C97C;
+  --rose: #F2A3A3;
+  --lilac: #C9B8F5;
+  --sky: #A6CDF2;
+  --sub-ds: #9FE8C7;
+  --sub-co: #F3C97C;
+  --sub-os: #A6CDF2;
+  --sub-cn: #F2A3A3;
+  --shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --font-sans: "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --grid: rgba(232, 237, 233, 0.035);
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --bg-0: #F4F3EE;
+  --bg-1: #FBFAF6;
+  --bg-2: #EFEEE8;
+  --bg-3: #E7E6DF;
+  --line: rgba(20, 22, 26, 0.10);
+  --line-strong: rgba(20, 22, 26, 0.22);
+  --text: #15181C;
+  --text-2: #4E5652;
+  --text-3: #8A928E;
+  --mint: #2E9C74;
+  --mint-deep: #1C7A59;
+  --amber: #A9701A;
+  --rose: #B85151;
+  --lilac: #6F5BC0;
+  --sky: #3B77B0;
+  --sub-ds: #2E9C74;
+  --sub-co: #B07C1E;
+  --sub-os: #3B77B0;
+  --sub-cn: #B85151;
+  --grid: rgba(20, 22, 26, 0.05);
+  --shadow: 0 18px 48px rgba(20, 22, 26, 0.14);
+  color-scheme: light;
+}
