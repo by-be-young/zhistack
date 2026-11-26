@@ -111,7 +111,7 @@ function onKey(e) {
   }
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { next(); return }
   if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { prev(); return }
-  if (/^[1-7]$/.test(e.key) && current.value) {
+  if (/^[1-8]$/.test(e.key) && current.value) {
     const opts = current.value.type === 'judge' ? ['T', 'F'] : (current.value.options || []).map(o => o.key)
     const k = opts[Number(e.key) - 1]
     if (k) onSelect(k)
@@ -215,7 +215,7 @@ onBeforeUnmount(() => {
           </button>
           <button v-else class="btn btn-primary btn-sm" @click="showSubmit = true">完成并交卷</button>
         </div>
-        <div class="tiny dim keyboard-tip">快捷键：1–7 选项 · ← → 切题 · M 标记 · 草稿层切题自动清空</div>
+        <div class="tiny dim keyboard-tip">快捷键：1–8 选项 · ← → 切题 · M 标记 · 草稿层切题自动清空</div>
         <InkPad :reset-key="qid || ''" />
       </div>
 

@@ -9,6 +9,7 @@ import { questions2024_408 } from '../papers/2024-408.js'
 import { questions2024_pol } from '../papers/2024-pol.js'
 import { questions2024_math1 } from '../papers/2024-math1.js'
 import { questions2024_en1 } from '../papers/2024-en1.js'
+import { questions2023_en1 } from '../papers/2023-en1.js'
 import { withMaterial } from '../papers/material.js'
 
 export const questions = [
@@ -16,7 +17,7 @@ export const questions = [
   ...questionsMath, ...questionsEn, ...questionsPol
 ]
 
-export const paperQuestions = [...questions2024_408, ...questions2024_pol.map(withMaterial), ...questions2024_math1, ...questions2024_en1]
+export const paperQuestions = [...questions2024_408, ...questions2024_pol.map(withMaterial), ...questions2024_math1, ...questions2024_en1, ...questions2023_en1]
 
 export const allQuestions = [...questions, ...paperQuestions]
 
