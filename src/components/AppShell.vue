@@ -9,7 +9,7 @@ const router = useRouter()
 const app = useApp()
 const { archive, level } = app
 
-const theme = ref(archive.settings.theme || 'dark')
+const theme = ref(archive.settings.theme || 'light')
 const isDark = computed(() => document.documentElement.dataset.theme !== 'light')
 
 const navs = [

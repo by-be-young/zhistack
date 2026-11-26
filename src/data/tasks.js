@@ -20,5 +20,5 @@ export const achievementDefs = [
   { id: 'a-clear-10', title: '清错', desc: '累计错题出本 10 道', reward: 80, icon: 'broom' },
   { id: 'a-streak-30', title: '三十日', desc: '连续打卡 30 天', reward: 200, icon: 'flame' },
   { id: 'a-collect-one', title: '集章', desc: '集齐任一科卡册', reward: 100, icon: 'stamp' },
-  { id: 'a-all-subjects', title: '四科入门', desc: '四科各完成 ≥ 1 次会话', reward: 60, icon: 'compass' }
+  { id: 'a-all-subjects', title: '全科入门', desc: '各科各完成 ≥ 1 次会话', reward: 60, icon: 'compass' }
 ]

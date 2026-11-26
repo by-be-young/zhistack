@@ -1,4 +1,6 @@
-export const cards = [
+import { cardsPublic } from './public-cards.js'
+
+const coreCards = [
   // 数据结构 12 张
   { id: 'c-ds-01', subject: 'ds', rarity: 'N', name: '线性之始', knowledgeId: 'k-ds-002', motif: 'lattice', line: '下标即地址，一步到位。' },
   { id: 'c-ds-02', subject: 'ds', rarity: 'N', name: '链上寻踪', knowledgeId: 'k-ds-003', motif: 'chain', line: '不连续，也走得到。' },
@@ -55,6 +57,8 @@ export const cards = [
   { id: 'c-cn-11', subject: 'cn', rarity: 'SR', name: 'TIME_WAIT', knowledgeId: 'k-cn-016', motif: 'halo', line: '多等 2MSL，只为干净收场。' },
   { id: 'c-cn-12', subject: 'cn', rarity: 'SSR', name: '端到端之约', knowledgeId: 'k-cn-017', motif: 'halo', line: '窗口之内，可靠前行。' }
 ]
+
+export const cards = [...coreCards, ...cardsPublic]
 
 export const cardsBySubject = cards.reduce((acc, c) => {
   (acc[c.subject] ||= []).push(c)

@@ -109,8 +109,8 @@ function startAllWeak() {
 
       <section class="card card-pad radar-card">
         <div class="card-label">RADAR</div>
-        <h2 style="font-size: 18px; margin-bottom: 4px">四科掌握度</h2>
-        <RadarChart :data="radarData" :size="250" />
+        <h2 style="font-size: 18px; margin-bottom: 4px">各科掌握度</h2>
+        <RadarChart :data="radarData" :size="280" />
         <div class="radar-legend">
           <div v-for="s in subjects" :key="s.id" class="tiny">
             <span class="dot" :style="{ background: `var(--sub-${s.id})` }" />

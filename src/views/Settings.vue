@@ -44,7 +44,7 @@ function download() {
   const blob = new Blob([exportJSON()], { type: 'application/json' })
   const a = document.createElement('a')
   a.href = URL.createObjectURL(blob)
-  a.download = `知栈-408-备份-${dayKey()}.json`
+  a.download = `知栈-考研-备份-${dayKey()}.json`
   a.click()
   setTimeout(() => URL.revokeObjectURL(a.href), 1000)
   toast('已导出 JSON 备份', 'info')

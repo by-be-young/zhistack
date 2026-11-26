@@ -81,7 +81,7 @@ export function coldStartPath() {
   return Object.values(bySubject).map(k => ({
     knowledge: k,
     reason: ['尚未开始', '按科目均衡起步', '基础难度先摸底']
-  })).slice(0, 4)
+  })).slice(0, 7)
 }
 
 export function subjectStats(archive, now = new Date()) {

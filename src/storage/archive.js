@@ -15,7 +15,7 @@ export function createArchive() {
     createdAt: nowISO(),
     updatedAt: nowISO(),
     settings: {
-      theme: 'dark',
+      theme: 'light',
       subjects: ['ds', 'co', 'os', 'cn'],
       guideDone: false,
       pdfOffset: {},

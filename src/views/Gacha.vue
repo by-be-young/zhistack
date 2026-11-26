@@ -211,7 +211,7 @@ function costOf(card) {
 .rates { display: flex; gap: 14px; margin-bottom: 8px; }
 .rate { display: flex; align-items: center; gap: 6px; }
 .gh-actions { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
-.stamps { display: flex; gap: 14px; margin-top: 16px; }
+.stamps { display: flex; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
 .stamp { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .stamp-ring { width: 54px; height: 54px; border-radius: 50%; border: 1px dashed var(--line-strong); display: grid; place-items: center; color: var(--text-3); font-size: 11px; }
 .stamp.done .stamp-ring { border: 1px solid var(--sub); color: var(--sub); background: color-mix(in srgb, var(--sub) 8%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sub) 10%, transparent); font-family: var(--font-display); font-size: 18px; }

@@ -38,12 +38,19 @@ const draftInfo = computed(() => {
 
 const lastSession = computed(() => archive.sessions[0] || null)
 
+function spread(list, n = 4) {
+  if (list.length <= n) return list
+  const step = (list.length - 1) / (n - 1)
+  return Array.from({ length: n }, (_, i) => list[Math.round(i * step)])
+}
+
 const weakItems = computed(() => {
   const d = weak.value
   if (d.coldStart) {
-    return coldStartPath().map(x => ({ knowledge: x.knowledge, mastery: { mastery: null, label: '未练' }, reasons: x.reason, pool: 1 }))
+    const path = coldStartPath().map(x => ({ knowledge: x.knowledge, mastery: { mastery: null, label: '未练' }, reasons: x.reason, pool: 1 }))
+    return spread(path, 4)
   }
-  return d.items.slice(0, 3)
+  return spread(d.items, 4)
 })
 
 const weakEmpty = computed(() => !weak.value.coldStart && !weak.value.items.length)
@@ -52,7 +59,7 @@ const guideStep = ref(0)
 const showGuide = ref(!archive.settings.guideDone)
 
 const guide = [
-  { title: '选科目', text: '四科都在本地，先按当前复习重心保留要练的科目，随时可在设置里改。' },
+  { title: '选科目', text: '公共课与 408 都在本地，先按当前复习重心保留要练的科目，随时可在设置里改。' },
   { title: '做一题', text: '练习中心可组卷、做真题改编、刷错题。答完自动结算积分，错题会进入错题本。' },
   { title: '攒卡', text: '积分可抽知识卡，重复卡转碎片，集齐一科点亮一枚章。' }
 ]
@@ -191,7 +198,7 @@ onMounted(() => {
           <div class="spread" style="margin-bottom: 4px">
             <div>
               <div class="card-label">WEAK POINTS</div>
-              <h2 style="font-size: 18px">最该补的三块</h2>
+              <h2 style="font-size: 18px">今日优先四块</h2>
             </div>
             <router-link to="/stats" class="btn btn-text btn-sm">完整诊断 →</router-link>
           </div>
@@ -220,7 +227,7 @@ onMounted(() => {
           </div>
           <div v-else-if="weakEmpty" class="empty" style="padding: 24px 0">
             <h4>暂无薄弱点</h4>
-            <p>四科掌握度都在 75 以上，可以试试综合难度。</p>
+            <p>各科掌握度都在 75 以上，可以试试综合难度。</p>
             <button class="btn btn-ghost btn-sm" @click="start(archive.settings.subjects, 10)">挑战 10 题</button>
           </div>
           <div v-else class="tiny dim" style="padding: 20px 0">正在计算诊断结果…</div>
