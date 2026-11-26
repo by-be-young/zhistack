@@ -1,17 +1,18 @@
 <script setup>
-import { computed, ref, watch, nextTick } from 'vue'
+import { computed, ref, watch, nextTick, onMounted } from 'vue'
 import RichText from './RichText.vue'
 import AppIcon from './AppIcon.vue'
 
 const props = defineProps({
   material: { type: Object, required: true },
-  resetKey: { type: String, default: '' }
+  resetKey: { type: String, default: '' },
+  focus: { type: Number, default: 0 }
 })
 const emit = defineEmits(['close'])
 
 const blocks = computed(() => props.material.blocks || [])
 const active = ref(0)
-const fontSize = ref(15)
+const fontSize = ref(Math.min(19, Math.max(13, props.material.fontSize || 15)))
 const scrollEl = ref(null)
 const tops = []
 
@@ -22,6 +23,27 @@ watch(() => props.resetKey, async () => {
   if (scrollEl.value) scrollEl.value.scrollTop = 0
 })
 watch(blocks, () => { if (active.value >= blocks.value.length) active.value = 0 })
+
+function scrollToFocus(n) {
+  const el = scrollEl.value
+  if (!el || !n) return
+  const text = blocks.value[active.value]?.text || ''
+  const idx = text.indexOf(`__${n}__`)
+  if (idx < 0) return
+  const range = Math.max(0, el.scrollHeight - el.clientHeight)
+  el.scrollTop = Math.max(0, range * (idx / Math.max(1, text.length)) - 16)
+}
+
+watch(() => props.focus, async n => {
+  if (!n) return
+  await nextTick()
+  scrollToFocus(n)
+})
+
+onMounted(async () => {
+  await nextTick()
+  scrollToFocus(props.focus)
+})
 
 function setActive(i) {
   if (i === active.value) return

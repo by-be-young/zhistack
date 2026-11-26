@@ -28,6 +28,20 @@ const opts = computed(() => {
 const multi = computed(() => props.q.type === 'multiple')
 const knowledge = computed(() => knowledgeById[props.q.knowledgeId])
 const pct = computed(() => Math.round((props.result?.selfRatio ?? 0) * 100))
+const isEn = computed(() => props.q.subject === 'en' || (props.q.subjects || []).includes('en'))
+const textCount = computed(() => {
+  if (!isEn.value || props.q.number < 51) return `${textValue.value.length} 字`
+  const words = textValue.value.trim().match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)?/g)
+  return `${words ? words.length : 0} 词`
+})
+const answerHint = computed(() => {
+  if (isEn.value) return props.q.number >= 51
+    ? '写下你的英文作文；交卷后可对照范文与评分要点自评得分比例。'
+    : '写下你的中文译文；交卷后可对照参考译文自评得分比例。'
+  if (props.q.subtype === 'fill') return '填写最终结果；交卷后可对照参考答案自评得分比例。'
+  if (props.q.subject === 'math') return '写下推导、关键步骤与最终结果；交卷后可对照参考答案自评得分比例。'
+  return '写下答题要点或关键步骤；交卷后可对照参考答案自评得分比例。'
+})
 
 function stateOf(key) {
   if (!props.showResult) return {}
@@ -77,14 +91,14 @@ function onSelect(key) {
     <div v-if="isSubjective" class="subjective-box">
       <div class="spread" style="margin-bottom: 6px">
         <label class="tiny dim">作答区 · 只保存在本机</label>
-        <span class="mono tiny dim">{{ textValue.length }} 字</span>
+        <span class="mono tiny dim">{{ textCount }}</span>
       </div>
       <textarea
         class="answer-input"
         :value="textValue"
         :disabled="showResult"
-        rows="7"
-        placeholder="写下你的推导、关键步骤或答题要点；交卷后可对照参考答案自评得分比例。"
+        :rows="isEn && q.number >= 51 ? 12 : 7"
+        :placeholder="answerHint"
         @input="emit('text', $event.target.value)"
       />
     </div>
@@ -98,7 +112,7 @@ function onSelect(key) {
         :disabled="showResult"
         @click="onSelect(o.key)"
       >
-        <span class="key">{{ o.key === 'T' ? '✓' : o.key === 'F' ? '✕' : o.key }}</span>
+        <span class="key">{{ q.type === 'judge' ? (o.key === 'T' ? '✓' : '✕') : o.key }}</span>
         <span class="otext"><RichText :text="o.text" /></span>
         <span v-if="showResult && (q.answer || []).includes(o.key)" class="mark"><AppIcon name="check" :size="14" /></span>
         <span v-else-if="showResult && (result?.keys || []).includes(o.key)" class="mark wrong"><AppIcon name="x" :size="14" /></span>

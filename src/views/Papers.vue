@@ -106,6 +106,10 @@ function sourceHost(url) {
             <span class="mono">{{ subjectiveOf(p).label }} · {{ subjectiveOf(p).score }} 分</span>
           </div>
 
+          <div v-if="p.sections" class="paper-sections tiny dim">
+            <span v-for="sec in p.sections" :key="sec.name">{{ sec.short }}</span>
+          </div>
+
           <div v-if="p.note" class="tiny dim paper-note">{{ p.note }}</div>
 
           <div class="paper-foot">
@@ -156,6 +160,8 @@ function sourceHost(url) {
 .paper-title { font-size: 16px; line-height: 1.5; margin: 12px 0 10px; }
 .paper-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); }
 .paper-meta span { display: inline-flex; align-items: center; gap: 5px; }
+.paper-sections { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.paper-sections span { padding: 2px 7px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg-2); font-size: 10.5px; }
 .paper-note { margin-top: 10px; line-height: 1.65; }
 .paper-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); flex-wrap: wrap; }
 .notice-card { margin-top: 6px; }

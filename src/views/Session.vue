@@ -35,7 +35,7 @@ const subjectiveList = computed(() => (s.value?.qids || []).map(id => questionBy
 const answeredCount = computed(() => s.value ? Object.values(s.value.answers).filter(a => (typeof a === 'string' ? a.trim() : a.length)).length : 0)
 const unanswered = computed(() => (s.value?.count || 0) - answeredCount.value)
 
-watch(qid, () => { materialOpen.value = true })
+watch(() => current.value?.material?.key || qid.value, () => { materialOpen.value = true })
 
 let timer = null
 
@@ -111,7 +111,7 @@ function onKey(e) {
   }
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { next(); return }
   if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { prev(); return }
-  if (['1', '2', '3', '4'].includes(e.key) && current.value) {
+  if (/^[1-7]$/.test(e.key) && current.value) {
     const opts = current.value.type === 'judge' ? ['T', 'F'] : (current.value.options || []).map(o => o.key)
     const k = opts[Number(e.key) - 1]
     if (k) onSelect(k)
@@ -178,12 +178,13 @@ onBeforeUnmount(() => {
 
     <div class="s-progress"><i :style="{ width: ((s.index + 1) / s.count * 100) + '%' }" /></div>
 
-    <main class="s-main" :class="{ 'has-material': current?.material && materialOpen }">
+    <main class="s-main" :class="{ 'has-material': current?.material && materialOpen, 'material-wide': current?.material?.wide }">
       <MaterialPane
         v-if="current?.material && materialOpen"
         class="s-material"
         :material="current.material"
-        :reset-key="qid"
+        :reset-key="current.material.key || qid"
+        :focus="current.material.autoFocus ? current.number : 0"
         @close="materialOpen = false"
       />
 
@@ -214,7 +215,7 @@ onBeforeUnmount(() => {
           </button>
           <button v-else class="btn btn-primary btn-sm" @click="showSubmit = true">完成并交卷</button>
         </div>
-        <div class="tiny dim keyboard-tip">快捷键：1–4 选项 · ← → 切题 · M 标记 · 草稿层切题自动清空</div>
+        <div class="tiny dim keyboard-tip">快捷键：1–7 选项 · ← → 切题 · M 标记 · 草稿层切题自动清空</div>
         <InkPad :reset-key="qid || ''" />
       </div>
 
@@ -315,6 +316,9 @@ onBeforeUnmount(() => {
   max-width: 1440px;
   grid-template-columns: minmax(300px, .84fr) minmax(440px, 1.16fr) 220px;
 }
+.s-main.has-material.material-wide {
+  grid-template-columns: minmax(420px, 1.12fr) minmax(400px, .88fr) 220px;
+}
 .s-material { min-width: 0; }
 .material-strip {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -335,11 +339,11 @@ onBeforeUnmount(() => {
 .lg.done { background: color-mix(in srgb, var(--mint) 40%, transparent); border-color: var(--mint); }
 .lg.flag { background: var(--amber); border-color: var(--amber); }
 @media (max-width: 1200px) {
-  .s-main.has-material { grid-template-columns: minmax(0, 1fr) 220px; }
+  .s-main.has-material, .s-main.has-material.material-wide { grid-template-columns: minmax(0, 1fr) 220px; }
   .s-material { grid-column: 1 / -1; position: relative; top: 0; max-height: 40vh; }
 }
 @media (max-width: 900px) {
-  .s-main, .s-main.has-material { grid-template-columns: minmax(0, 1fr); padding: 16px 14px 60px; }
+  .s-main, .s-main.has-material, .s-main.has-material.material-wide { grid-template-columns: minmax(0, 1fr); padding: 16px 14px 60px; }
   .s-side { display: none; }
   .s-material { max-height: 38vh; }
   .answer-card-btn { display: inline-flex !important; }
