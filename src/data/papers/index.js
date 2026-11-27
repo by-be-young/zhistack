@@ -28,7 +28,59 @@ import { paper2019_408 } from './2019-408.js'
 import { paper2020_408 } from './2020-408.js'
 import { paper2021_408 } from './2021-408.js'
 import { paper2026_408 } from './2026-408.js'
+import { paper2010_pol } from './2010-pol.js'
+import { paper2011_pol } from './2011-pol.js'
+import { paper2012_pol } from './2012-pol.js'
+import { paper2013_pol } from './2013-pol.js'
+import { paper2014_pol } from './2014-pol.js'
+import { paper2015_pol } from './2015-pol.js'
+import { paper2016_pol } from './2016-pol.js'
+import { paper2017_pol } from './2017-pol.js'
+import { paper2018_pol } from './2018-pol.js'
+import { paper2019_pol } from './2019-pol.js'
+import { paper2020_pol } from './2020-pol.js'
+import { paper2021_pol } from './2021-pol.js'
+import { paper2026_pol } from './2026-pol.js'
+import { paper2010_en1 } from './2010-en1.js'
+import { paper2011_en1 } from './2011-en1.js'
+import { paper2012_en1 } from './2012-en1.js'
+import { paper2013_en1 } from './2013-en1.js'
+import { paper2014_en1 } from './2014-en1.js'
+import { paper2015_en1 } from './2015-en1.js'
+import { paper2016_en1 } from './2016-en1.js'
+import { paper2017_en1 } from './2017-en1.js'
+import { paper2018_en1 } from './2018-en1.js'
+import { paper2019_en1 } from './2019-en1.js'
+import { paper2020_en1 } from './2020-en1.js'
+import { paper2021_en1 } from './2021-en1.js'
+import { paper2026_en1 } from './2026-en1.js'
 export const papers = [
+  paper2026_en1,
+  paper2021_en1,
+  paper2020_en1,
+  paper2019_en1,
+  paper2018_en1,
+  paper2017_en1,
+  paper2016_en1,
+  paper2015_en1,
+  paper2014_en1,
+  paper2013_en1,
+  paper2012_en1,
+  paper2011_en1,
+  paper2010_en1,
+  paper2026_pol,
+  paper2021_pol,
+  paper2020_pol,
+  paper2019_pol,
+  paper2018_pol,
+  paper2017_pol,
+  paper2016_pol,
+  paper2015_pol,
+  paper2014_pol,
+  paper2013_pol,
+  paper2012_pol,
+  paper2011_pol,
+  paper2010_pol,
   paper2025_408,
   paper2025_math1,
   paper2025_en1,

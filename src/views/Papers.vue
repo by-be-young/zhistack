@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { archive } from '../storage/archive.js'
 import { papers, subjectMap, questionById } from '../data/index.js'
+import { mathExternalPapers } from '../data/papers/math-external.js'
 import { createSession } from '../stores/practice.js'
 import AppIcon from '../components/AppIcon.vue'
 
@@ -17,11 +18,12 @@ const groups = [
   { id: 'pol', name: '政治' }
 ]
 
-const totalQuestions = computed(() => papers.reduce((n, p) => n + p.questionCount, 0))
-const totalMinutes = computed(() => papers.reduce((n, p) => n + p.durationMin, 0))
+const allPapers = [...papers, ...mathExternalPapers]
+const totalQuestions = computed(() => allPapers.reduce((n, p) => n + p.questionCount, 0))
+const totalMinutes = computed(() => allPapers.reduce((n, p) => n + p.durationMin, 0))
 
 const groupOrder = { 408: 0, math: 1, en: 2, pol: 3 }
-const list = computed(() => papers
+const list = computed(() => allPapers
   .filter(p => filter.value === 'all' || p.group === filter.value || p.subjects.includes(filter.value))
   .slice()
   .sort((a, b) => (b.year - a.year) || (groupOrder[a.group] - groupOrder[b.group])))
@@ -42,12 +44,16 @@ function best(p) {
 }
 
 function start(p) {
+  if (p.externalHref) {
+    router.push(p.externalHref.replace(/^#/, ''))
+    return
+  }
   const s = createSession({ mode: 'paper', paperId: p.id, title: p.title, durationMin: p.durationMin })
   if (s) router.push(`/practice/session/${s.id}`)
 }
 
 function subjectiveOf(p) {
-  const rows = p.qids.map(id => questionById[id]).filter(q => q?.type === 'subjective')
+  const rows = (p.qids || []).map(id => questionById[id]).filter(q => q?.type === 'subjective')
   const fill = rows.filter(q => q.subtype === 'fill').length
   return {
     count: rows.length,
@@ -66,7 +72,7 @@ function subjectiveOf(p) {
         <div class="eyebrow">REAL PAPERS</div>
         <h1 class="page-title">真题原卷</h1>
         <div class="head-stats">
-          <span><b>{{ papers.length }}</b> 套</span>
+          <span><b>{{ allPapers.length }}</b> 套</span>
           <span><b>{{ totalQuestions }}</b> 题</span>
           <span><b>{{ totalMinutes }}</b> 分钟</span>
         </div>
@@ -92,6 +98,7 @@ function subjectiveOf(p) {
 
       <div class="paper-grid">
         <article v-for="p in block.rows" :key="p.id" class="paper-card card card-pad card-hover"
+          :class="{ 'paper-external': p.externalHref }"
           :style="{ '--accent': p.group === '408' ? 'var(--sub-ds)' : p.group === 'math' ? 'var(--sub-math)' : p.group === 'en' ? 'var(--sub-en)' : 'var(--sub-pol)' }">
           <div class="spread" style="align-items: flex-start">
             <div class="row" style="gap: 8px; flex-wrap: wrap">
@@ -100,8 +107,9 @@ function subjectiveOf(p) {
               <span v-for="s in p.subjects" :key="s" class="chip sub-chip" :style="{ '--sub': `var(--sub-${s})` }">
                 <span class="dot" />{{ subjectMap[s]?.short }}
               </span>
+              <span v-if="p.externalHref" class="chip">资料库原卷</span>
             </div>
-            <span class="mono tiny dim">{{ p.questionCount }} 题</span>
+            <span class="mono tiny dim">{{ p.externalHref ? '公式完整' : `${p.questionCount} 题` }}</span>
           </div>
 
           <h2 class="paper-title">{{ p.title }}</h2>
@@ -109,7 +117,8 @@ function subjectiveOf(p) {
           <div class="paper-meta">
             <span><AppIcon name="clock" :size="14" /> {{ p.durationMin }} 分钟</span>
             <span><AppIcon name="target" :size="14" /> 满分 {{ p.totalScore }}</span>
-            <span class="mono">{{ subjectiveOf(p).label }} · {{ subjectiveOf(p).score }} 分</span>
+            <span v-if="!p.externalHref" class="mono">{{ subjectiveOf(p).label }} · {{ subjectiveOf(p).score }} 分</span>
+            <span v-else class="mono">题干含公式 · 站内查看</span>
           </div>
 
           <div v-if="p.sections" class="paper-sections tiny dim">
@@ -118,17 +127,20 @@ function subjectiveOf(p) {
 
           <div class="paper-foot">
             <div class="paper-score">
-              <template v-if="best(p)">
+              <template v-if="p.externalHref">
+                <span class="dim">原卷入口</span>
+              </template>
+              <template v-else-if="best(p)">
                 <b>{{ best(p).rawPoints ?? best(p).score }}</b><span>/ {{ p.totalScore }} 分</span>
               </template>
               <template v-else><span class="dim">未作答</span></template>
             </div>
             <div class="row" style="gap: 6px">
-              <a :href="p.sourceUrl" target="_blank" rel="noopener" class="btn btn-text btn-sm src-link" title="查看原卷">
+              <a v-if="!p.externalHref" :href="p.sourceUrl" target="_blank" rel="noopener" class="btn btn-text btn-sm src-link" title="查看原卷">
                 <AppIcon name="arrow-right" :size="13" /><span>原卷</span>
               </a>
               <button class="btn btn-primary btn-sm" @click="start(p)">
-                <AppIcon name="play" :size="13" /> 开始
+                <AppIcon :name="p.externalHref ? 'book' : 'play'" :size="13" /> {{ p.externalHref ? '打开原卷' : '开始' }}
               </button>
             </div>
           </div>
@@ -184,4 +196,5 @@ function subjectiveOf(p) {
   .paper-meta { gap: 8px; }
 }
 </style>
+
 
