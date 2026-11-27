@@ -1,15 +1,29 @@
 <script setup>
-import { onErrorCaptured, ref } from 'vue'
+import { onErrorCaptured, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import AppShell from './components/AppShell.vue'
 import ToastHost from './components/ToastHost.vue'
-import { archive } from './storage/archive.js'
+import { toast } from './core/toast.js'
 
+const route = useRoute()
 const crashed = ref(false)
+
 onErrorCaptured((err) => {
   console.error(err)
   crashed.value = true
   return false
 })
+
+// 单个页面渲染出错不该让整站停摆：切走再回来重新给一次机会
+watch(
+  () => route.fullPath,
+  () => {
+    if (crashed.value) {
+      crashed.value = false
+      toast('已跳过出错的页面，可以继续浏览', 'warn', 2600)
+    }
+  }
+)
 </script>
 
 <template>

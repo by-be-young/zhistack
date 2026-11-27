@@ -1,16 +1,18 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useApp } from '../stores/app.js'
+import { navState } from '../core/routeProgress.js'
+import { warmRoute } from '../router/index.js'
 import AppIcon from './AppIcon.vue'
 
 const route = useRoute()
-const router = useRouter()
 const app = useApp()
 const { archive, level } = app
 
 const theme = ref(archive.settings.theme || 'light')
-const isDark = computed(() => document.documentElement.dataset.theme !== 'light')
+const systemDark = window.matchMedia('(prefers-color-scheme: dark)')
+const isDark = computed(() => theme.value === 'dark' || (theme.value === 'system' && systemDark.matches))
 const isSession = computed(() => route.path.startsWith('/practice/session'))
 
 const navs = [
@@ -45,6 +47,26 @@ const moreNavs = [
 
 const moreOpen = ref(false)
 
+// 正在加载中的目标路径：点击后立刻高亮，不等 chunk 落地
+const pendingPath = computed(() => (navState.pending ? navState.path : ''))
+
+function isCurrent(to) {
+  return route.path === to || (to !== '/' && route.path.startsWith(to + '/'))
+}
+
+function isPending(to) {
+  return pendingPath.value === to && !isCurrent(to)
+}
+
+// 点到当前页不该像"没反应"：回到顶部，并把已缓存的视图提前热好
+function onNavClick(to) {
+  if (isCurrent(to)) {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  } else {
+    warmRoute(to)
+  }
+}
+
 function toggleTheme() {
   const next = isDark.value ? 'light' : 'dark'
   theme.value = next
@@ -56,18 +78,32 @@ onMounted(() => app.applyTheme(theme.value))
 
 <template>
   <div class="app-shell">
+    <div class="route-progress" :class="{ on: navState.pending }" aria-hidden="true"><i /></div>
+
     <nav class="nav-rail" aria-label="主导航">
-      <router-link to="/" class="nav-brand" aria-label="知栈首页">知栈</router-link>
+      <router-link
+        to="/" class="nav-brand" aria-label="知栈首页"
+        @pointerenter="warmRoute('/')" @focus="warmRoute('/')"
+      >知栈</router-link>
       <router-link
         v-for="n in navs" :key="n.to" :to="n.to"
         class="nav-item"
-        :class="{ 'router-link-active': route.path === n.to || (n.to !== '/' && route.path.startsWith(n.to)) }"
+        :class="{ 'router-link-active': isCurrent(n.to), 'is-pending': isPending(n.to) }"
+        :aria-busy="isPending(n.to) ? 'true' : 'false'"
+        @click="onNavClick(n.to)"
+        @pointerenter="warmRoute(n.to)" @focus="warmRoute(n.to)"
       >
         <AppIcon :name="n.icon" :size="19" />
         <span>{{ n.name }}</span>
       </router-link>
       <div style="flex: 1" />
-      <router-link to="/settings" class="nav-item" :class="{ 'router-link-active': route.path.startsWith('/settings') }">
+      <router-link
+        to="/settings" class="nav-item"
+        :class="{ 'router-link-active': isCurrent('/settings'), 'is-pending': isPending('/settings') }"
+        :aria-busy="isPending('/settings') ? 'true' : 'false'"
+        @click="onNavClick('/settings')"
+        @pointerenter="warmRoute('/settings')" @focus="warmRoute('/settings')"
+      >
         <AppIcon name="gear" :size="18" />
         <span>设置</span>
       </router-link>
@@ -110,8 +146,9 @@ onMounted(() => app.applyTheme(theme.value))
     <nav v-if="!isSession" class="mobile-nav" aria-label="移动端导航">
       <router-link
         v-for="n in mobileNavs" :key="n.to" :to="n.to"
-        :class="{ 'router-link-active': route.path === n.to || (n.to !== '/' && route.path.startsWith(n.to)) }"
-        @click="moreOpen = false"
+        :class="{ 'router-link-active': isCurrent(n.to), 'is-pending': isPending(n.to) }"
+        @click="onNavClick(n.to); moreOpen = false"
+        @pointerenter="warmRoute(n.to)" @focus="warmRoute(n.to)"
       >
         <AppIcon :name="n.icon" :size="18" />
         <span>{{ n.name }}</span>

@@ -89,6 +89,29 @@ body:not(.ink-pen-lock) .nav-item:hover { color: var(--text); background: var(--
 }
 .nav-item span { font-size: 11px; letter-spacing: 0.02em; }
 
+/* ---------- 路由切换反馈：点击即响应，不等懒加载落地 ---------- */
+.route-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 2px;
+  z-index: 45; pointer-events: none;
+  opacity: 0; transition: opacity 0.18s var(--ease);
+}
+.route-progress.on { opacity: 1; transition-delay: 0.1s; }
+.route-progress i {
+  position: absolute; top: 0; left: -40%; height: 2px; width: 40%;
+  background: linear-gradient(90deg, transparent, var(--mint) 55%, var(--mint-deep));
+  animation: routeSweep 1.05s var(--ease) infinite;
+}
+@keyframes routeSweep { 0% { left: -40%; } 62% { left: 100%; } 100% { left: 100%; } }
+
+.nav-item.is-pending { color: var(--mint); background: color-mix(in srgb, var(--mint) 6%, transparent); }
+.nav-item.is-pending::after {
+  content: '';
+  position: absolute; left: 50%; bottom: 3px; width: 12px; height: 2px;
+  margin-left: -6px; border-radius: 2px;
+  background: var(--mint); animation: navBlink 0.9s ease-in-out infinite;
+}
+@keyframes navBlink { 50% { opacity: 0.3; } }
+
 .main-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
 .topbar {
@@ -393,6 +416,7 @@ body:not(.ink-pen-lock) .table tr:hover td { background: var(--bg-2); }
     color: var(--text-3); font-size: 10.5px;
   }
   .mobile-nav a.router-link-active { color: var(--mint); }
+  .mobile-nav a.is-pending { color: var(--mint); opacity: 0.75; }
   .mobile-more-btn {
     flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
     border: 0; background: none; color: var(--text-3); font-size: 10.5px; font-family: inherit;
