@@ -85,6 +85,13 @@ function onSelect(key) {
       <span>{{ q.figureNote }}</span>
     </div>
 
+    <div v-if="q.noteId" class="figure-note tiny">
+      <AppIcon name="bookopen" :size="13" />
+      <a :href="`#/notes/${q.noteId}`" target="_blank" rel="noopener" style="color: var(--mint)">
+        本题在资料库的原题页（含图示与详解）
+      </a>
+    </div>
+
     <div v-if="zoomSrc" class="zoom-mask" @click="zoomSrc = ''">
       <img :src="zoomSrc" alt="题图" />
     </div>

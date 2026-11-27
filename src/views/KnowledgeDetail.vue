@@ -11,6 +11,8 @@ import RichText from '../components/RichText.vue'
 import ProgressRing from '../components/ProgressRing.vue'
 import AppIcon from '../components/AppIcon.vue'
 import EmptyState from '../components/EmptyState.vue'
+import { knowledgeNotes } from '../data/knowledge/notes.js'
+import { noteById } from '../data/notes/index.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,6 +22,7 @@ const stats = computed(() => k.value ? knowledgeStats(archive, k.value.id) : nul
 const qs = computed(() => k.value ? (questionsByKnowledge[k.value.id] || []) : [])
 const related = computed(() => (k.value?.related || []).map(id => knowledgeById[id]).filter(Boolean))
 const bookRefs = computed(() => (k.value?.bookRefs || []).map(r => ({ ...r, book: bookMap[r.bookId] })))
+const noteLinks = computed(() => ((k.value && knowledgeNotes[k.value.id]) || []).map(id => noteById[id]).filter(Boolean).slice(0, 3))
 const reasons = computed(() => {
   if (!k.value || !m.value) return []
   const open = Object.values(archive.mistakes).filter(x => {
@@ -105,6 +108,17 @@ onMounted(() => {
             <ul>
               <li v-for="(p, i) in k.pitfalls" :key="i">{{ p }}</li>
             </ul>
+          </div>
+        </section>
+
+        <section v-if="noteLinks.length" class="card card-pad">
+          <div class="card-label">NOTES</div>
+          <h2 style="font-size: 18px; margin-bottom: 10px">站内讲义</h2>
+          <div class="rel-grid">
+            <router-link v-for="n in noteLinks" :key="n.id" :to="`/notes/${n.id}`" class="rel-card">
+              <div class="tiny dim">{{ n.section || '资料库' }} · 约 {{ n.minutes }} 分钟</div>
+              <div style="font-size: 14px; margin-top: 3px">{{ n.title }}</div>
+            </router-link>
           </div>
         </section>
 

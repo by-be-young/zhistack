@@ -21,6 +21,20 @@ import { questions2022_408 } from '../papers/2022-408.js'
 import { questions2022_math1 } from '../papers/2022-math1.js'
 import { questions2022_en1 } from '../papers/2022-en1.js'
 import { questions2022_pol } from '../papers/2022-pol.js'
+import { questions2009_408 } from '../papers/2009-408.js'
+import { questions2010_408 } from '../papers/2010-408.js'
+import { questions2011_408 } from '../papers/2011-408.js'
+import { questions2012_408 } from '../papers/2012-408.js'
+import { questions2013_408 } from '../papers/2013-408.js'
+import { questions2014_408 } from '../papers/2014-408.js'
+import { questions2015_408 } from '../papers/2015-408.js'
+import { questions2016_408 } from '../papers/2016-408.js'
+import { questions2017_408 } from '../papers/2017-408.js'
+import { questions2018_408 } from '../papers/2018-408.js'
+import { questions2019_408 } from '../papers/2019-408.js'
+import { questions2020_408 } from '../papers/2020-408.js'
+import { questions2021_408 } from '../papers/2021-408.js'
+import { questions2026_408 } from '../papers/2026-408.js'
 import { withMaterial } from '../papers/material.js'
 import { knowledgeById } from '../knowledge/index.js'
 
@@ -52,7 +66,38 @@ export const questions = [
   ...questionsMath, ...questionsEn, ...questionsPol
 ].map(withKnowledgeIds)
 
-export const paperQuestions = [...questions2025_408, ...questions2025_math1, ...questions2025_en1, ...questions2025_pol.map(withMaterial), ...questions2024_408, ...questions2024_pol.map(withMaterial), ...questions2024_math1, ...questions2024_en1, ...questions2023_en1, ...questions2023_pol.map(withMaterial), ...questions2023_math1, ...questions2023_408, ...questions2022_408, ...questions2022_math1, ...questions2022_en1, ...questions2022_pol.map(withMaterial)].map(withKnowledgeIds)
+export const paperQuestions = [
+  ...questions2025_408,
+  ...questions2026_408,
+  ...questions2021_408,
+  ...questions2020_408,
+  ...questions2019_408,
+  ...questions2018_408,
+  ...questions2017_408,
+  ...questions2016_408,
+  ...questions2015_408,
+  ...questions2014_408,
+  ...questions2013_408,
+  ...questions2012_408,
+  ...questions2011_408,
+  ...questions2010_408,
+  ...questions2009_408,
+  ...questions2025_math1,
+  ...questions2025_en1,
+  ...questions2025_pol.map(withMaterial),
+  ...questions2024_408,
+  ...questions2024_pol.map(withMaterial),
+  ...questions2024_math1,
+  ...questions2024_en1,
+  ...questions2023_en1,
+  ...questions2023_pol.map(withMaterial),
+  ...questions2023_math1,
+  ...questions2023_408,
+  ...questions2022_408,
+  ...questions2022_math1,
+  ...questions2022_en1,
+  ...questions2022_pol.map(withMaterial)
+].map(withKnowledgeIds)
 
 export const allQuestions = [...questions, ...paperQuestions]
 

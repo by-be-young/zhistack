@@ -28,12 +28,22 @@ const navs = [
 
 const mobileNavs = [
   { to: '/', name: '总览', icon: 'home' },
+  { to: '/knowledge', name: '知识点', icon: 'search' },
+  { to: '/notes', name: '资料', icon: 'bookopen' },
   { to: '/practice', name: '练习', icon: 'pencil' },
-  { to: '/papers', name: '真题', icon: 'trophy' },
-  { to: '/mistakes', name: '错题', icon: 'alert' },
-  { to: '/gacha', name: '卡册', icon: 'cards' },
-  { to: '/stats', name: '统计', icon: 'chart' }
+  { to: '/papers', name: '真题', icon: 'trophy' }
 ]
+
+const moreNavs = [
+  { to: '/library', name: '书库', icon: 'book', desc: '教材章节与页码' },
+  { to: '/mistakes', name: '错题', icon: 'alert', desc: '错题本与重练' },
+  { to: '/gacha', name: '卡册', icon: 'cards', desc: '知识卡与集章' },
+  { to: '/tasks', name: '任务', icon: 'tasks', desc: '每日每周任务' },
+  { to: '/stats', name: '统计', icon: 'chart', desc: '学习数据与诊断' },
+  { to: '/settings', name: '设置', icon: 'gear', desc: '主题与存档' }
+]
+
+const moreOpen = ref(false)
 
 function toggleTheme() {
   const next = isDark.value ? 'light' : 'dark'
@@ -101,10 +111,31 @@ onMounted(() => app.applyTheme(theme.value))
       <router-link
         v-for="n in mobileNavs" :key="n.to" :to="n.to"
         :class="{ 'router-link-active': route.path === n.to || (n.to !== '/' && route.path.startsWith(n.to)) }"
+        @click="moreOpen = false"
       >
         <AppIcon :name="n.icon" :size="18" />
         <span>{{ n.name }}</span>
       </router-link>
+      <button class="mobile-more-btn" :class="{ 'is-open': moreOpen }" @click="moreOpen = !moreOpen">
+        <AppIcon name="grid" :size="18" />
+        <span>更多</span>
+      </button>
     </nav>
+
+    <div v-if="moreOpen" class="more-mask" @click="moreOpen = false" />
+    <div v-if="moreOpen" class="more-sheet">
+      <div class="more-handle" />
+      <div class="more-title">全部功能</div>
+      <div class="more-grid">
+        <router-link
+          v-for="n in moreNavs" :key="n.to" :to="n.to" class="more-item"
+          @click="moreOpen = false"
+        >
+          <AppIcon :name="n.icon" :size="17" />
+          <span class="more-name">{{ n.name }}</span>
+          <span class="more-desc">{{ n.desc }}</span>
+        </router-link>
+      </div>
+    </div>
   </div>
 </template>
