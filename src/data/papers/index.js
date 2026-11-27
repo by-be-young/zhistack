@@ -107,7 +107,41 @@ import { paper2023_math3 } from './2023-math3.js'
 import { paper2024_math3 } from './2024-math3.js'
 import { paper2025_math3 } from './2025-math3.js'
 import { paper2026_math3 } from './2026-math3.js'
+import { paper2010_en2 } from './2010-en2.js'
+import { paper2011_en2 } from './2011-en2.js'
+import { paper2012_en2 } from './2012-en2.js'
+import { paper2013_en2 } from './2013-en2.js'
+import { paper2014_en2 } from './2014-en2.js'
+import { paper2015_en2 } from './2015-en2.js'
+import { paper2016_en2 } from './2016-en2.js'
+import { paper2017_en2 } from './2017-en2.js'
+import { paper2018_en2 } from './2018-en2.js'
+import { paper2019_en2 } from './2019-en2.js'
+import { paper2020_en2 } from './2020-en2.js'
+import { paper2021_en2 } from './2021-en2.js'
+import { paper2022_en2 } from './2022-en2.js'
+import { paper2023_en2 } from './2023-en2.js'
+import { paper2024_en2 } from './2024-en2.js'
+import { paper2025_en2 } from './2025-en2.js'
+import { paper2026_en2 } from './2026-en2.js'
 export const papers = [
+  paper2026_en2,
+  paper2025_en2,
+  paper2024_en2,
+  paper2023_en2,
+  paper2022_en2,
+  paper2021_en2,
+  paper2020_en2,
+  paper2019_en2,
+  paper2018_en2,
+  paper2017_en2,
+  paper2016_en2,
+  paper2015_en2,
+  paper2014_en2,
+  paper2013_en2,
+  paper2012_en2,
+  paper2011_en2,
+  paper2010_en2,
   paper2026_math3,
   paper2025_math3,
   paper2024_math3,

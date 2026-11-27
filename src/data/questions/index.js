@@ -116,6 +116,23 @@ import { questions2023_math3 } from '../papers/2023-math3.js'
 import { questions2024_math3 } from '../papers/2024-math3.js'
 import { questions2025_math3 } from '../papers/2025-math3.js'
 import { questions2026_math3 } from '../papers/2026-math3.js'
+import { questions2010_en2 } from '../papers/2010-en2.js'
+import { questions2011_en2 } from '../papers/2011-en2.js'
+import { questions2012_en2 } from '../papers/2012-en2.js'
+import { questions2013_en2 } from '../papers/2013-en2.js'
+import { questions2014_en2 } from '../papers/2014-en2.js'
+import { questions2015_en2 } from '../papers/2015-en2.js'
+import { questions2016_en2 } from '../papers/2016-en2.js'
+import { questions2017_en2 } from '../papers/2017-en2.js'
+import { questions2018_en2 } from '../papers/2018-en2.js'
+import { questions2019_en2 } from '../papers/2019-en2.js'
+import { questions2020_en2 } from '../papers/2020-en2.js'
+import { questions2021_en2 } from '../papers/2021-en2.js'
+import { questions2022_en2 } from '../papers/2022-en2.js'
+import { questions2023_en2 } from '../papers/2023-en2.js'
+import { questions2024_en2 } from '../papers/2024-en2.js'
+import { questions2025_en2 } from '../papers/2025-en2.js'
+import { questions2026_en2 } from '../papers/2026-en2.js'
 
 // 英语真题按题型补辅助考点；其余题目先保留主考点，避免把“同章相关卡”误标成考点。
 const enSecondary = n => {
@@ -146,6 +163,23 @@ export const questions = [
 ].map(withKnowledgeIds)
 
 export const paperQuestions = [
+  ...questions2026_en2,
+  ...questions2025_en2,
+  ...questions2024_en2,
+  ...questions2023_en2,
+  ...questions2022_en2,
+  ...questions2021_en2,
+  ...questions2020_en2,
+  ...questions2019_en2,
+  ...questions2018_en2,
+  ...questions2017_en2,
+  ...questions2016_en2,
+  ...questions2015_en2,
+  ...questions2014_en2,
+  ...questions2013_en2,
+  ...questions2012_en2,
+  ...questions2011_en2,
+  ...questions2010_en2,
   ...questions2026_math3,
   ...questions2025_math3,
   ...questions2024_math3,

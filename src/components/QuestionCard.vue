@@ -69,15 +69,18 @@ const knowledges = computed(() => {
 })
 const pct = computed(() => Math.round((props.result?.selfRatio ?? 0) * 100))
 const isEn = computed(() => props.q.subject === 'en' || (props.q.subjects || []).includes('en'))
+const isEnWriting = computed(() => isEn.value && (props.q.number >= 51 || props.q.number === 47 || props.q.number === 48))
 const textCount = computed(() => {
-  if (!isEn.value || props.q.number < 51) return `${textValue.value.length} 字`
+  if (!isEnWriting.value) return `${textValue.value.length} 字`
   const words = textValue.value.trim().match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)?/g)
   return `${words ? words.length : 0} 词`
 })
 const answerHint = computed(() => {
-  if (isEn.value) return props.q.number >= 51
-    ? '写下你的英文作文；交卷后可对照范文与评分要点自评得分比例。'
-    : '写下你的中文译文；交卷后可对照参考译文自评得分比例。'
+  if (isEn.value) {
+    if (isEnWriting.value) return '写下你的英文作文；交卷后可对照范文与评分要点自评得分比例。'
+    if (props.q.number === 41) return '写下 41–45 题的答案；交卷后可对照参考答案自评得分比例。'
+    return '写下你的中文译文；交卷后可对照参考译文自评得分比例。'
+  }
   if (props.q.subtype === 'fill') return '填写最终结果；交卷后可对照参考答案自评得分比例。'
   if (props.q.subject === 'math') return '写下推导、关键步骤与最终结果；交卷后可对照参考答案自评得分比例。'
   return '写下答题要点或关键步骤；交卷后可对照参考答案自评得分比例。'
@@ -148,7 +151,7 @@ function onSelect(key) {
         class="answer-input"
         :value="textValue"
         :disabled="showResult"
-        :rows="isEn && q.number >= 51 ? 12 : 7"
+        :rows="isEnWriting ? 12 : 7"
         :placeholder="answerHint"
         @input="emit('text', $event.target.value)"
       />
