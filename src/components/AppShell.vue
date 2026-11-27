@@ -17,6 +17,7 @@ const navs = [
   { to: '/', name: '总览', icon: 'home', exact: true },
   { to: '/library', name: '书库', icon: 'book' },
   { to: '/knowledge', name: '知识点', icon: 'search' },
+  { to: '/notes', name: '资料', icon: 'bookopen' },
   { to: '/practice', name: '练习', icon: 'pencil' },
   { to: '/papers', name: '真题', icon: 'trophy' },
   { to: '/mistakes', name: '错题', icon: 'alert' },

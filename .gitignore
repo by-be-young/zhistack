@@ -21,3 +21,6 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+
+# 抓取中间产物
+_crawl/

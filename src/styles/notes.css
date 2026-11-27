@@ -1,0 +1,142 @@
+/* 资料库正文排版：承接 csgraduates 页面的原始结构（Docsy/Bootstrap 语义类） */
+
+.note-body {
+  font-size: 14.5px;
+  line-height: 1.85;
+  color: var(--text-2);
+  word-break: break-word;
+}
+.note-body p { margin: 10px 0; }
+.note-body strong { color: var(--text); font-weight: 600; }
+.note-body em { color: var(--text); font-style: normal; border-bottom: 1px dashed var(--line-strong); }
+.note-body a { color: var(--mint); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--mint) 40%, transparent); }
+.note-body a:hover { color: var(--mint-deep); }
+
+.note-body h3 {
+  font-size: 20px; line-height: 1.4; color: var(--text); font-weight: 600;
+  margin: 30px 0 12px; padding-left: 10px; border-left: 3px solid var(--mint);
+  scroll-margin-top: 80px;
+}
+.note-body h4 {
+  font-size: 16px; line-height: 1.5; color: var(--text); font-weight: 600;
+  margin: 22px 0 8px; scroll-margin-top: 80px;
+}
+.note-body h5 {
+  font-size: 14.5px; line-height: 1.5; color: var(--text); font-weight: 600;
+  margin: 16px 0 6px; scroll-margin-top: 80px;
+}
+.note-body h6 { font-size: 13px; color: var(--text-2); margin: 14px 0 6px; }
+
+.note-body ul, .note-body ol { margin: 10px 0; padding-left: 24px; }
+.note-body li { margin: 4px 0; }
+.note-body li > ul, .note-body li > ol { margin: 4px 0; }
+
+.note-body code {
+  font-family: var(--font-mono); font-size: 12.5px;
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  border-radius: 4px; padding: 1px 5px; color: var(--text);
+}
+.note-body .highlight {
+  background: #f8f8f8; border: 1px solid var(--line); border-radius: 8px;
+  overflow: auto; margin: 12px 0;
+}
+.note-body .highlight pre {
+  margin: 0; padding: 12px 14px; font-size: 12.5px; line-height: 1.6;
+  background: #f8f8f8 !important; color: #1b1b1b; tab-size: 4;
+}
+.note-body .highlight code { background: transparent; padding: 0; font-size: 12.5px; color: inherit; }
+.note-body pre:not(.highlight pre) {
+  background: var(--bg-0); border: 1px solid var(--line); border-radius: 8px;
+  padding: 12px 14px; overflow: auto; font-size: 12.5px; line-height: 1.6;
+}
+
+.note-body .figure {
+  margin: 16px 0; padding: 12px; text-align: center;
+  background: #fff; border: 1px solid var(--line); border-radius: 10px;
+}
+.note-body .figure img { max-width: 100%; height: auto; display: inline-block; }
+.note-body img { max-width: 100%; height: auto; border-radius: 4px; }
+
+.note-body table {
+  width: 100%; border-collapse: collapse; margin: 14px 0;
+  font-size: 12.5px; line-height: 1.65; background: var(--bg-1);
+  border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+}
+.note-body th, .note-body td {
+  border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top;
+}
+.note-body th { background: var(--bg-2); color: var(--text); font-weight: 600; }
+.note-body td { color: var(--text-2); }
+
+.note-body blockquote {
+  margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--lilac);
+  background: color-mix(in srgb, var(--lilac) 6%, transparent); border-radius: 0 8px 8px 0;
+}
+.note-body hr { border: 0; border-top: 1px dashed var(--line); margin: 22px 0; }
+
+/* 标签页 */
+.note-body .nav-tabs, .note-body .nav {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 0;
+  border-bottom: 1px solid var(--line); padding-bottom: 8px;
+}
+.note-body .nav-item { list-style: none; }
+.note-body .nav-link {
+  font: inherit; font-size: 12.5px; line-height: 1; padding: 7px 10px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--bg-1);
+  color: var(--text-2); cursor: pointer;
+}
+.note-body .nav-link.active { border-color: var(--mint); color: var(--mint); background: color-mix(in srgb, var(--mint) 8%, transparent); }
+.note-body .tab-content { padding-top: 4px; }
+.note-body .tab-pane { display: none; }
+.note-body .tab-pane.active, .note-body .tab-pane.show { display: block; }
+
+/* 真题/视频折叠 */
+.note-body .kp-bar { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.note-body .kp-fold {
+  display: inline-block; border: 1px solid color-mix(in srgb, var(--amber) 35%, var(--line));
+  border-radius: 8px; background: color-mix(in srgb, var(--amber) 5%, transparent);
+  font-size: 12.5px; vertical-align: top;
+}
+.note-body .kp-fold summary {
+  cursor: pointer; padding: 6px 10px; color: var(--amber); list-style: none; user-select: none;
+}
+.note-body .kp-fold summary::-webkit-details-marker { display: none; }
+.note-body .kp-fold summary::before { content: "▸ "; }
+.note-body .kp-fold[open] summary::before { content: "▾ "; }
+.note-body .kp-panel-inner { padding: 4px 10px 10px; display: flex; flex-direction: column; gap: 6px; }
+.note-body .kp-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
+.note-body .kp-group-label, .note-body .kp-section-label { font-size: 11.5px; color: var(--text-3); }
+.note-body .kp-links { display: inline-flex; flex-wrap: wrap; gap: 5px; }
+.note-body .kp-link {
+  font-size: 11.5px; font-family: var(--font-mono); padding: 2px 6px; border-radius: 4px;
+  border: 1px solid var(--line); color: var(--text-2); background: var(--bg-1);
+  text-decoration: none; border-bottom: 1px solid var(--line);
+}
+.note-body .kp-link:hover { border-color: var(--mint); color: var(--mint); }
+.note-body .kp-video-link { border-color: color-mix(in srgb, var(--sky) 40%, var(--line)); color: var(--sky); font-family: inherit; }
+.note-body .kp-section-group { margin: 8px 0; }
+
+/* 注意/提示块 */
+.note-body .region {
+  margin: 16px 0; border: 1px solid color-mix(in srgb, var(--amber) 30%, var(--line));
+  border-radius: 10px; background: color-mix(in srgb, var(--amber) 5%, transparent); overflow: hidden;
+}
+.note-body .region-heading {
+  display: flex; align-items: center; gap: 6px; padding: 8px 14px; font-size: 12px; font-weight: 600;
+  color: var(--amber); background: color-mix(in srgb, var(--amber) 10%, transparent);
+}
+.note-body .region-content { padding: 10px 14px; }
+.note-body .region-content p { margin: 6px 0; }
+
+/* 页内锚点 */
+.note-body .anchored-text { cursor: pointer; border-bottom: 1px dashed var(--line-strong); }
+
+/* 数学公式 */
+.note-body .katex { font-size: 1.02em; }
+.note-body .katex-display { margin: 12px 0; overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+
+@media (max-width: 700px) {
+  .note-body { font-size: 14px; }
+  .note-body h3 { font-size: 18px; }
+  .note-body table { font-size: 12px; }
+}
