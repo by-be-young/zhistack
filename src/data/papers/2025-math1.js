@@ -1,6 +1,5 @@
 const P = 'paper-2025-math'
 const Y = 2025
-const SRC = 'https://kaoyan.eol.cn/shiti/shuxue/202508/t20250828_2686951.shtml'
 
 const base = (n, kid, extra = {}) => ({
   id: `q-math-2025-${String(n).padStart(2, '0')}`,
@@ -11,8 +10,7 @@ const base = (n, kid, extra = {}) => ({
   year: Y,
   number: n,
   source: 'real',
-  sourceName: '2025 考研数学（一）原卷（公开网络版）',
-  sourceUrl: SRC,
+  sourceName: '2025 考研数学（一）真题',
   ...extra
 })
 
@@ -204,7 +202,5 @@ export const paper2025_math1 = {
   questionCount: questions2025_math1.length,
   qids: questions2025_math1.map(q => q.id),
   sourceName: '公开网络版（中国教育在线 / 启航解析）',
-  sourceUrl: SRC,
-  answerUrl: SRC,
   note: ''
 }

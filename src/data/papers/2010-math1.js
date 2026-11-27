@@ -1,12 +1,10 @@
 const P = 'paper-2010-math1'
 const Y = 2010
-const SRC = '#/notes/study_methods-math-math1-2010'
 const A = (import.meta.env?.BASE_URL || '/') + 'notes/assets/'
 const base = (n, kid, extra = {}) => ({
   id: `q-math1-2010-${String(n).padStart(2, '0')}`,
   subject: 'math', knowledgeId: kid, paperId: P, paperOnly: true, year: Y, number: n,
-  noteId: `study_methods-math-math1-${Y}`,
-  source: 'real', sourceName: '2010 考研数学（一）原卷（站内镜像）', sourceUrl: SRC,
+  source: 'real', sourceName: '2010 考研数学（一）真题',
   ...extra
 })
 

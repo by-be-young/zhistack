@@ -135,7 +135,7 @@ function subjectiveOf(p) {
               <template v-else><span class="dim">未作答</span></template>
             </div>
             <div class="row" style="gap: 6px">
-              <a v-if="!p.externalHref" :href="p.sourceUrl" target="_blank" rel="noopener" class="btn btn-text btn-sm src-link" title="查看原卷">
+              <a v-if="!p.externalHref && p.sourceUrl" :href="p.sourceUrl" target="_blank" rel="noopener" class="btn btn-text btn-sm src-link" title="查看原卷">
                 <AppIcon name="arrow-right" :size="13" /><span>原卷</span>
               </a>
               <button class="btn btn-primary btn-sm" @click="start(p)">

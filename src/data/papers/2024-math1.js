@@ -1,7 +1,5 @@
 const P = 'paper-2024-math'
 const Y = 2024
-const SRC = 'https://gjb.ztbu.edu.cn/attachment/sites/item/2025_09/18_17/1066d05b0b708445.pdf'
-const ANS = 'https://kaoyan.eol.cn/shiti/shuxue/202312/t20231226_2551143.shtml'
 
 const base = (n, kid, extra = {}) => ({
   id: `q-math-2024-${String(n).padStart(2, '0')}`,
@@ -12,8 +10,7 @@ const base = (n, kid, extra = {}) => ({
   year: Y,
   number: n,
   source: 'real',
-  sourceName: '2024 考研数学（一）原卷（公开网络版）',
-  sourceUrl: SRC,
+  sourceName: '2024 考研数学（一）真题',
   ...extra
 })
 
@@ -210,7 +207,5 @@ export const paper2024_math1 = {
   questionCount: questions2024_math1.length,
   qids: questions2024_math1.map(q => q.id),
   sourceName: '公开网络版（郑州工商学院试卷 PDF / 中国教育在线答案）',
-  sourceUrl: SRC,
-  answerUrl: ANS,
   note: '题干含公式，页面使用 KaTeX 渲染；填空题按结果自评，解答题按步骤要点自评。'
 }

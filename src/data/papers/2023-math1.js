@@ -1,7 +1,5 @@
 const P = 'paper-2023-math'
 const Y = 2023
-const SRC = 'https://www.ztbu.edu.cn/uploadfile/files/2023/05/24/20230524103825547.pdf'
-const ANS = 'https://kaoyan.eol.cn/shiti/shuxue/202212/t20221227_2263121.shtml'
 
 const base = (n, kid, extra = {}) => ({
   id: `q-math-2023-${String(n).padStart(2, '0')}`,
@@ -12,8 +10,7 @@ const base = (n, kid, extra = {}) => ({
   year: Y,
   number: n,
   source: 'real',
-  sourceName: '2023 考研数学（一）原卷（公开网络版）',
-  sourceUrl: SRC,
+  sourceName: '2023 考研数学（一）真题',
   ...extra
 })
 
@@ -317,7 +314,5 @@ export const paper2023_math1 = {
   questionCount: questions2023_math1.length,
   qids: questions2023_math1.map(q => q.id),
   sourceName: '公开网络版（郑州商学院试卷 PDF / 中国教育在线答案）',
-  sourceUrl: SRC,
-  answerUrl: ANS,
   note: '题干按原卷录入，公式使用 KaTeX；解答题参考答案按步骤整理，自评时按评分要点选择得分比例。'
 }
