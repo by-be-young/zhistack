@@ -1,5 +1,8 @@
 // 书目只存公开出版信息、重组后的章节结构与起始印刷页，不含教材正文。
 // 页码按目录推算，标记 approx，可在书库中做页码偏移校准。
+// 全文录入的书目（OCR 读本）在 booktext.js 中定义，末尾合并进 books。
+
+import { textBooks } from './booktext.js'
 
 export const books = [
   {
@@ -230,6 +233,8 @@ export const books = [
     ]
   }
 ]
+
+books.push(...textBooks)
 
 export const bookMap = Object.fromEntries(books.map(b => [b.id, b]))
 

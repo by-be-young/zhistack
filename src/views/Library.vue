@@ -58,7 +58,8 @@ onMounted(async () => {
             <span class="chip sub-chip" :style="{ '--sub': `var(--sub-${b.subject})` }">
               <span class="dot" />{{ subjectMap[b.subject]?.short }}
             </span>
-            <span v-if="metas[b.id]" class="chip active"><AppIcon name="check" :size="11" /> 已挂载</span>
+            <span v-if="b.text" class="chip active"><AppIcon name="book" :size="11" /> 全文已录入</span>
+            <span v-else-if="metas[b.id]" class="chip active"><AppIcon name="check" :size="11" /> 已挂载</span>
             <span v-else class="chip">未挂载</span>
           </div>
           <h2 class="book-title">{{ b.title }}</h2>

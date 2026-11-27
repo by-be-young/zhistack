@@ -4,6 +4,7 @@ const routes = [
   { path: '/', name: 'home', component: () => import('../views/Home.vue'), meta: { title: '总览', crumb: 'OVERVIEW' } },
   { path: '/library', name: 'library', component: () => import('../views/Library.vue'), meta: { title: '书库', crumb: 'LIBRARY' } },
   { path: '/library/:bookId', name: 'book', component: () => import('../views/BookDetail.vue'), meta: { title: '书目', crumb: 'LIBRARY / BOOK' } },
+  { path: '/library/:bookId/read/:sectionId?', name: 'book-read', component: () => import('../views/BookReader.vue'), meta: { title: '全文阅读', crumb: 'LIBRARY / READ' } },
   { path: '/knowledge', name: 'knowledge', component: () => import('../views/Knowledge.vue'), meta: { title: '知识点', crumb: 'KNOWLEDGE' } },
   { path: '/knowledge/:kid', name: 'knowledge-detail', component: () => import('../views/KnowledgeDetail.vue'), meta: { title: '知识点', crumb: 'KNOWLEDGE / DETAIL' } },
   { path: '/notes', name: 'notes', component: () => import('../views/Notes.vue'), meta: { title: '资料库', crumb: 'REFERENCE' } },

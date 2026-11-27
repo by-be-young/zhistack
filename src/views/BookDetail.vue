@@ -134,7 +134,10 @@ onMounted(async () => {
       </div>
       <div style="flex: 1" />
       <div class="row">
-        <button v-if="!meta" class="btn btn-primary" @click="pickPdf"><AppIcon name="upload" :size="15" /> 挂载 PDF</button>
+        <button v-if="book.text" class="btn btn-primary" @click="router.push(`/library/${book.id}/read`)">
+          <AppIcon name="book" :size="15" /> 在线阅读
+        </button>
+        <button v-if="!meta" class="btn" :class="book.text ? 'btn-ghost' : 'btn-primary'" @click="pickPdf"><AppIcon name="upload" :size="15" /> 挂载 PDF</button>
         <template v-else>
           <span class="chip active"><AppIcon name="check" :size="11" /> {{ meta.name }}</span>
           <button class="btn btn-ghost btn-sm" @click="unmount">解除</button>
@@ -170,7 +173,7 @@ onMounted(async () => {
               <button
                 v-for="sub in ch.children" :key="sub.id"
                 class="sub-row" :class="{ active: selected === sub.id }"
-                @click="pick(sub)"
+                @click="book.text ? router.push(`/library/${book.id}/read/${sub.id}`) : pick(sub)"
               >
                 <span>{{ sub.title }}</span>
                 <span class="mono tiny dim">p.{{ sub.page }}</span>
@@ -188,7 +191,10 @@ onMounted(async () => {
               {{ (book.chapters.flatMap(c => [c, ...(c.children || [])]).find(c => c.id === selected)?.title) }}
             </h2>
           </div>
-          <button class="btn btn-ghost btn-sm" @click="openPage((book.chapters.flatMap(c => [c, ...(c.children || [])]).find(c => c.id === selected)?.page) || 1)">
+          <button v-if="book.text" class="btn btn-primary btn-sm" @click="router.push(`/library/${book.id}/read/${selected}`)">
+            <AppIcon name="book" :size="14" /> 阅读本节
+          </button>
+          <button v-else class="btn btn-ghost btn-sm" @click="openPage((book.chapters.flatMap(c => [c, ...(c.children || [])]).find(c => c.id === selected)?.page) || 1)">
             <AppIcon name="book" :size="14" /> 打开书页
           </button>
         </div>

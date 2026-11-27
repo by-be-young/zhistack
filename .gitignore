@@ -24,3 +24,5 @@ pnpm-debug.log*
 
 # 抓取中间产物
 _crawl/
+_ocr/
+_shot-*.png
