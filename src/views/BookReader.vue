@@ -215,7 +215,18 @@ body:not(.ink-pen-lock) .toc-sec:hover { background: var(--bg-2); color: var(--t
 }
 .reader-body :deep(p) { font-size: 1em; line-height: 1.95; margin: 7px 0; text-align: justify; }
 .reader-body :deep(.pgmark) { font-family: var(--font-mono); font-size: 10px; color: var(--text-3); opacity: 0.7; text-align: right; margin: 10px 0 -4px; }
-.reader-body :deep(.tip) { background: var(--bg-2); border-left: 3px solid var(--amber, #e8b45a); padding: 6px 10px; border-radius: 6px; font-size: 0.94em; }
+.reader-body :deep(.tip) { background: var(--bg-2); border-left: 3px solid var(--amber, #e8b45a); padding: 6px 10px; border-radius: 6px; font-size: 0.94em; margin: 10px 0; }
+.reader-body :deep(.tip b) { color: var(--amber, #e8b45a); font-weight: 600; margin-right: 2px; }
+.reader-body :deep(h5) { font-size: 1em; font-weight: 600; line-height: 1.6; margin: 20px 0 6px; color: var(--text); }
+.reader-body :deep(p.tag) { margin: 18px 0 6px; font-size: 0.94em; font-weight: 600; letter-spacing: 0.06em; color: var(--mint); }
+.reader-body :deep(p.item) { margin: 14px 0 4px; font-weight: 600; }
+.reader-body :deep(p.li) { padding-left: 1.1em; }
+.reader-body :deep(p.li)::before { content: "·"; margin-left: -1.1em; margin-right: 0.5em; color: var(--mint); }
+.reader-body :deep(figure.fig) { margin: 14px 0 18px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 8px; background: var(--bg-2); }
+.reader-body :deep(.fig-body) { font-size: 0.8em; line-height: 1.75; color: var(--text-3); letter-spacing: 0.02em; }
+.reader-body :deep(figcaption) { margin-top: 8px; font-size: 0.86em; color: var(--text-2); text-align: center; }
+.reader-body :deep(.figcap) { margin: 10px 0; font-size: 0.86em; color: var(--text-2); text-align: center; }
+.reader-body :deep(sup) { font-size: 0.68em; line-height: 0; }
 .reader-pager { display: flex; justify-content: space-between; gap: 10px; margin-top: 28px; padding-top: 16px; border-top: 1px dashed var(--line); }
 .reader-subs { margin-top: 22px; padding-top: 14px; border-top: 1px dashed var(--line); display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .sub-link { background: none; border: 0; padding: 2px 0; color: var(--text-2); font-size: 12.5px; cursor: pointer; text-align: left; }
