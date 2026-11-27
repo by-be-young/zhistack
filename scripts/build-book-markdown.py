@@ -140,7 +140,7 @@ def table_ranges(items):
     return spans
 
 
-def build_section_md(items, sub_by_y, out):
+def build_section_md(items, sub_by_y, out, sub_id=None):
     spans = table_ranges(items)
     table_map = {s: g for s, _ids, g in spans}
     table_ids = set()
@@ -184,7 +184,7 @@ def build_section_md(items, sub_by_y, out):
         for pos, s in sub_by_y:
             if pos not in used_subs and i >= pos:
                 flush()
-                out.append(f"### {s['no']} {fix_dup(s['no'], s['title'])}".replace("  ", " "))
+                out.append(f"## {s['no']} {fix_dup(s['no'], s['title'])}".replace("  ", " "))
                 out.append("")
                 used_subs.add(pos)
         t = B.fix_text(text.strip())
@@ -205,7 +205,7 @@ def build_section_md(items, sub_by_y, out):
                 flush()
                 num = t
                 head = f"{num} {items[i + 1][0].strip()}"
-                out.append(f"#### {head}")
+                out.append(f"### {head}")
                 out.append("")
                 i += 2
                 continue
@@ -246,13 +246,13 @@ def build_section_md(items, sub_by_y, out):
             continue
         if re.match(r"^\d+[）)]\s*操作系统(作为|实现)", t):
             flush()
-            out.append(f"#### {t}")
+            out.append(f"### {t}")
             out.append("")
             i += 1
             continue
         if B.is_heading(t):
             flush()
-            out.append(f"#### {B.clean_heading(t)}")
+            out.append(f"### {B.clean_heading(t)}")
             out.append("")
             i += 1
             continue
@@ -283,11 +283,25 @@ def build_section_md(items, sub_by_y, out):
 LEFT, CHARW, BODY = [0], [10], [1100]
 
 
+def shift_headings(lines):
+    """章节文件里整体降一级：节 `# ` → `## `。"""
+    return [("#" + l) if l.startswith("#") else l for l in lines]
+
+
+def count_chars(lines):
+    return sum(len(l) for l in lines if l and not l.startswith(("#", ">", "|", "<", "-", "*")))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--book", default="os2025")
     ap.add_argument("--src", default=None)
     ap.add_argument("--out", default="md/2025操作系统")
+    ap.add_argument("--slug", default="os-wd2025", help="public/booktext/<slug>/ 下的分节 md")
+    ap.add_argument("--public", default="public/booktext", help="分节 md 的根目录；传空字符串则不导出")
+    ap.add_argument("--js-dir", default="src/data/booktext")
+    ap.add_argument("--title", default="2025 操作系统考研复习指导")
+    ap.add_argument("--prefix", default="osw")
     ap.add_argument("--single", action="store_true")
     args = ap.parse_args()
 
@@ -319,8 +333,14 @@ def main():
         sub_of.setdefault(sub["section"], []).append(sub)
 
     os.makedirs(args.out, exist_ok=True)
+    pub_dir = os.path.join(args.public, args.slug, "md") if args.public else None
+    if pub_dir:
+        os.makedirs(pub_dir, exist_ok=True)
+    toc_node = []
+    total_chars = 0
     for ci, ch in enumerate(chapters, start=1):
         lines = [f"# 第{ch['no']}章 {strip_no(ch['title'])}", ""]
+        ch_sections = []
         for si, sec in enumerate(sections):
             if sec["chapter"] != ci:
                 continue
@@ -362,15 +382,61 @@ def main():
                     ln["_p"] = pno
                 items.extend(keep)
 
-            lines.append(f"## {sec['no']} {fix_dup(sec['no'], sec['title'])}".replace("  ", " "))
-            lines.append("")
+            sid = f"{args.prefix}-{sec['no'].replace('.', '-')}"
+            sub_ids = {}
+            for s in subs_here:
+                sub_ids[s["no"]] = f"{sid}-{s['no'].split('.')[-1]}"
+            frag = [f"# {sec['no']} {fix_dup(sec['no'], sec['title'])}".replace("  ", " "), ""]
             sub_y.sort(key=lambda x: x[0])
-            build_section_md(items, sub_y, lines)
+            build_section_md(items, sub_y, frag, sub_id=sub_ids)
+
+            chars = count_chars(frag[2:])
+            total_chars += chars
+            ch_sections.append({
+                "id": sid, "no": sec["no"], "title": sec["title"],
+                "page": sec["page"], "endPage": sec["end"],
+                "chars": chars,
+                "subs": [{"id": sub_ids[s["no"]], "title": s["title"], "page": s["page"]} for s in subs_here],
+            })
+            if pub_dir:
+                with open(os.path.join(pub_dir, sid + ".md"), "w", encoding="utf-8") as fh:
+                    fh.write("\n".join(frag).rstrip() + "\n")
+            lines.append("")
+            lines.extend(shift_headings(frag))
+
+        toc_node.append({
+            "id": f"{args.prefix}-ch{ci}", "no": ch["no"], "title": ch["title"],
+            "page": ch["page"], "sections": ch_sections,
+        })
 
         name = f"第{ch['no']}章-{re.sub(r'[\\\\/:*?\"<>| ]+', '', strip_no(ch['title']))}.md"
         with open(os.path.join(args.out, name), "w", encoding="utf-8") as fh:
             fh.write("\n".join(lines).rstrip() + "\n")
         print(f"[md] {name}: {len(lines)} 行")
+
+    toc = {
+        "book": args.slug, "title": args.title, "fmt": "markdown",
+        "chapters": toc_node, "chars": total_chars,
+    }
+    if pub_dir:
+        base = os.path.dirname(pub_dir)                       # public/booktext/os-wd2025
+        with open(os.path.join(base, "toc.json"), "w", encoding="utf-8") as fh:
+            json.dump(toc, fh, ensure_ascii=False, indent=1)
+
+    slim = {
+        "book": args.slug, "title": args.title, "chars": total_chars, "fmt": "markdown",
+        "chapters": [
+            {
+                "id": c["id"], "title": f"第{c['no']}章 {strip_no(c['title'])}", "page": c["page"],
+                "children": [{"id": s["id"], "title": s["title"], "page": s["page"]} for s in c["sections"]],
+            }
+            for c in toc_node
+        ],
+    }
+    os.makedirs(args.js_dir, exist_ok=True)
+    with open(os.path.join(args.js_dir, args.slug + ".js"), "w", encoding="utf-8") as fh:
+        fh.write("// 由 scripts/build-book-markdown.py 生成，勿手工编辑。\n")
+        fh.write("export default " + json.dumps(slim, ensure_ascii=False, indent=1) + "\n")
 
     if args.single:
         parts = []
@@ -384,3 +450,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

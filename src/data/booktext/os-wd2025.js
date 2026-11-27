@@ -1,8 +1,9 @@
-// 由 scripts/build-book-text.py 生成，勿手工编辑。
+// 由 scripts/build-book-markdown.py 生成，勿手工编辑。
 export default {
  "book": "os-wd2025",
  "title": "2025 操作系统考研复习指导",
- "chars": 369883,
+ "chars": 358978,
+ "fmt": "markdown",
  "chapters": [
   {
    "id": "osw-ch1",

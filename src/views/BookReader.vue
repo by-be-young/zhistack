@@ -1,10 +1,25 @@
 <script setup>
 import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import MarkdownIt from 'markdown-it'
 import { bookMap, subjectMap } from '../data/index.js'
 import AppIcon from '../components/AppIcon.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { prepareDocHtml, watchTheme } from '../core/reading.js'
+
+const md = new MarkdownIt({ html: true, linkify: false, typographer: false })
+// 行内只允许 <sup>/<sub>/<b>/<i> 这类排版标签，其余原始 HTML 直接转义
+const ALLOWED_INLINE = /^(sup|sub|b|i|em|strong|br|code)$/i
+const defaultHtmlInline = md.renderer.rules.html_inline || ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options))
+md.renderer.rules.html_inline = (tokens, idx, options, env, self) => {
+  const tag = /^<\s*(\/?)\s*([a-z0-9]+)/i.exec(tokens[idx].content)
+  if (tag && ALLOWED_INLINE.test(tag[2])) return defaultHtmlInline(tokens, idx, options, env, self)
+  return md.utils.escapeHtml(tokens[idx].content)
+}
+const defaultHtmlBlock = md.renderer.rules.html_block || ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options))
+md.renderer.rules.html_block = (tokens, idx, options, env, self) => {
+  return md.utils.escapeHtml(tokens[idx].content)
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -41,7 +56,27 @@ async function readGzip(res) {
 
 function showSection(data) {
   current.value = data
-  bodyHtml.value = prepareDocHtml(data?.html || '').html
+  const text = data?.md != null ? md.render(data.md) : (data?.html || '')
+  bodyHtml.value = prepareDocHtml(text).html
+  if (data?.md != null) nextTick(decorateHeadings)
+}
+
+/** Markdown 的标题没有 id，按顺序挂上目录里的锚点，供「本节目录」跳转。 */
+function decorateHeadings() {
+  const root = bodyRef.value
+  if (!root || !current.value?.subs?.length) return
+  const subs = current.value.subs
+  let k = 0
+  root.querySelectorAll('h2').forEach(h => {
+    if (k < subs.length && normHeading(h.textContent) === normHeading(subs[k].title)) {
+      h.id = subs[k].id
+      k += 1
+    }
+  })
+}
+
+function normHeading(text) {
+  return (text || '').replace(/[\s·．.、　]+/g, '')
 }
 
 async function load(id) {
@@ -55,9 +90,16 @@ async function load(id) {
   loading.value = true
   failed.value = false
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}${base.value}/${id}.json.gz`)
-    if (!res.ok) throw new Error('HTTP ' + res.status)
-    const data = JSON.parse(await readGzip(res))
+    let data
+    if (book.value?.text?.md) {
+      const res = await fetch(`${import.meta.env.BASE_URL}${base.value}/md/${id}.md`)
+      if (!res.ok) throw new Error('HTTP ' + res.status)
+      data = { ...(sections.value.find(s => s.id === id) || { id }), md: await res.text() }
+    } else {
+      const res = await fetch(`${import.meta.env.BASE_URL}${base.value}/${id}.json.gz`)
+      if (!res.ok) throw new Error('HTTP ' + res.status)
+      data = JSON.parse(await readGzip(res))
+    }
     cache.set(id, data)
     showSection(data)
     await nextTick()
@@ -205,12 +247,32 @@ body:not(.ink-pen-lock) .toc-sec:hover { background: var(--bg-2); color: var(--t
 .toc-sec-pg { font-size: 10.5px; color: var(--text-3); text-align: right; }
 .reader-main { min-height: 60vh; }
 .reader-meta { display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--text-3); padding-bottom: 12px; border-bottom: 1px dashed var(--line); margin-bottom: 18px; }
-.reader-body :deep(h3) {
-  font-size: 1.26em; line-height: 1.5; margin: 26px 0 18px; padding: 0 0 0 10px;
-  background: none; border: 0; border-left: 3px solid var(--mint); border-radius: 0;
+/* Markdown 正文：h1 节、h2 小节、h3 节内小标题 */
+.reader-body :deep(h1) {
+  font-size: 1.34em; line-height: 1.5; margin: 4px 0 18px; padding: 0 0 0 10px;
+  font-weight: 700; background: none; border: 0; border-left: 3px solid var(--mint); border-radius: 0;
 }
+.reader-body :deep(h2) {
+  font-size: 1.06em; line-height: 1.6; margin: 26px 0 8px; padding: 0;
+  font-weight: 650; color: var(--text);
+}
+.reader-body :deep(h3) { font-size: 1em; font-weight: 600; line-height: 1.6; margin: 20px 0 6px; color: var(--text); }
+.reader-body :deep(blockquote) {
+  margin: 12px 0; padding: 7px 12px; border-left: 3px solid var(--amber, #e8b45a);
+  background: var(--bg-2); border-radius: 0 6px 6px 0; font-size: 0.95em; color: var(--text);
+}
+.reader-body :deep(blockquote p) { margin: 3px 0; }
+.reader-body :deep(blockquote strong) { color: var(--amber, #e8b45a); font-weight: 600; }
+.reader-body :deep(hr) { border: 0; border-top: 1px dashed var(--line); margin: 22px 0; }
+.reader-body :deep(a) { color: var(--mint); }
+.reader-body :deep(table) {
+  border-collapse: collapse; width: 100%; margin: 12px 0 16px; font-size: 0.92em;
+}
+.reader-body :deep(table th),
+.reader-body :deep(table td) { border: 1px solid var(--line); padding: 5px 9px; line-height: 1.7; text-align: left; vertical-align: top; }
+.reader-body :deep(table th) { background: var(--bg-2); font-weight: 600; }
 .reader-body :deep(h4) {
-  font-size: 1.04em; line-height: 1.6; margin: 24px 0 8px; padding: 0;
+  font-size: 1em; line-height: 1.6; margin: 22px 0 8px; padding: 0;
   background: none; border: 0; border-radius: 0; color: var(--text);
 }
 .reader-body :deep(p) { font-size: 1em; line-height: 1.95; margin: 7px 0; text-align: justify; }
@@ -226,6 +288,12 @@ body:not(.ink-pen-lock) .toc-sec:hover { background: var(--bg-2); color: var(--t
 .reader-body :deep(figcaption) { margin-top: 8px; font-size: 0.86em; color: var(--text-2); text-align: center; }
 .reader-body :deep(.figcap) { margin: 10px 0; font-size: 0.86em; color: var(--text-2); text-align: center; }
 .reader-body :deep(sup) { font-size: 0.68em; line-height: 0; }
+.reader-body :deep(p.formula) {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 0.9em; line-height: 1.75; margin: 6px 0; padding: 6px 10px;
+  background: var(--bg-2); border-radius: 6px; color: var(--text-2);
+  overflow-x: auto; white-space: pre-wrap; word-break: break-all;
+}
 .reader-pager { display: flex; justify-content: space-between; gap: 10px; margin-top: 28px; padding-top: 16px; border-top: 1px dashed var(--line); }
 .reader-subs { margin-top: 22px; padding-top: 14px; border-top: 1px dashed var(--line); display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .sub-link { background: none; border: 0; padding: 2px 0; color: var(--text-2); font-size: 12.5px; cursor: pointer; text-align: left; }
