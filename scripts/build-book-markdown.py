@@ -19,6 +19,7 @@ import sys
 sys.path.insert(0, HERE)
 import mdpolish as P
 
+PAGE_NOISE = re.compile(r"^\d+(?:\.\d+)+\s+\d{1,3}$")
 CAP_TABLE = re.compile(r"^表\s*\d+(?:[.．]\d+)?")
 CAP_FIG = re.compile(r"^图\s*\d+(?:[.．]\d+)?")
 BAND_GAP = 22
@@ -193,7 +194,7 @@ def build_section_md(items, sub_by_y, out, sub_id=None):
                 out.append("")
                 used_subs.add(pos)
         t = B.fix_text(text.strip())
-        if not t:
+        if not t or PAGE_NOISE.match(t):
             i += 1
             continue
         if re.match(r"^\d+\s*[.．]$", t):

@@ -95,6 +95,12 @@ def polish_text(s):
     s = re.sub(r"(?<=\d)\s*一\s*(?=\d)", "—", s)
     # 中文引号
     s = re.sub(r'"([^"\n]{1,60})"', r"“\1”", s)
+    # 「：当然」这类把分号读成冒号的过渡语
+    s = s.replace("：当然", "；当然")
+    s = s.replace("：再如", "；再如")
+    # 英文缩写与汉字之间的多余空格
+    s = re.sub(r"(?<=[A-Za-z]) +(?=[\u4e00-\u9fff])", "", s)
+    s = re.sub(rf"(?<=[{CJK}]) +(?=[A-Za-z])", "", s)
     # 图 / 表编号后补空格
     s = re.sub(r"^([图表])\s*(\d+(?:\.\d+)?)\s*(?=[^\s\d.．])", r"\1\2 ", s)
     # 括号、英文词组、重复标点
@@ -117,6 +123,9 @@ def tidy_heading(line):
         return line
     hashes, body = m.group(1), m.group(2)
     body = re.sub(r"\s+", " ", body.replace("\u3000", " ")).strip()
+    # 「1）标题」「1 标题」统一成「1. 标题」
+    body = re.sub(r"^(\d{1,2})\s*[）)]\s*", r"\1. ", body)
+    body = re.sub(r"^(\d{1,2})\s+(?=[\u4e00-\u9fff])", r"\1. ", body)
     body = polish_text(body)
     body = body.rstrip("。，、；：．,.;:")
     body = re.sub(r"^(\d+(?:\.\d+)*\.?)\s*", r"\1 ", body)
@@ -142,10 +151,11 @@ def normalize_headings(lines):
 
 
 def _colon_fix(block):
-    """考纲列举里被读成「：」的分号。只在这一节的第一块列举里动。"""
-    if block.rstrip().endswith(("：", ":")) and block.count("：") + block.count(":") >= 2:
-        block = block.replace("：", "；").replace(":", "；")
-        block = re.sub(r"[；;]\s*$", "", block)
+    """考纲列举里被读成「：」的分号：保留第一个冒号，其后的一律改为「；」。"""
+    if block.count("：") >= 2:
+        head, rest = block.split("：", 1)
+        rest = rest.replace("：", "；").replace(":", "；")
+        block = re.sub(r"[；;]\s*$", "", head + "：" + rest)
     return block
 
 
@@ -182,14 +192,24 @@ def group_fragments(merged, skip_idx):
     return out
 
 
-Q_GLUE = re.compile(r"(?<=[\u4e00-\u9fff）】”\u3001])(\d{2}\.\s*(?=[\u4e00-\u9fff]))")
-OPT_GLUE = re.compile(r"(?<=[\u4e00-\u9fff）】”])([B-D]\.\s*(?=[\u4e00-\u9fff]))")
+Q_GLUE = re.compile(r"(?<=[\u4e00-\u9fff）】”…。，、；：0-9A-Za-z])\s*(\d{2})[.．]\s*(?=[\u4e00-\u9fff【（(])")
+OPT_GLUE = re.compile(r"(?<=[\u4e00-\u9fff）】”])\s*([A-D])[.．]\s*(?=[\u4e00-\u9fff0-9A-Za-z])")
+# 选项按两列排时同一行会粘成「A. … B. …」，在空格处拆开
+OPT_COL = re.compile(r"\s+([B-D])[.．]\s*(?=[\u4e00-\u9fff0-9A-Za-z])")
+# 罗马序号项粘在一起：「…直接交互II.批处理系统…」
+ROMAN_GLUE = re.compile(r"(?<=[\u4e00-\u9fff0-9A-Za-z）】”])\s*(?=(?:II|III|IV|I)[.．][\u4e00-\u9fff])")
+
+
+ANS_GLUE = re.compile(r"^(\d{2})\.\s*([A-D])\s*(?=[\u4e00-\u9fff])")
 
 
 def split_glued(text):
-    """一行里粘上了下一道题的题号 / 下一个选项时拆开。"""
+    """一行里粘上了下一道题的题号 / 下一个选项 / 答案字母后的解析时拆开。"""
+    m = ANS_GLUE.match(text)
+    if m:
+        return [f"{m.group(1)}. {m.group(2)}", text[m.end():].strip()]
     pieces = [text]
-    for pat in (Q_GLUE, OPT_GLUE):
+    for pat in (Q_GLUE, OPT_GLUE, OPT_COL, ROMAN_GLUE):
         nxt = []
         for p in pieces:
             start = 0
@@ -234,7 +254,7 @@ def polish_blocks(lines):
         if HEAD_RE.match(t) or not in_outline:
             continue
         outline_idx.add(i)
-        if len(b) == 1 and len(t) <= 60:
+        if len(b) == 1 and len(t) <= 120:
             b[0] = _colon_fix(t)
 
     # 硬换行接回：上一块以「，、；」收尾且下一块是正文
@@ -263,8 +283,200 @@ def polish_blocks(lines):
     split = []
     for b in merged:
         for piece in split_glued("".join(b)):
-            split.append([polish_text(piece)])
+            split.append([piece if piece.startswith(("#", ">", "|")) else polish_text(piece)])
+    split = roman_sort(split)
     return group_fragments(split, set())
+
+
+ROMAN = {"I": 1, "II": 2, "III": 3, "IV": 4}
+ROMAN_RE = re.compile(r"^(I{1,3}|IV)[.．]")
+
+
+def roman_sort(bs):
+    """「I. / II. / III. / IV.」四项被 OCR 打乱顺序时按序排回（如 13 题的并行项）。"""
+    out, i = [], 0
+    while i < len(bs):
+        m = ROMAN_RE.match(bs[i][0].strip()) if len(bs[i]) == 1 else None
+        if m:
+            j, run = i, []
+            while j < len(bs) and len(bs[j]) == 1 and ROMAN_RE.match(bs[j][0].strip()):
+                run.append(bs[j])
+                j += 1
+            got = sorted(ROMAN.get(ROMAN_RE.match(b[0].strip()).group(1), 99) for b in run)
+            if got == [1, 2, 3, 4] and len(run) == 4:
+                run.sort(key=lambda b: ROMAN[ROMAN_RE.match(b[0].strip()).group(1)])
+            out.extend(run)
+            i = j
+            continue
+        out.append(bs[i])
+        i += 1
+    return out
+
+
+LABEL_RE = re.compile(r"^（[1-9]）[^。，；：！？]{2,12}$")
+
+OPT_RE = re.compile(r"^([A-D]|I{1,3}|IV)[.．]\s*")
+LETTER_ORD = ["A", "B", "C", "D"]
+
+
+def pack_options(lines):
+    """选择题选项（A./B./C./D.）与罗马序号项：先按原序号排正，再合成一个紧凑块。"""
+    bs = blocks(lines)
+    out, i = [], 0
+    while i < len(bs):
+        t = bs[i][0].strip() if len(bs[i]) == 1 else ""
+        if t and OPT_RE.match(t):
+            j, run = i, []
+            while j < len(bs):
+                tj = bs[j][0].strip() if len(bs[j]) == 1 else ""
+                if not tj or not OPT_RE.match(tj):
+                    break
+                run.append(tj)
+                j += 1
+            if run:
+                # 字母重复说明这一串混进了前后两道题，按「字母重新出现」切段
+                groups, cur = [], []
+                for x in run:
+                    L = OPT_RE.match(x).group(1)
+                    if cur and L in {OPT_RE.match(y).group(1) for y in cur}:
+                        groups.append(cur)
+                        cur = [x]
+                    else:
+                        cur.append(x)
+                groups.append(cur)
+                for g in groups:
+                    if len(g) < 2:
+                        out.append([g[0]])
+                        continue
+                    letters = [x for x in g if x[0] in LETTER_ORD]
+                    romans = [x for x in g if x[0] not in LETTER_ORD]
+                    letters.sort(key=lambda x: LETTER_ORD.index(x[0]))
+                    romans.sort(key=lambda x: ROMAN.get(OPT_RE.match(x).group(1), 9))
+                    seq = []
+                    for x in romans + letters:
+                        m = OPT_RE.match(x)
+                        tail = x[m.end():].strip()
+                        seq.append(f"{m.group(1)}. {tail}" if tail else f"{m.group(1)}.")
+                    out.append(["  \n".join(seq)])
+                i = j
+                continue
+        out.append(bs[i])
+        i += 1
+    res = []
+    for b in out:
+        res.extend(b)
+        res.append("")
+    return res
+
+
+JOIN_HEAD = "又并而且即其以为在由经"
+END_PUNCT = "。？！）"
+
+ANS_LINE = re.compile(r"^(0\d|1\d)\. ?([A-D])$")
+QUIZ_NO = re.compile(r"^(0\d|1\d)\.(?=\S)")
+QUIZ_KIND = re.compile(r"^([一二三])、([\u4e00-\u9fff]{2,8})$")
+
+
+def shape_quiz(lines):
+    """习题区：答案字母加粗、题号后补空格、题型标签加粗。"""
+    out, in_answer = [], False
+    for l in lines:
+        t = l.strip()
+        m = HEAD_RE.match(t)
+        if m and len(m.group(1)) == 2:
+            in_answer = "答案与解析" in m.group(2)
+        if t and not t.startswith(("#", ">", "|")):
+            if in_answer:
+                a = ANS_LINE.match(t)
+                if a:
+                    out.append(f"**{a.group(1)}. {a.group(2)}**")
+                    continue
+            k = QUIZ_KIND.match(t)
+            if k:
+                out.append(f"**{k.group(1)}、{k.group(2)}**")
+                continue
+            q = QUIZ_NO.match(t)
+            if q:
+                out.append(q.group(1) + ". " + t[q.end():])
+                continue
+        out.append(l)
+    return out
+
+
+def join_broken(lines):
+    """前半句没有句末标点、下一行以「又/并/而且…」起的短碎片，接回上一句。"""
+    out = []
+    for l in lines:
+        t = l.strip()
+        if not t:
+            out.append(l)
+            continue
+        k = len(out) - 1
+        while k >= 0 and not out[k].strip():
+            k -= 1
+        if (k >= 0 and t[0] in JOIN_HEAD and len(t) <= 26 and t[-1] in END_PUNCT
+                and not out[k].strip().startswith(("#", ">", "|"))
+                and out[k].strip()[-1] not in "。？！：；】"):
+            out[k] = out[k].rstrip() + t
+            del out[k + 1:]
+            continue
+        out.append(l)
+    return out
+
+
+def promote_labels(lines):
+    """「（1）处理机管理」这类独立短标签升成 h4，正文层次更清楚。"""
+    out, prev_head = [], False
+    for l in lines:
+        t = l.strip()
+        if t == "":
+            out.append(l)
+            prev_head = False
+            continue
+        if LABEL_RE.match(t) and not t.startswith(("#", ">", "|", "**")):
+            out.append(f"#### {t}")
+            out.append("")
+            prev_head = True
+            continue
+        prev_head = bool(HEAD_RE.match(t)) or prev_head
+        out.append(l)
+    return out
+
+
+TERMS = ["并发", "并行", "共享", "虚拟", "异步", "临界资源",
+         "命令接口", "程序接口", "系统调用", "裸机", "扩充机器",
+         "虚拟处理器", "虚拟存储器"]
+
+
+def bold_terms(lines):
+    """术语加粗只落在定义句上（「X是指…」「称为X」），每节每个术语只加一次。"""
+    done = set()
+    out, in_body = [], False
+    for l in lines:
+        t = l.strip()
+        if HEAD_RE.match(t) and t.startswith("## "):
+            in_body = True
+        if (not in_body or not t or t.startswith(("#", ">", "|", "**")) or len(t) < 12):
+            out.append(l)
+            continue
+        for term in TERMS:
+            if term in done:
+                continue
+            m = (re.search(rf"(?:称为|叫做)({re.escape(term)})(?=[，。、；：）]|$)", t)
+                 or re.search(rf"{re.escape(term)}(?=是指|指的是)", t))
+            if not m:
+                continue
+            if m.re.groups:
+                t = t[:m.start(1)] + "**" + m.group(1) + "**" + t[m.end(1):]
+            else:
+                t = t[:m.start()] + "**" + m.group(0) + "**" + t[m.end():]
+            done.add(term)
+        if "包括并发、共享、虚拟和异步" in t:
+            t = t.replace("包括并发、共享、虚拟和异步",
+                          "包括**并发**、**共享**、**虚拟**和**异步**")
+            done.update(["并发", "共享", "虚拟", "异步"])
+        out.append(t)
+    return out
 
 
 def polish_document(lines):
@@ -280,4 +492,16 @@ def polish_document(lines):
         else:
             out.append(polish_text(l))
     out = polish_blocks(out)
-    return normalize_headings(out)
+    out = join_broken(out)
+    out = shape_quiz(out)
+    out = pack_options(out)
+    out = promote_labels(out)
+    out = bold_terms(out)
+    out = normalize_headings(out)
+    # 压掉多余空行
+    squeezed = []
+    for l in out:
+        if l.strip() == "" and squeezed and squeezed[-1] == "":
+            continue
+        squeezed.append(l.rstrip())
+    return squeezed
