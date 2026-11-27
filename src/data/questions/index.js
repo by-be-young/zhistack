@@ -63,6 +63,21 @@ import { questions2019_en1 } from '../papers/2019-en1.js'
 import { questions2020_en1 } from '../papers/2020-en1.js'
 import { questions2021_en1 } from '../papers/2021-en1.js'
 import { questions2026_en1 } from '../papers/2026-en1.js'
+import { questions2008_math1 } from '../papers/2008-math1.js'
+import { questions2009_math1 } from '../papers/2009-math1.js'
+import { questions2010_math1 } from '../papers/2010-math1.js'
+import { questions2011_math1 } from '../papers/2011-math1.js'
+import { questions2012_math1 } from '../papers/2012-math1.js'
+import { questions2013_math1 } from '../papers/2013-math1.js'
+import { questions2014_math1 } from '../papers/2014-math1.js'
+import { questions2015_math1 } from '../papers/2015-math1.js'
+import { questions2016_math1 } from '../papers/2016-math1.js'
+import { questions2017_math1 } from '../papers/2017-math1.js'
+import { questions2018_math1 } from '../papers/2018-math1.js'
+import { questions2019_math1 } from '../papers/2019-math1.js'
+import { questions2020_math1 } from '../papers/2020-math1.js'
+import { questions2021_math1 } from '../papers/2021-math1.js'
+import { questions2026_math1 } from '../papers/2026-math1.js'
 
 // 英语真题按题型补辅助考点；其余题目先保留主考点，避免把“同章相关卡”误标成考点。
 const enSecondary = n => {
@@ -93,6 +108,21 @@ export const questions = [
 ].map(withKnowledgeIds)
 
 export const paperQuestions = [
+    ...questions2026_math1,
+    ...questions2021_math1,
+    ...questions2020_math1,
+    ...questions2019_math1,
+    ...questions2018_math1,
+    ...questions2017_math1,
+    ...questions2016_math1,
+    ...questions2015_math1,
+    ...questions2014_math1,
+    ...questions2013_math1,
+    ...questions2012_math1,
+    ...questions2011_math1,
+    ...questions2010_math1,
+    ...questions2009_math1,
+    ...questions2008_math1,
   ...questions2026_en1,
   ...questions2021_en1,
   ...questions2020_en1,

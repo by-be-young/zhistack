@@ -3,7 +3,6 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { archive } from '../storage/archive.js'
 import { papers, subjectMap, questionById } from '../data/index.js'
-import { mathExternalPapers } from '../data/papers/math-external.js'
 import { createSession } from '../stores/practice.js'
 import AppIcon from '../components/AppIcon.vue'
 
@@ -18,7 +17,7 @@ const groups = [
   { id: 'pol', name: '政治' }
 ]
 
-const allPapers = [...papers, ...mathExternalPapers]
+const allPapers = papers
 const totalQuestions = computed(() => allPapers.reduce((n, p) => n + p.questionCount, 0))
 const totalMinutes = computed(() => allPapers.reduce((n, p) => n + p.durationMin, 0))
 

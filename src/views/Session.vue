@@ -14,6 +14,7 @@ import EmptyState from '../components/EmptyState.vue'
 import RichText from '../components/RichText.vue'
 import MaterialPane from '../components/MaterialPane.vue'
 import InkPad from '../components/InkPad.vue'
+import { loadPaperHtml } from '../data/mathHtml.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -26,6 +27,7 @@ const showQuit = ref(false)
 const autoSubmitting = ref(false)
 const selfGrades = ref({})
 const materialOpen = ref(true)
+const paperHtml = ref({})
 
 const s = computed(() => practice.session)
 const titleShort = computed(() => {
@@ -51,6 +53,15 @@ const answeredCount = computed(() => s.value ? Object.values(s.value.answers).fi
 const unanswered = computed(() => (s.value?.count || 0) - answeredCount.value)
 
 watch(() => current.value?.material?.key || qid.value, () => { materialOpen.value = true })
+
+watch(() => s.value?.paperId, async id => {
+  paperHtml.value = {}
+  if (!id || !id.includes('math1')) return
+  const map = await loadPaperHtml(id)
+  if (s.value?.paperId === id) paperHtml.value = map
+}, { immediate: true })
+
+const refHtml = q => paperHtml.value[q.id]?.referenceHtml || ''
 
 let timer = null
 
@@ -265,11 +276,12 @@ onBeforeUnmount(() => {
           <div class="spread" style="align-items: flex-start; gap: 12px">
             <div>
               <div class="mono tiny dim">第 {{ q.number }} 题 · 满分 {{ q.score }} 分</div>
-              <div style="font-weight: 600; margin-top: 2px">{{ q.title || '主观题' }}</div>
+              <div style="font-weight: 600; margin-top: 2px">{{ q.title || (q.subtype === 'fill' ? '填空题' : '解答题') }}</div>
             </div>
             <span class="chip" :class="gradeRatio(q.id) >= 0.6 ? 'active' : 'rose'">{{ Math.round(gradeRatio(q.id) * 100) }}%</span>
           </div>
-          <div class="grade-ref"><RichText :text="q.referenceAnswer" /></div>
+          <div v-if="refHtml(q)" class="grade-ref katex-html-block" v-html="refHtml(q)" />
+          <div v-else class="grade-ref"><RichText :text="q.referenceAnswer" /></div>
           <div class="grade-actions">
             <button
               v-for="p in [0, 20, 40, 60, 80, 100]" :key="p"
@@ -348,6 +360,9 @@ onBeforeUnmount(() => {
 .grade-list { display: flex; flex-direction: column; gap: 14px; max-height: 58vh; overflow-y: auto; padding-right: 4px; }
 .grade-item { padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-0); }
 .grade-ref { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: var(--bg-2); font-size: 12.5px; line-height: 1.7; max-height: 180px; overflow-y: auto; }
+.katex-html-block { line-height: 1.9; overflow-x: auto; }
+.katex-html-block :deep(.katex) { font-size: 1.04em; }
+.katex-html-block :deep(img) { display: block; max-width: 100%; height: auto; margin: 8px 0; }
 .grade-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
 .s-side { position: sticky; top: 84px; }
 .side-legend { display: flex; gap: 12px; margin-top: 12px; }

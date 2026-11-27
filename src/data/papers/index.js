@@ -54,7 +54,37 @@ import { paper2019_en1 } from './2019-en1.js'
 import { paper2020_en1 } from './2020-en1.js'
 import { paper2021_en1 } from './2021-en1.js'
 import { paper2026_en1 } from './2026-en1.js'
+import { paper2008_math1 } from './2008-math1.js'
+import { paper2009_math1 } from './2009-math1.js'
+import { paper2010_math1 } from './2010-math1.js'
+import { paper2011_math1 } from './2011-math1.js'
+import { paper2012_math1 } from './2012-math1.js'
+import { paper2013_math1 } from './2013-math1.js'
+import { paper2014_math1 } from './2014-math1.js'
+import { paper2015_math1 } from './2015-math1.js'
+import { paper2016_math1 } from './2016-math1.js'
+import { paper2017_math1 } from './2017-math1.js'
+import { paper2018_math1 } from './2018-math1.js'
+import { paper2019_math1 } from './2019-math1.js'
+import { paper2020_math1 } from './2020-math1.js'
+import { paper2021_math1 } from './2021-math1.js'
+import { paper2026_math1 } from './2026-math1.js'
 export const papers = [
+  paper2026_math1,
+  paper2021_math1,
+  paper2020_math1,
+  paper2019_math1,
+  paper2018_math1,
+  paper2017_math1,
+  paper2016_math1,
+  paper2015_math1,
+  paper2014_math1,
+  paper2013_math1,
+  paper2012_math1,
+  paper2011_math1,
+  paper2010_math1,
+  paper2009_math1,
+  paper2008_math1,
   paper2026_en1,
   paper2021_en1,
   paper2020_en1,

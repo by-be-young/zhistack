@@ -1,8 +1,9 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import RichText from './RichText.vue'
 import AppIcon from './AppIcon.vue'
 import { knowledgeById } from '../data/index.js'
+import { getQuestionHtml } from '../data/mathHtml.js'
 
 const props = defineProps({
   q: { type: Object, required: true },
@@ -16,6 +17,17 @@ const emit = defineEmits(['select', 'text'])
 const zoomSrc = ref('')
 
 const isSubjective = computed(() => props.q.type === 'subjective')
+const qHtml = ref(null)
+watch(
+  () => props.q.id,
+  async id => {
+    qHtml.value = null
+    if (!props.q.mathHtml) return
+    const html = await getQuestionHtml(props.q.paperId, id)
+    if (props.q.id === id) qHtml.value = html
+  },
+  { immediate: true }
+)
 const selKeys = computed(() => Array.isArray(props.selected) ? props.selected : [])
 const textValue = computed(() => typeof props.selected === 'string' ? props.selected : '')
 
@@ -23,7 +35,9 @@ const opts = computed(() => {
   if (props.q.type === 'judge') {
     return [{ key: 'T', text: '正确' }, { key: 'F', text: '错误' }]
   }
-  return props.q.options || []
+  const rows = props.q.options || []
+  const htmls = qHtml.value?.optionsHtml || []
+  return rows.map((o, i) => ({ ...o, html: htmls[i] || o.html }))
 })
 
 const multi = computed(() => props.q.type === 'multiple')
@@ -78,7 +92,8 @@ function onSelect(key) {
       <span class="mono dim tiny" v-if="total">{{ index + 1 }} / {{ total }}</span>
     </div>
 
-    <div class="stem"><RichText :text="q.stem" /></div>
+    <div v-if="qHtml?.stemHtml" class="stem katex-html-block" v-html="qHtml.stemHtml" />
+    <div v-else class="stem"><RichText :text="q.stem" /></div>
 
     <div v-if="q.figureNote" class="figure-note tiny dim">
       <AppIcon name="image" :size="13" />
@@ -127,7 +142,10 @@ function onSelect(key) {
         @click="onSelect(o.key)"
       >
         <span class="key">{{ q.type === 'judge' ? (o.key === 'T' ? '✓' : '✕') : o.key }}</span>
-        <span class="otext"><RichText :text="o.text" /></span>
+        <span class="otext">
+          <span v-if="o.html" v-html="o.html" />
+          <RichText v-else :text="o.text" />
+        </span>
         <span v-if="showResult && (q.answer || []).includes(o.key)" class="mark"><AppIcon name="check" :size="14" /></span>
         <span v-else-if="showResult && (result?.keys || []).includes(o.key)" class="mark wrong"><AppIcon name="x" :size="14" /></span>
       </button>
@@ -153,7 +171,8 @@ function onSelect(key) {
       <div class="tiny dim" style="margin-bottom: 4px">你的作答</div>
       <div class="my-answer small">{{ result?.text || '未作答' }}</div>
       <div class="tiny dim" style="margin: 14px 0 4px">参考答案</div>
-      <div class="ref-answer small"><RichText :text="q.referenceAnswer || '暂无参考答案'" /></div>
+      <div v-if="qHtml?.referenceHtml" class="ref-answer small katex-html-block" v-html="qHtml.referenceHtml" />
+      <div v-else class="ref-answer small"><RichText :text="q.referenceAnswer || '暂无参考答案'" /></div>
       <div v-if="q.rubric?.length" class="rubric">
         <div class="tiny dim" style="margin-bottom: 6px">评分要点（自评时逐条对照）</div>
         <div v-for="(r, i) in q.rubric" :key="i" class="rubric-row">
@@ -177,7 +196,8 @@ function onSelect(key) {
         </span>
         <span class="mono tiny dim">正确答案 {{ (q.answer || []).join(' / ') }}</span>
       </div>
-      <div class="small muted"><RichText :text="q.explain" /></div>
+      <div v-if="qHtml?.explainHtml" class="small muted katex-html-block" v-html="qHtml.explainHtml" />
+      <div v-else class="small muted"><RichText :text="q.explain" /></div>
       <div v-if="knowledges.length" class="kp-links mt-8">
         <span class="tiny dim">知识点</span>
         <router-link
@@ -193,6 +213,11 @@ function onSelect(key) {
 .qcard { border-radius: 16px; }
 .qhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
 .stem { font-size: 15.5px; line-height: 1.85; margin-bottom: 18px; }
+.katex-html-block { line-height: 1.95; overflow-x: auto; overflow-y: hidden; }
+.katex-html-block :deep(.katex) { font-size: 1.06em; }
+.katex-html-block :deep(.katex-display) { margin: 0.6em 0; }
+.katex-html-block :deep(img) { display: block; max-width: 100%; height: auto; margin: 12px 0; border-radius: 6px; }
+.otext :deep(img) { display: block; max-width: 100%; max-height: 160px; width: auto; height: auto; margin: 2px 0; }
 .stem :deep(.codeblock) { font-size: 12.5px; }
 .figure-note { display: flex; align-items: center; gap: 6px; padding: 8px 10px; margin-bottom: 14px; border: 1px dashed var(--line); border-radius: 8px; }
 .kp-links { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
