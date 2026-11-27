@@ -9,6 +9,7 @@
   letter-spacing: 0.01em;
   color: var(--doc-ink);
   max-width: 880px;
+  min-width: 0;
   word-break: break-word;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -256,6 +257,7 @@
 
 .note-body .doc-table {
   margin: 1.15em 0;
+  max-width: 100%;
   border: 1px solid var(--doc-rule-mid);
   border-radius: 10px;
   background: var(--bg-1);
@@ -396,7 +398,7 @@
 .note-body .katex { font-size: 1.03em; }
 .note-body .katex-display { margin: 1em 0; overflow-x: auto; overflow-y: hidden; padding: 0.2em 0; }
 
-/* ==================== 书库专用 ==================== */
+/* ==================== 书库专用（Markdown 语义块） ==================== */
 
 .note-body .pgmark {
   font-family: var(--font-mono);
@@ -407,13 +409,83 @@
   letter-spacing: 0.04em;
   opacity: 0.8;
 }
+
+/* 提示块与 .region 共用琥珀色语言，不再整块铺底 */
 .note-body .tip {
-  background: color-mix(in srgb, var(--amber) 6%, transparent);
+  margin: 1.1em 0;
+  padding: 0.7em 1em;
+  border: 1px solid color-mix(in srgb, var(--amber) 24%, var(--doc-rule));
   border-left: 3px solid var(--amber);
-  padding: 0.5em 0.9em;
-  border-radius: 6px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--amber) 6%, transparent);
   font-size: 0.94em;
+  color: var(--doc-ink-soft);
 }
+.note-body .tip b,
+.note-body .tip strong { color: var(--amber); font-weight: 600; }
+
+/* 考纲标签 / 条目 / 伪列表 / 公式块 */
+.note-body p.tag {
+  margin: 1.6em 0 0.5em;
+  font-family: var(--font-sans);
+  font-size: 0.78em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--amber);
+}
+.note-body p.item { margin: 1.1em 0 0.35em; font-weight: 700; color: var(--doc-ink); }
+.note-body p.li { padding-left: 1.15em; margin: 0.35em 0; }
+.note-body p.li::before {
+  content: "·";
+  margin-left: -1.15em;
+  margin-right: 0.55em;
+  color: var(--doc-h2-bar);
+}
+.note-body p.formula {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  line-height: 1.75;
+  margin: 0.8em 0;
+  padding: 0.6em 0.85em;
+  border: 1px solid var(--doc-code-line);
+  border-radius: 8px;
+  background: var(--doc-code-bg);
+  color: var(--doc-ink-soft);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 图示：文字版结构图 */
+.note-body figure.fig {
+  margin: 1.2em 0;
+  padding: 0.7em 0.9em;
+  border: 1px dashed var(--doc-rule-mid);
+  border-radius: 10px;
+  background: var(--bg-2);
+}
+.note-body .fig-body {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  line-height: 1.8;
+  letter-spacing: 0.01em;
+  color: var(--doc-ink-faint);
+}
+.note-body .figcap {
+  margin: 0.8em 0;
+  font-size: 0.78em;
+  color: var(--doc-ink-soft);
+  text-align: center;
+}
+.note-body figcaption {
+  margin-top: 8px;
+  font-family: var(--font-sans);
+  font-size: 0.78em;
+  letter-spacing: 0.03em;
+  color: var(--doc-ink-faint);
+  text-align: center;
+}
+.note-body sup { font-size: 0.68em; line-height: 0; }
 
 /* ==================== 响应式 ==================== */
 

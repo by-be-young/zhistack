@@ -13,6 +13,8 @@ Thumbs.db
 
 # 日志
 npm-debug.log*
+dev.log
+dev.err
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*

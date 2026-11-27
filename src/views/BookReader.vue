@@ -229,8 +229,10 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.reader-head { margin-bottom: 14px; }
+.reader-head { margin-bottom: 14px; flex-wrap: wrap; row-gap: 10px; }
 .reader-grid { grid-template-columns: 262px minmax(0, 1fr); gap: 16px; align-items: start; }
+/* 网格子项默认 min-width:auto，宽表会把右栏撑出视口，这里显式收住 */
+.reader-grid > * { min-width: 0; }
 .reader-toc { position: sticky; top: 18px; max-height: calc(100vh - 40px); overflow: auto; }
 .toc-chapter { margin-bottom: 14px; }
 .toc-ch-title { font-size: 12.5px; font-weight: 600; color: var(--text); padding: 4px 2px 6px; border-bottom: 1px dashed var(--line); margin-bottom: 4px; }
@@ -245,55 +247,11 @@ body:not(.ink-pen-lock) .toc-sec:hover { background: var(--bg-2); color: var(--t
 .toc-sec-no { font-family: var(--font-mono); font-size: 11px; color: var(--text-3); }
 .toc-sec-title { min-width: 0; }
 .toc-sec-pg { font-size: 10.5px; color: var(--text-3); text-align: right; }
-.reader-main { min-height: 60vh; }
+.reader-main { min-height: 60vh; min-width: 0; }
 .reader-meta { display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--text-3); padding-bottom: 12px; border-bottom: 1px dashed var(--line); margin-bottom: 18px; }
-/* Markdown 正文：h1 节、h2 小节、h3 节内小标题 */
-.reader-body :deep(h1) {
-  font-size: 1.34em; line-height: 1.5; margin: 4px 0 18px; padding: 0 0 0 10px;
-  font-weight: 700; background: none; border: 0; border-left: 3px solid var(--mint); border-radius: 0;
-}
-.reader-body :deep(h2) {
-  font-size: 1.06em; line-height: 1.6; margin: 26px 0 8px; padding: 0;
-  font-weight: 650; color: var(--text);
-}
-.reader-body :deep(h3) { font-size: 1em; font-weight: 600; line-height: 1.6; margin: 20px 0 6px; color: var(--text); }
-.reader-body :deep(blockquote) {
-  margin: 12px 0; padding: 7px 12px; border-left: 3px solid var(--amber, #e8b45a);
-  background: var(--bg-2); border-radius: 0 6px 6px 0; font-size: 0.95em; color: var(--text);
-}
-.reader-body :deep(blockquote p) { margin: 3px 0; }
-.reader-body :deep(blockquote strong) { color: var(--amber, #e8b45a); font-weight: 600; }
-.reader-body :deep(hr) { border: 0; border-top: 1px dashed var(--line); margin: 22px 0; }
-.reader-body :deep(a) { color: var(--mint); }
-.reader-body :deep(table) {
-  border-collapse: collapse; width: 100%; margin: 12px 0 16px; font-size: 0.92em;
-}
-.reader-body :deep(table th),
-.reader-body :deep(table td) { border: 1px solid var(--line); padding: 5px 9px; line-height: 1.7; text-align: left; vertical-align: top; }
-.reader-body :deep(table th) { background: var(--bg-2); font-weight: 600; }
-.reader-body :deep(h4) {
-  font-size: 1em; line-height: 1.6; margin: 22px 0 8px; padding: 0;
-  background: none; border: 0; border-radius: 0; color: var(--text);
-}
-.reader-body :deep(p) { font-size: 1em; line-height: 1.95; margin: 7px 0; text-align: justify; }
-.reader-body :deep(.tip) { background: var(--bg-2); border-left: 3px solid var(--amber, #e8b45a); padding: 6px 10px; border-radius: 6px; font-size: 0.94em; margin: 10px 0; }
-.reader-body :deep(.tip b) { color: var(--amber, #e8b45a); font-weight: 600; margin-right: 2px; }
-.reader-body :deep(h5) { font-size: 1em; font-weight: 600; line-height: 1.6; margin: 20px 0 6px; color: var(--text); }
-.reader-body :deep(p.tag) { margin: 18px 0 6px; font-size: 0.94em; font-weight: 600; letter-spacing: 0.06em; color: var(--mint); }
-.reader-body :deep(p.item) { margin: 14px 0 4px; font-weight: 600; }
-.reader-body :deep(p.li) { padding-left: 1.1em; }
-.reader-body :deep(p.li)::before { content: "·"; margin-left: -1.1em; margin-right: 0.5em; color: var(--mint); }
-.reader-body :deep(figure.fig) { margin: 14px 0 18px; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 8px; background: var(--bg-2); }
-.reader-body :deep(.fig-body) { font-size: 0.8em; line-height: 1.75; color: var(--text-3); letter-spacing: 0.02em; }
-.reader-body :deep(figcaption) { margin-top: 8px; font-size: 0.86em; color: var(--text-2); text-align: center; }
-.reader-body :deep(.figcap) { margin: 10px 0; font-size: 0.86em; color: var(--text-2); text-align: center; }
-.reader-body :deep(sup) { font-size: 0.68em; line-height: 0; }
-.reader-body :deep(p.formula) {
-  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
-  font-size: 0.9em; line-height: 1.75; margin: 6px 0; padding: 6px 10px;
-  background: var(--bg-2); border-radius: 6px; color: var(--text-2);
-  overflow-x: auto; white-space: pre-wrap; word-break: break-all;
-}
+/* 正文排版全部由 styles/notes.css 的 .note-body 规则负责（见 docs/04 §3.1）。
+   此处只保留阅读页页框：目录、元信息、翻页器、字号控件。
+   不要再加 h1–h6 / p / blockquote / hr / table 的覆写，否则书库会退回旧样式。 */
 .reader-pager { display: flex; justify-content: space-between; gap: 10px; margin-top: 28px; padding-top: 16px; border-top: 1px dashed var(--line); }
 .reader-subs { margin-top: 22px; padding-top: 14px; border-top: 1px dashed var(--line); display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .sub-link { background: none; border: 0; padding: 2px 0; color: var(--text-2); font-size: 12.5px; cursor: pointer; text-align: left; }
