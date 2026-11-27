@@ -17,8 +17,8 @@
      "no": "1.1",
      "title": "1.1 操作系统的基本概念",
      "page": 13,
-     "endPage": 18,
-     "chars": 6330,
+     "endPage": 19,
+     "chars": 6967,
      "subs": [
       {
        "id": "osw-1-1-1",
@@ -52,8 +52,8 @@
      "no": "1.2",
      "title": "1.2 操作系统发展历程",
      "page": 19,
-     "endPage": 26,
-     "chars": 8342,
+     "endPage": 27,
+     "chars": 7773,
      "subs": [
       {
        "id": "osw-1-2-1",
@@ -102,8 +102,8 @@
      "no": "1.3",
      "title": "1.3 操作系统的运行环境",
      "page": 27,
-     "endPage": 38,
-     "chars": 13768,
+     "endPage": 39,
+     "chars": 13672,
      "subs": [
       {
        "id": "osw-1-3-1",
@@ -137,8 +137,8 @@
      "no": "1.4",
      "title": "1.4 操作系统结构",
      "page": 39,
-     "endPage": 41,
-     "chars": 3378,
+     "endPage": 42,
+     "chars": 3708,
      "subs": []
     },
     {
@@ -146,8 +146,8 @@
      "no": "1.5",
      "title": "1.5 操作系统引导",
      "page": 42,
-     "endPage": 42,
-     "chars": 1197,
+     "endPage": 43,
+     "chars": 870,
      "subs": []
     },
     {
@@ -155,8 +155,8 @@
      "no": "1.6",
      "title": "1.6 虚拟机",
      "page": 43,
-     "endPage": 47,
-     "chars": 5686,
+     "endPage": 48,
+     "chars": 6691,
      "subs": [
       {
        "id": "osw-1-6-1",
@@ -180,8 +180,8 @@
      "no": "1.7",
      "title": "1.7 本章疑难点",
      "page": 48,
-     "endPage": 49,
-     "chars": 2026,
+     "endPage": 50,
+     "chars": 1021,
      "subs": []
     }
    ]
@@ -197,8 +197,8 @@
      "no": "2.1",
      "title": "2.1 进程与线程",
      "page": 50,
-     "endPage": 76,
-     "chars": 30074,
+     "endPage": 77,
+     "chars": 30728,
      "subs": [
       {
        "id": "osw-2-1-1",
@@ -252,8 +252,8 @@
      "no": "2.2",
      "title": "2.2 CPU调度",
      "page": 77,
-     "endPage": 105,
-     "chars": 29990,
+     "endPage": 106,
+     "chars": 30025,
      "subs": [
       {
        "id": "osw-2-2-1",
@@ -302,8 +302,8 @@
      "no": "2.3",
      "title": "2.3 同步与互斥",
      "page": 106,
-     "endPage": 159,
-     "chars": 52957,
+     "endPage": 160,
+     "chars": 52683,
      "subs": [
       {
        "id": "osw-2-3-1",
@@ -357,8 +357,8 @@
      "no": "2.4",
      "title": "2.4 死锁",
      "page": 160,
-     "endPage": 186,
-     "chars": 27257,
+     "endPage": 187,
+     "chars": 26980,
      "subs": [
       {
        "id": "osw-2-4-1",
@@ -402,8 +402,8 @@
      "no": "2.5",
      "title": "2.5 本章疑难点",
      "page": 187,
-     "endPage": 187,
-     "chars": 824,
+     "endPage": 188,
+     "chars": 517,
      "subs": []
     }
    ]
@@ -419,8 +419,8 @@
      "no": "3.1",
      "title": "3.1 内存管理概念",
      "page": 188,
-     "endPage": 223,
-     "chars": 36650,
+     "endPage": 224,
+     "chars": 36795,
      "subs": [
       {
        "id": "osw-3-1-1",
@@ -469,8 +469,8 @@
      "no": "3.2",
      "title": "3.2 虚拟内存管理",
      "page": 224,
-     "endPage": 260,
-     "chars": 38075,
+     "endPage": 261,
+     "chars": 38698,
      "subs": [
       {
        "id": "osw-3-2-1",
@@ -493,7 +493,7 @@
        "page": 229
       },
       {
-       "id": "osw-3-2-5",
+       "id": "osw-3-2-x67",
        "title": "*3.2.5 抖动和工作集",
        "page": 232
       },
@@ -534,8 +534,8 @@
      "no": "3.3",
      "title": "3.3 本章疑难点",
      "page": 261,
-     "endPage": 261,
-     "chars": 1210,
+     "endPage": 262,
+     "chars": 388,
      "subs": []
     }
    ]
@@ -551,8 +551,8 @@
      "no": "4.1",
      "title": "4.1 文件系统基础",
      "page": 262,
-     "endPage": 290,
-     "chars": 30998,
+     "endPage": 291,
+     "chars": 31980,
      "subs": [
       {
        "id": "osw-4-1-1",
@@ -606,8 +606,8 @@
      "no": "4.2",
      "title": "4.2 目录",
      "page": 291,
-     "endPage": 303,
-     "chars": 12515,
+     "endPage": 304,
+     "chars": 11971,
      "subs": [
       {
        "id": "osw-4-2-1",
@@ -625,7 +625,7 @@
        "page": 294
       },
       {
-       "id": "osw-4-2-4",
+       "id": "osw-4-2-x86",
        "title": "*4.2.4 目录实现",
        "page": 294
       },
@@ -656,8 +656,8 @@
      "no": "4.3",
      "title": "4.3 文件系统",
      "page": 304,
-     "endPage": 314,
-     "chars": 11016,
+     "endPage": 315,
+     "chars": 10788,
      "subs": [
       {
        "id": "osw-4-3-1",
@@ -706,8 +706,8 @@
      "no": "4.4",
      "title": "4.4 本章疑难点",
      "page": 315,
-     "endPage": 315,
-     "chars": 802,
+     "endPage": 316,
+     "chars": 470,
      "subs": []
     }
    ]
@@ -723,8 +723,8 @@
      "no": "5.1",
      "title": "5.1 I/O管理概述",
      "page": 316,
-     "endPage": 329,
-     "chars": 15389,
+     "endPage": 330,
+     "chars": 16118,
      "subs": [
       {
        "id": "osw-5-1-1",
@@ -768,8 +768,8 @@
      "no": "5.2",
      "title": "5.2 设备独立性软件",
      "page": 330,
-     "endPage": 347,
-     "chars": 19564,
+     "endPage": 348,
+     "chars": 19311,
      "subs": [
       {
        "id": "osw-5-2-1",
@@ -818,8 +818,8 @@
      "no": "5.3",
      "title": "5.3 磁盘和固态硬盘",
      "page": 348,
-     "endPage": 365,
-     "chars": 19772,
+     "endPage": 366,
+     "chars": 20232,
      "subs": [
       {
        "id": "osw-5-3-1",
@@ -864,12 +864,12 @@
      "title": "5.4 本章疑难点",
      "page": 366,
      "endPage": 368,
-     "chars": 2503,
+     "chars": 1497,
      "subs": []
     }
    ]
   }
  ],
- "chars": 370323,
+ "chars": 369883,
  "missing": {}
 }

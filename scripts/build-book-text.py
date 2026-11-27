@@ -55,6 +55,16 @@ FIXES = [
     ("石磁滋盘", "磁盘"), ("石滋盘", "磁盘"), ("磁滋盘", "磁盘"), ("STTF", "SSTF"),
     ("一一", "——"), ("程）序", "程序"), ("真因", "因"), ("自已", "自己"),
     ("个族", "个簇"), ("1×10243", "1×1024³"), ("1×10242", "1×1024²"),
+    ("不匹配的盾", "不匹配的矛盾"), ("历程文分", "历程又分"),
+    ("ki&gt;0", "k1&gt;0"), ("kz&gt;0", "k2&gt;0"), ("kaxwaitTime", "k1×waitTime"),
+    ("kicpuTime", "k1×cpuTime"), ("kz", "k2"),
+    # 常见 OCR 形近字 / 接口 / 编号
+    ("支件管理", "文件管理"), ("支件", "文件"), ("尚用户", "向用户"),
+    ("命今", "命令"), ("遂条", "逐条"), ("为具提供", "为其提供"),
+    ("具其他", "其他"), ("1/O", "I/O"), ("I0", "I/O"), ("联关机", "联机"),
+    ("互式共享", "互斥共享"), ("1。操作系统", "1）操作系统"),
+    ("2. 操作系统作为用户", "2）操作系统作为用户"),
+    ("3操作系统实现", "3）操作系统实现"),
 ]
 
 
@@ -117,9 +127,19 @@ def split_entries(pdf_toc):
         if lv == 1 and title.startswith("第") and "章" in title:
             chapters.append({"no": re.match(r"第(\d+)章", title).group(1), "title": title, "page": pg})
         elif lv == 2 and chapters:
-            sections.append({"chapter": len(chapters), "no": title.split(" ")[0], "title": title, "page": pg})
+            m = re.match(r"(\d+(?:\.\d+)*)", title)
+            sections.append({"chapter": len(chapters), "no": m.group(1) if m else "", "title": title, "page": pg})
         elif lv == 3 and sections:
-            subs.append({"section": len(sections) - 1, "no": title.split(" ")[0], "title": title, "page": pg})
+            m = re.match(r"(\d+(?:\.\d+)*)", title)
+            subs.append({"section": len(sections) - 1, "no": m.group(1) if m else "", "title": title, "page": pg})
+    # 无编号的条目（归纳总结 / 思维拓展 / 本章小结）补一个合成的编号，保证 id 与文件名合法
+    for i, sec in enumerate(sections):
+        if not sec["no"]:
+            ch_no = chapters[min(sec["chapter"], len(chapters) - 1)]["no"] if chapters else "0"
+            sec["no"] = f"{ch_no}.x{i + 1}"
+    for i, sub in enumerate(subs):
+        if not sub["no"]:
+            sub["no"] = f"{sections[sub['section']]['no']}.x{i + 1}"
     return chapters, sections, subs
 
 
@@ -149,7 +169,7 @@ def is_heading(text):
     """小节内的粗体小标题：短、以编号开头、不是整句、不是答案行。"""
     if not HEAD_RE.match(text) or len(text) >= 32:
         return False
-    if text[-1:] in SENT_END:
+    if text.rstrip("）)】”").rstrip()[-1:] in SENT_END:
         return False
     if re.match(r"^\d+\s*[.．]\s*[A-D]$", text):          # 「01. C」答案行
         return False
@@ -246,22 +266,49 @@ def html_text(text):
     return out
 
 
-def build_html(pages, sec, sub_entries, chapter_title=""):
+def page_items(page):
+    """一页的正文条目：去页眉页脚、水印、重复标题后的 (text, line) 列表。"""
+    lines = body_lines(page)
+    items = [(fix_text(ln["text"].strip()), ln) for ln in lines]
+    return [(t, ln) for t, ln in items if t and not is_junk(t)]
+
+
+def heading_keys(sec):
+    """节标题的多种写法：全称、"1.2" 这种编号、去编号的纯标题。"""
+    title = sec["title"]
+    keys = title_keys(title)
+    keys.add(norm(sec["no"]))
+    return keys
+
+
+def find_section_start(pages, sec, limit_page):
+    """书签只给页码；标题常常跨行（"1.2" + "操作系统发展历程"），按编号或全称定位首行。
+
+    返回 (页号, 标题行的 y0)，正文按 y 坐标裁切，避免同页上方上一节的习题混进来。
+    """
+    keys = heading_keys(sec)
+    bare = norm(re.sub(r"^\d+(\.\d+)*\s*", "", sec["title"]))
+    for p in range(sec["page"], limit_page + 1):
+        page = pages.get(p)
+        if not page:
+            continue
+        items = page_items(page)
+        for idx, (text, ln) in enumerate(items):
+            if norm(text) in keys:
+                return p, ln["y0"]
+    return sec["page"], -1
+
+
+def build_html(pages, sec, sub_entries, chapter_title="", end_page=None, start_y=-1, end_y=None):
     html, chars = [], 0
     missing = []
     chapter_keys = title_keys(chapter_title) if chapter_title else set()
     html.append(f'<h3 id="{sec["id"]}">{esc(clean_heading(sec["title"]))}</h3>')
 
-    buf, frags, marks = [], [], []
+    buf, frags = [], []
     buf_lead = [""]
     prev = [None]     # 上一行正文行（用列表避免 nonlocal 混乱）
     force_join = [False]
-
-    def flush_marks():
-        if marks:
-            for m in marks:
-                html.append(f'<div class="pgmark" data-p="{m}">p.{m}</div>')
-            marks.clear()
 
     def flush_fig():
         nonlocal chars
@@ -292,40 +339,52 @@ def build_html(pages, sec, sub_entries, chapter_title=""):
             buf_lead[0] = ""
         prev[0] = None
 
-    for pno in range(sec["page"], sec["end"] + 1):
+    if end_page is None:
+        end_page = sec["end"]
+    for pno in range(sec["page"], end_page + 1):
         page = pages.get(pno)
         if not page:
             missing.append(pno)
             continue
-        lines = body_lines(page)
-        page_titles = title_keys(sec["title"]) if pno == sec["page"] else set()
-        page_titles |= chapter_keys
+        labels = title_keys(sec["title"]) if pno == sec["page"] else set()
+        labels |= chapter_keys
         sub = next((s for s in sub_entries if s["page"] == pno), None)
         if sub:
-            flush_para()
-            flush_fig()
-            flush_marks()
-            html.append(f'<h4 id="{sub["id"]}">{esc(clean_heading(sub["title"]))}</h4>')
-            page_titles |= title_keys(sub["title"])
-        lines = [ln for ln in lines if norm(ln["text"]) not in page_titles]
+            labels |= title_keys(sub["title"])
+        lines = [ln for ln in body_lines(page) if norm(ln["text"]) not in labels]
         left, right, charw = layout(lines)
         body = max(1, right - left)
 
         items = [(fix_text(ln["text"].strip()), ln) for ln in lines]
         items = [(t, ln) for t, ln in items if t and not is_junk(t)]
+        if pno == sec["page"] and start_y >= 0:
+            items = [(t, ln) for t, ln in items if ln["y0"] >= start_y]
+        if pno == end_page and end_y is not None:
+            items = [(t, ln) for t, ln in items if ln["y0"] < end_y]
         cand = [is_fig_frag(t, ln, body) for t, ln in items]
         frag_flag = [
             c and ((i > 0 and cand[i - 1]) or (i + 1 < len(cand) and cand[i + 1]))
             for i, c in enumerate(cand)
         ]
-
-        marks.append(pno)
-        if not buf:
-            flush_marks()
+        sub_y = None
+        if sub:
+            keys = title_keys(sub["title"])
+            for t, ln in page_items(page):
+                if norm(t) in keys or norm(t) == norm(sub["no"]):
+                    sub_y = ln["y0"]
+                    break
+            if sub_y is None:
+                sub_y = -1
+        sub_done = sub is None
 
         i = 0
         while i < len(items):
             text, ln = items[i]
+            if not sub_done and (sub_y < 0 or ln["y0"] >= sub_y):
+                flush_para()
+                flush_fig()
+                html.append(f'<h4 id="{sub["id"]}">{esc(clean_heading(sub["title"]))}</h4>')
+                sub_done = True
             # 题号单独成行（03.），与下一行题干合成一段
             if re.match(r"^\d+\s*[.．]$", text):
                 flush_para()
@@ -335,6 +394,20 @@ def build_html(pages, sec, sub_entries, chapter_title=""):
                 i += 1
                 continue
             if PURE_NO.match(text):
+                # 「1.2.2」这类编号被 OCR 拆成单独一行，后面紧跟标题文字，合成 h5
+                if (re.match(r"^\d+\.\d+(\.\d+)*$", text) and i + 1 < len(items)
+                        and len(items[i + 1][0]) <= 30
+                        and not re.match(r"^[\d.．]", items[i + 1][0])):
+                    flush_para()
+                    flush_fig()
+                    for s in sub_entries:                 # 「1.2.23」= 1.2.2 + 页脚数字
+                        if text.startswith(s["no"]) and len(text) == len(s["no"]) + 1:
+                            text = s["no"]
+                            break
+                    head = f"{text} {items[i + 1][0]}"
+                    html.append(f"<h5>{esc(clean_heading(head))}</h5>")
+                    i += 2
+                    continue
                 i += 1
                 continue
             # 「注意」「命题追踪」标题 + 紧随的说明合并成提示块
@@ -391,7 +464,6 @@ def build_html(pages, sec, sub_entries, chapter_title=""):
                 force_join[0] = False
             if new_para:
                 flush_para()
-                flush_marks()
             if not buf:
                 buf_lead[0] = text
             buf.append(text)
@@ -403,7 +475,6 @@ def build_html(pages, sec, sub_entries, chapter_title=""):
             flush_fig()
     flush_para()
     flush_fig()
-    flush_marks()
     return "\n".join([h for h in html if h]), chars, missing
 
 
@@ -431,6 +502,23 @@ def main():
         sec["end"] = (nxt[0] - 1) if nxt else sec["page"]
         sec["id"] = f"{args.prefix}-{sec['no'].replace('.', '-')}"
 
+    # 书签只给页码，正文常常从上节的习题尾巴挤在同一页；按标题行切，避免串节
+    last_page = max(pages or [1])
+    for i, sec in enumerate(sections):
+        limit = sections[i + 1]["page"] if i + 1 < len(sections) else max(sec["end"], sec["page"])
+        sec["page"], sec["startY"] = find_section_start(pages, sec, max(limit, sec["page"]))
+        # 每章第一节保留章首的【考纲内容】【复习提示】
+        if i == 0 or sections[i - 1]["chapter"] != sec["chapter"]:
+            sec["startY"] = -1
+    for i, sec in enumerate(sections):
+        if i + 1 < len(sections):
+            nxt = sections[i + 1]
+            sec["end"] = nxt["page"]
+            sec["endY"] = nxt["startY"]
+        else:
+            sec["end"] = last_page
+            sec["endY"] = None
+
     for i, sub in enumerate(subs):
         sub["id"] = f"{sections[sub['section']]['id']}-{sub['no'].split('.')[-1]}"
 
@@ -447,7 +535,10 @@ def main():
         for si, sec in enumerate(sections):
             if sec["chapter"] != ci:
                 continue
-            html, chars, missing = build_html(pages, sec, by_section.get(si, []), ch["title"])
+            html, chars, missing = build_html(
+                pages, sec, by_section.get(si, []), ch["title"],
+                end_page=sec["end"], start_y=sec.get("startY", -1),
+                end_y=sec.get("endY"))
             if missing:
                 missing_all[sec["id"]] = missing
             payload = {

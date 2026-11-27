@@ -206,7 +206,7 @@ body:not(.ink-pen-lock) .toc-sec:hover { background: var(--bg-2); color: var(--t
 .reader-main { min-height: 60vh; }
 .reader-meta { display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--text-3); padding-bottom: 12px; border-bottom: 1px dashed var(--line); margin-bottom: 18px; }
 .reader-body :deep(h3) {
-  font-size: 1.26em; line-height: 1.5; margin: 6px 0 18px; padding: 0 0 0 10px;
+  font-size: 1.26em; line-height: 1.5; margin: 26px 0 18px; padding: 0 0 0 10px;
   background: none; border: 0; border-left: 3px solid var(--mint); border-radius: 0;
 }
 .reader-body :deep(h4) {
@@ -214,7 +214,6 @@ body:not(.ink-pen-lock) .toc-sec:hover { background: var(--bg-2); color: var(--t
   background: none; border: 0; border-radius: 0; color: var(--text);
 }
 .reader-body :deep(p) { font-size: 1em; line-height: 1.95; margin: 7px 0; text-align: justify; }
-.reader-body :deep(.pgmark) { font-family: var(--font-mono); font-size: 10px; color: var(--text-3); opacity: 0.7; text-align: right; margin: 10px 0 -4px; }
 .reader-body :deep(.tip) { background: var(--bg-2); border-left: 3px solid var(--amber, #e8b45a); padding: 6px 10px; border-radius: 6px; font-size: 0.94em; margin: 10px 0; }
 .reader-body :deep(.tip b) { color: var(--amber, #e8b45a); font-weight: 600; margin-right: 2px; }
 .reader-body :deep(h5) { font-size: 1em; font-weight: 600; line-height: 1.6; margin: 20px 0 6px; color: var(--text); }
