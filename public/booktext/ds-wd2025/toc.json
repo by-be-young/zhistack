@@ -1,0 +1,508 @@
+{
+ "book": "ds-wd2025",
+ "title": "2025 数据结构考研复习指导",
+ "source": {
+  "ocr": "RapidOCR",
+  "dpi": 200
+ },
+ "chapters": [
+  {
+   "id": "dsw-ch1",
+   "no": "1",
+   "title": "第1章 绪论",
+   "page": 15,
+   "sections": [
+    {
+     "id": "dsw-1-1",
+     "no": "1.1",
+     "title": "1.1 数据结构的基本概念",
+     "page": 15,
+     "endPage": 18,
+     "chars": 2929,
+     "subs": []
+    },
+    {
+     "id": "dsw-1-2",
+     "no": "1.2",
+     "title": "1.2 算法和算法评价",
+     "page": 18,
+     "endPage": 25,
+     "chars": 5896,
+     "subs": []
+    },
+    {
+     "id": "dsw-2-x3",
+     "no": "2.x3",
+     "title": "归纳总结",
+     "page": 25,
+     "endPage": 25,
+     "chars": 577,
+     "subs": []
+    },
+    {
+     "id": "dsw-2-x4",
+     "no": "2.x4",
+     "title": "思维拓展",
+     "page": 25,
+     "endPage": 26,
+     "chars": 100,
+     "subs": []
+    }
+   ]
+  },
+  {
+   "id": "dsw-ch2",
+   "no": "2",
+   "title": "第2章 线性表",
+   "page": 26,
+   "sections": [
+    {
+     "id": "dsw-2-1",
+     "no": "2.1",
+     "title": "2.1 线性表的定义和基本操作",
+     "page": 26,
+     "endPage": 28,
+     "chars": 1792,
+     "subs": []
+    },
+    {
+     "id": "dsw-2-2",
+     "no": "2.2",
+     "title": "2.2 线性表的顺序表示",
+     "page": 28,
+     "endPage": 44,
+     "chars": 16702,
+     "subs": []
+    },
+    {
+     "id": "dsw-2-3",
+     "no": "2.3",
+     "title": "2.3 线性表的链式表示",
+     "page": 44,
+     "endPage": 76,
+     "chars": 30843,
+     "subs": []
+    },
+    {
+     "id": "dsw-3-x8",
+     "no": "3.x8",
+     "title": "归纳总结",
+     "page": 76,
+     "endPage": 77,
+     "chars": 424,
+     "subs": []
+    },
+    {
+     "id": "dsw-3-x9",
+     "no": "3.x9",
+     "title": "思维拓展",
+     "page": 77,
+     "endPage": 78,
+     "chars": 254,
+     "subs": []
+    }
+   ]
+  },
+  {
+   "id": "dsw-ch3",
+   "no": "3",
+   "title": "第3章 栈、队列和数组",
+   "page": 78,
+   "sections": [
+    {
+     "id": "dsw-3-1",
+     "no": "3.1",
+     "title": "3.1 栈",
+     "page": 78,
+     "endPage": 92,
+     "chars": 13731,
+     "subs": []
+    },
+    {
+     "id": "dsw-3-2",
+     "no": "3.2",
+     "title": "3.2 队列",
+     "page": 92,
+     "endPage": 106,
+     "chars": 14468,
+     "subs": []
+    },
+    {
+     "id": "dsw-3-3",
+     "no": "3.3",
+     "title": "3.3 栈和队列的应用",
+     "page": 106,
+     "endPage": 118,
+     "chars": 10240,
+     "subs": []
+    },
+    {
+     "id": "dsw-3-4",
+     "no": "3.4",
+     "title": "3.4 数组和特殊矩阵",
+     "page": 118,
+     "endPage": 125,
+     "chars": 7501,
+     "subs": []
+    },
+    {
+     "id": "dsw-4-x14",
+     "no": "4.x14",
+     "title": "归纳总结",
+     "page": 125,
+     "endPage": 126,
+     "chars": 425,
+     "subs": []
+    },
+    {
+     "id": "dsw-4-x15",
+     "no": "4.x15",
+     "title": "思维拓展",
+     "page": 126,
+     "endPage": 127,
+     "chars": 285,
+     "subs": []
+    }
+   ]
+  },
+  {
+   "id": "dsw-ch4",
+   "no": "4",
+   "title": "第4章 串",
+   "page": 127,
+   "sections": [
+    {
+     "id": "dsw-5-x16",
+     "no": "5.x16",
+     "title": "*4.1 串的定义和实现",
+     "page": 127,
+     "endPage": 129,
+     "chars": 2360,
+     "subs": []
+    },
+    {
+     "id": "dsw-4-2",
+     "no": "4.2",
+     "title": "4.2 串的模式匹配",
+     "page": 129,
+     "endPage": 141,
+     "chars": 10336,
+     "subs": []
+    },
+    {
+     "id": "dsw-5-x18",
+     "no": "5.x18",
+     "title": "归纳总结",
+     "page": 141,
+     "endPage": 141,
+     "chars": 201,
+     "subs": []
+    },
+    {
+     "id": "dsw-5-x19",
+     "no": "5.x19",
+     "title": "思维拓展",
+     "page": 141,
+     "endPage": 142,
+     "chars": 39,
+     "subs": []
+    }
+   ]
+  },
+  {
+   "id": "dsw-ch5",
+   "no": "5",
+   "title": "第5章 树与二叉树",
+   "page": 142,
+   "sections": [
+    {
+     "id": "dsw-5-1",
+     "no": "5.1",
+     "title": "5.1 树的基本概念",
+     "page": 142,
+     "endPage": 148,
+     "chars": 5063,
+     "subs": []
+    },
+    {
+     "id": "dsw-5-2",
+     "no": "5.2",
+     "title": "5.2 二叉树的概念",
+     "page": 148,
+     "endPage": 159,
+     "chars": 11164,
+     "subs": []
+    },
+    {
+     "id": "dsw-5-3",
+     "no": "5.3",
+     "title": "5.3 二叉树的遍历和线索二叉树",
+     "page": 159,
+     "endPage": 193,
+     "chars": 31109,
+     "subs": []
+    },
+    {
+     "id": "dsw-5-4",
+     "no": "5.4",
+     "title": "5.4 树、森林",
+     "page": 193,
+     "endPage": 205,
+     "chars": 9015,
+     "subs": []
+    },
+    {
+     "id": "dsw-5-5",
+     "no": "5.5",
+     "title": "5.5 树与二叉树的应用",
+     "page": 205,
+     "endPage": 218,
+     "chars": 11036,
+     "subs": []
+    },
+    {
+     "id": "dsw-6-x25",
+     "no": "6.x25",
+     "title": "归纳总结",
+     "page": 218,
+     "endPage": 218,
+     "chars": 631,
+     "subs": []
+    },
+    {
+     "id": "dsw-6-x26",
+     "no": "6.x26",
+     "title": "思维拓展",
+     "page": 218,
+     "endPage": 220,
+     "chars": 243,
+     "subs": []
+    }
+   ]
+  },
+  {
+   "id": "dsw-ch6",
+   "no": "6",
+   "title": "第6章 图",
+   "page": 220,
+   "sections": [
+    {
+     "id": "dsw-6-1",
+     "no": "6.1",
+     "title": "6.1 图的基本概念",
+     "page": 220,
+     "endPage": 228,
+     "chars": 6952,
+     "subs": []
+    },
+    {
+     "id": "dsw-6-2",
+     "no": "6.2",
+     "title": "6.2 图的存储及基本操作",
+     "page": 228,
+     "endPage": 241,
+     "chars": 10891,
+     "subs": []
+    },
+    {
+     "id": "dsw-6-3",
+     "no": "6.3",
+     "title": "6.3 图的遍历",
+     "page": 241,
+     "endPage": 253,
+     "chars": 12183,
+     "subs": []
+    },
+    {
+     "id": "dsw-6-4",
+     "no": "6.4",
+     "title": "6.4 图的应用",
+     "page": 253,
+     "endPage": 289,
+     "chars": 31339,
+     "subs": []
+    },
+    {
+     "id": "dsw-7-x31",
+     "no": "7.x31",
+     "title": "归纳总结",
+     "page": 289,
+     "endPage": 290,
+     "chars": 1027,
+     "subs": []
+    },
+    {
+     "id": "dsw-7-x32",
+     "no": "7.x32",
+     "title": "思维拓展",
+     "page": 290,
+     "endPage": 291,
+     "chars": 175,
+     "subs": []
+    }
+   ]
+  },
+  {
+   "id": "dsw-ch7",
+   "no": "7",
+   "title": "第7章 查找",
+   "page": 291,
+   "sections": [
+    {
+     "id": "dsw-7-1",
+     "no": "7.1",
+     "title": "7.1 查找的基本概念",
+     "page": 291,
+     "endPage": 292,
+     "chars": 979,
+     "subs": []
+    },
+    {
+     "id": "dsw-7-2",
+     "no": "7.2",
+     "title": "7.2 顺序查找和折半查找",
+     "page": 292,
+     "endPage": 305,
+     "chars": 13645,
+     "subs": []
+    },
+    {
+     "id": "dsw-7-3",
+     "no": "7.3",
+     "title": "7.3 树形查找",
+     "page": 305,
+     "endPage": 333,
+     "chars": 21344,
+     "subs": []
+    },
+    {
+     "id": "dsw-7-4",
+     "no": "7.4",
+     "title": "7.4 B树和B+树",
+     "page": 333,
+     "endPage": 345,
+     "chars": 11315,
+     "subs": []
+    },
+    {
+     "id": "dsw-7-5",
+     "no": "7.5",
+     "title": "7.5 散列（Hash）表",
+     "page": 345,
+     "endPage": 357,
+     "chars": 12113,
+     "subs": []
+    },
+    {
+     "id": "dsw-8-x38",
+     "no": "8.x38",
+     "title": "归纳总结",
+     "page": 357,
+     "endPage": 358,
+     "chars": 521,
+     "subs": []
+    },
+    {
+     "id": "dsw-8-x39",
+     "no": "8.x39",
+     "title": "思维拓展",
+     "page": 358,
+     "endPage": 360,
+     "chars": 700,
+     "subs": []
+    }
+   ]
+  },
+  {
+   "id": "dsw-ch8",
+   "no": "8",
+   "title": "第8章 排序",
+   "page": 359,
+   "sections": [
+    {
+     "id": "dsw-8-1",
+     "no": "8.1",
+     "title": "8.1 排序的基本概念",
+     "page": 360,
+     "endPage": 361,
+     "chars": 1626,
+     "subs": []
+    },
+    {
+     "id": "dsw-8-2",
+     "no": "8.2",
+     "title": "8.2 插入排序",
+     "page": 361,
+     "endPage": 369,
+     "chars": 7918,
+     "subs": []
+    },
+    {
+     "id": "dsw-8-3",
+     "no": "8.3",
+     "title": "8.3 交换排序",
+     "page": 369,
+     "endPage": 380,
+     "chars": 12065,
+     "subs": []
+    },
+    {
+     "id": "dsw-8-4",
+     "no": "8.4",
+     "title": "8.4 选择排序",
+     "page": 380,
+     "endPage": 391,
+     "chars": 10051,
+     "subs": []
+    },
+    {
+     "id": "dsw-8-5",
+     "no": "8.5",
+     "title": "8.5 归并排序、基数排序和计数排序",
+     "page": 391,
+     "endPage": 401,
+     "chars": 10274,
+     "subs": []
+    },
+    {
+     "id": "dsw-8-6",
+     "no": "8.6",
+     "title": "8.6 各种内部排序算法的比较及应用",
+     "page": 401,
+     "endPage": 408,
+     "chars": 7852,
+     "subs": []
+    },
+    {
+     "id": "dsw-8-7",
+     "no": "8.7",
+     "title": "8.7 外部排序",
+     "page": 408,
+     "endPage": 418,
+     "chars": 11096,
+     "subs": []
+    },
+    {
+     "id": "dsw-8-x47",
+     "no": "8.x47",
+     "title": "归纳总结",
+     "page": 418,
+     "endPage": 419,
+     "chars": 1517,
+     "subs": []
+    },
+    {
+     "id": "dsw-8-x48",
+     "no": "8.x48",
+     "title": "思维拓展",
+     "page": 419,
+     "endPage": 420,
+     "chars": 644,
+     "subs": []
+    }
+   ]
+  }
+ ],
+ "chars": 373591,
+ "missing": {}
+}
