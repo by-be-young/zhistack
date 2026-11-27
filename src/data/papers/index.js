@@ -69,7 +69,83 @@ import { paper2019_math1 } from './2019-math1.js'
 import { paper2020_math1 } from './2020-math1.js'
 import { paper2021_math1 } from './2021-math1.js'
 import { paper2026_math1 } from './2026-math1.js'
+import { paper2008_math2 } from './2008-math2.js'
+import { paper2009_math2 } from './2009-math2.js'
+import { paper2010_math2 } from './2010-math2.js'
+import { paper2011_math2 } from './2011-math2.js'
+import { paper2012_math2 } from './2012-math2.js'
+import { paper2013_math2 } from './2013-math2.js'
+import { paper2014_math2 } from './2014-math2.js'
+import { paper2015_math2 } from './2015-math2.js'
+import { paper2016_math2 } from './2016-math2.js'
+import { paper2017_math2 } from './2017-math2.js'
+import { paper2018_math2 } from './2018-math2.js'
+import { paper2019_math2 } from './2019-math2.js'
+import { paper2020_math2 } from './2020-math2.js'
+import { paper2021_math2 } from './2021-math2.js'
+import { paper2022_math2 } from './2022-math2.js'
+import { paper2023_math2 } from './2023-math2.js'
+import { paper2024_math2 } from './2024-math2.js'
+import { paper2025_math2 } from './2025-math2.js'
+import { paper2026_math2 } from './2026-math2.js'
+import { paper2008_math3 } from './2008-math3.js'
+import { paper2009_math3 } from './2009-math3.js'
+import { paper2010_math3 } from './2010-math3.js'
+import { paper2011_math3 } from './2011-math3.js'
+import { paper2012_math3 } from './2012-math3.js'
+import { paper2013_math3 } from './2013-math3.js'
+import { paper2014_math3 } from './2014-math3.js'
+import { paper2015_math3 } from './2015-math3.js'
+import { paper2016_math3 } from './2016-math3.js'
+import { paper2017_math3 } from './2017-math3.js'
+import { paper2018_math3 } from './2018-math3.js'
+import { paper2019_math3 } from './2019-math3.js'
+import { paper2020_math3 } from './2020-math3.js'
+import { paper2021_math3 } from './2021-math3.js'
+import { paper2022_math3 } from './2022-math3.js'
+import { paper2023_math3 } from './2023-math3.js'
+import { paper2024_math3 } from './2024-math3.js'
+import { paper2025_math3 } from './2025-math3.js'
+import { paper2026_math3 } from './2026-math3.js'
 export const papers = [
+  paper2026_math3,
+  paper2025_math3,
+  paper2024_math3,
+  paper2023_math3,
+  paper2022_math3,
+  paper2021_math3,
+  paper2020_math3,
+  paper2019_math3,
+  paper2018_math3,
+  paper2017_math3,
+  paper2016_math3,
+  paper2015_math3,
+  paper2014_math3,
+  paper2013_math3,
+  paper2012_math3,
+  paper2011_math3,
+  paper2010_math3,
+  paper2009_math3,
+  paper2008_math3,
+  paper2026_math2,
+  paper2025_math2,
+  paper2024_math2,
+  paper2023_math2,
+  paper2022_math2,
+  paper2021_math2,
+  paper2020_math2,
+  paper2019_math2,
+  paper2018_math2,
+  paper2017_math2,
+  paper2016_math2,
+  paper2015_math2,
+  paper2014_math2,
+  paper2013_math2,
+  paper2012_math2,
+  paper2011_math2,
+  paper2010_math2,
+  paper2009_math2,
+  paper2008_math2,
   paper2026_math1,
   paper2021_math1,
   paper2020_math1,

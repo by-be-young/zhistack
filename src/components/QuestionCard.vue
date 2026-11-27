@@ -1,9 +1,10 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import RichText from './RichText.vue'
 import AppIcon from './AppIcon.vue'
 import { knowledgeById } from '../data/index.js'
 import { getQuestionHtml } from '../data/mathHtml.js'
+import renderMathInElement from 'katex/contrib/auto-render'
 
 const props = defineProps({
   q: { type: Object, required: true },
@@ -15,6 +16,19 @@ const props = defineProps({
 })
 const emit = defineEmits(['select', 'text'])
 const zoomSrc = ref('')
+const root = ref(null)
+
+function renderTex() {
+  if (!root.value) return
+  renderMathInElement(root.value, {
+    delimiters: [
+      { left: String.raw`\(`, right: String.raw`\)`, display: false },
+      { left: String.raw`\[`, right: String.raw`\]`, display: true }
+    ],
+    throwOnError: false,
+    ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  })
+}
 
 const isSubjective = computed(() => props.q.type === 'subjective')
 const qHtml = ref(null)
@@ -28,6 +42,14 @@ watch(
   },
   { immediate: true }
 )
+watch(qHtml, async () => {
+  await nextTick()
+  renderTex()
+})
+watch(() => props.showResult, async () => {
+  await nextTick()
+  renderTex()
+})
 const selKeys = computed(() => Array.isArray(props.selected) ? props.selected : [])
 const textValue = computed(() => typeof props.selected === 'string' ? props.selected : '')
 
@@ -77,7 +99,7 @@ function onSelect(key) {
 </script>
 
 <template>
-  <div class="qcard card card-pad">
+  <div ref="root" class="qcard card card-pad">
     <div class="qhead">
       <div class="row" style="gap: 8px; flex-wrap: wrap">
         <span class="chip" :class="{ lilac: isSubjective }">

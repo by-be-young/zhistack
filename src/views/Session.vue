@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { practice, resumeDraft, pickAnswer, setTextAnswer, clearAnswer, toggleMark, goTo, next, prev, tick, submitSession, discardDraft, persistDraft, setSelfGrades } from '../stores/practice.js'
 import { archive } from '../storage/archive.js'
@@ -15,6 +15,7 @@ import RichText from '../components/RichText.vue'
 import MaterialPane from '../components/MaterialPane.vue'
 import InkPad from '../components/InkPad.vue'
 import { loadPaperHtml } from '../data/mathHtml.js'
+import renderMathInElement from 'katex/contrib/auto-render'
 
 const route = useRoute()
 const router = useRouter()
@@ -28,6 +29,7 @@ const autoSubmitting = ref(false)
 const selfGrades = ref({})
 const materialOpen = ref(true)
 const paperHtml = ref({})
+const gradeRoot = ref(null)
 
 const s = computed(() => practice.session)
 const titleShort = computed(() => {
@@ -56,10 +58,23 @@ watch(() => current.value?.material?.key || qid.value, () => { materialOpen.valu
 
 watch(() => s.value?.paperId, async id => {
   paperHtml.value = {}
-  if (!id || !id.includes('math1')) return
+  if (!id || !/^paper-\d{4}-math\d$/.test(id)) return
   const map = await loadPaperHtml(id)
   if (s.value?.paperId === id) paperHtml.value = map
 }, { immediate: true })
+
+watch([paperHtml, showGrade], async () => {
+  await nextTick()
+  if (!gradeRoot.value) return
+  renderMathInElement(gradeRoot.value, {
+    delimiters: [
+      { left: String.raw`\(`, right: String.raw`\)`, display: false },
+      { left: String.raw`\[`, right: String.raw`\]`, display: true }
+    ],
+    throwOnError: false,
+    ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  })
+})
 
 const refHtml = q => paperHtml.value[q.id]?.referenceHtml || ''
 
@@ -271,7 +286,7 @@ onBeforeUnmount(() => {
       <p class="small muted" style="margin-bottom: 14px">
         对照参考答案，为每道主观题选择得分比例。系统按“满分 × 比例”计分，60% 及以上计入答对；未作答或 0% 计 0 分。
       </p>
-      <div class="grade-list">
+      <div ref="gradeRoot" class="grade-list">
         <div v-for="q in subjectiveList" :key="q.id" class="grade-item">
           <div class="spread" style="align-items: flex-start; gap: 12px">
             <div>

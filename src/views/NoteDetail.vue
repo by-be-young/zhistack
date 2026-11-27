@@ -12,15 +12,6 @@ const n = computed(() => noteById[route.params.nid])
 const groupName = computed(() => noteGroups.find(g => g.id === n.value?.group)?.name || '')
 const groupColor = computed(() => noteGroups.find(g => g.id === n.value?.group)?.color || 'var(--mint)')
 
-// 数学（一）年份原卷页已迁移为可作答真题，旧链接统一回到真题列表
-watch(
-  () => route.params.nid,
-  id => {
-    if (/^study_methods-math-math1(?:-\d{4})?$/.test(id || '')) router.replace('/papers')
-  },
-  { immediate: true }
-)
-
 const html = ref('')
 const rawHtml = ref('')
 const toc = ref([])

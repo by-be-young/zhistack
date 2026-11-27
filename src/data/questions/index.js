@@ -78,6 +78,44 @@ import { questions2019_math1 } from '../papers/2019-math1.js'
 import { questions2020_math1 } from '../papers/2020-math1.js'
 import { questions2021_math1 } from '../papers/2021-math1.js'
 import { questions2026_math1 } from '../papers/2026-math1.js'
+import { questions2008_math2 } from '../papers/2008-math2.js'
+import { questions2009_math2 } from '../papers/2009-math2.js'
+import { questions2010_math2 } from '../papers/2010-math2.js'
+import { questions2011_math2 } from '../papers/2011-math2.js'
+import { questions2012_math2 } from '../papers/2012-math2.js'
+import { questions2013_math2 } from '../papers/2013-math2.js'
+import { questions2014_math2 } from '../papers/2014-math2.js'
+import { questions2015_math2 } from '../papers/2015-math2.js'
+import { questions2016_math2 } from '../papers/2016-math2.js'
+import { questions2017_math2 } from '../papers/2017-math2.js'
+import { questions2018_math2 } from '../papers/2018-math2.js'
+import { questions2019_math2 } from '../papers/2019-math2.js'
+import { questions2020_math2 } from '../papers/2020-math2.js'
+import { questions2021_math2 } from '../papers/2021-math2.js'
+import { questions2022_math2 } from '../papers/2022-math2.js'
+import { questions2023_math2 } from '../papers/2023-math2.js'
+import { questions2024_math2 } from '../papers/2024-math2.js'
+import { questions2025_math2 } from '../papers/2025-math2.js'
+import { questions2026_math2 } from '../papers/2026-math2.js'
+import { questions2008_math3 } from '../papers/2008-math3.js'
+import { questions2009_math3 } from '../papers/2009-math3.js'
+import { questions2010_math3 } from '../papers/2010-math3.js'
+import { questions2011_math3 } from '../papers/2011-math3.js'
+import { questions2012_math3 } from '../papers/2012-math3.js'
+import { questions2013_math3 } from '../papers/2013-math3.js'
+import { questions2014_math3 } from '../papers/2014-math3.js'
+import { questions2015_math3 } from '../papers/2015-math3.js'
+import { questions2016_math3 } from '../papers/2016-math3.js'
+import { questions2017_math3 } from '../papers/2017-math3.js'
+import { questions2018_math3 } from '../papers/2018-math3.js'
+import { questions2019_math3 } from '../papers/2019-math3.js'
+import { questions2020_math3 } from '../papers/2020-math3.js'
+import { questions2021_math3 } from '../papers/2021-math3.js'
+import { questions2022_math3 } from '../papers/2022-math3.js'
+import { questions2023_math3 } from '../papers/2023-math3.js'
+import { questions2024_math3 } from '../papers/2024-math3.js'
+import { questions2025_math3 } from '../papers/2025-math3.js'
+import { questions2026_math3 } from '../papers/2026-math3.js'
 
 // 英语真题按题型补辅助考点；其余题目先保留主考点，避免把“同章相关卡”误标成考点。
 const enSecondary = n => {
@@ -108,6 +146,44 @@ export const questions = [
 ].map(withKnowledgeIds)
 
 export const paperQuestions = [
+  ...questions2026_math3,
+  ...questions2025_math3,
+  ...questions2024_math3,
+  ...questions2023_math3,
+  ...questions2022_math3,
+  ...questions2021_math3,
+  ...questions2020_math3,
+  ...questions2019_math3,
+  ...questions2018_math3,
+  ...questions2017_math3,
+  ...questions2016_math3,
+  ...questions2015_math3,
+  ...questions2014_math3,
+  ...questions2013_math3,
+  ...questions2012_math3,
+  ...questions2011_math3,
+  ...questions2010_math3,
+  ...questions2009_math3,
+  ...questions2008_math3,
+  ...questions2026_math2,
+  ...questions2025_math2,
+  ...questions2024_math2,
+  ...questions2023_math2,
+  ...questions2022_math2,
+  ...questions2021_math2,
+  ...questions2020_math2,
+  ...questions2019_math2,
+  ...questions2018_math2,
+  ...questions2017_math2,
+  ...questions2016_math2,
+  ...questions2015_math2,
+  ...questions2014_math2,
+  ...questions2013_math2,
+  ...questions2012_math2,
+  ...questions2011_math2,
+  ...questions2010_math2,
+  ...questions2009_math2,
+  ...questions2008_math2,
     ...questions2026_math1,
     ...questions2021_math1,
     ...questions2020_math1,

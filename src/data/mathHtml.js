@@ -4,9 +4,9 @@ const pending = new Map()
 
 const BASE = import.meta.env.BASE_URL || '/'
 
-function yearOf(paperId) {
-  const m = /(\d{4})/.exec(paperId || '')
-  return m ? m[1] : null
+function paperOf(paperId) {
+  const m = /paper-(\d{4})-(math\d)/.exec(paperId || '')
+  return m ? { year: m[1], subject: m[2] } : null
 }
 
 async function gunzip(buf) {
@@ -15,16 +15,20 @@ async function gunzip(buf) {
   return new TextDecoder().decode(ab)
 }
 
-async function fetchPaper(year) {
-  const res = await fetch(`${BASE}math-html/${year}.json.gz`)
-  if (!res.ok) throw new Error(`math html ${year} ${res.status}`)
+async function fetchPaper(paperId) {
+  const meta = paperOf(paperId)
+  if (!meta) return {}
+  const file = meta.subject === 'math1'
+    ? `${meta.year}.json.gz`
+    : `${meta.year}-${meta.subject}.json.gz`
+  const res = await fetch(`${BASE}math-html/${file}`)
+  if (!res.ok) throw new Error(`math html ${file} ${res.status}`)
   const buf = await res.arrayBuffer()
   const enc = res.headers.get('content-encoding') || ''
   const bytes = new Uint8Array(buf)
   const map = (enc.includes('gzip') || !(bytes[0] === 0x1f && bytes[1] === 0x8b))
     ? JSON.parse(new TextDecoder().decode(buf))
     : JSON.parse(await gunzip(buf))
-  // 题干/选项/解析里的题图是相对 notes/assets 路径，补上站点的 base
   const fix = s => typeof s === 'string' ? s.replaceAll('src="notes/assets/', `src="${BASE}notes/assets/`) : s
   for (const item of Object.values(map)) {
     item.stemHtml = fix(item.stemHtml)
@@ -37,21 +41,20 @@ async function fetchPaper(year) {
 }
 
 export async function loadPaperHtml(paperId) {
-  const year = yearOf(paperId)
-  if (!year) return {}
-  if (cache.has(year)) return cache.get(year)
-  if (pending.has(year)) return pending.get(year)
-  const p = fetchPaper(year)
+  if (!paperOf(paperId)) return {}
+  if (cache.has(paperId)) return cache.get(paperId)
+  if (pending.has(paperId)) return pending.get(paperId)
+  const p = fetchPaper(paperId)
     .then(map => {
-      cache.set(year, map)
-      pending.delete(year)
+      cache.set(paperId, map)
+      pending.delete(paperId)
       return map
     })
     .catch(() => {
-      pending.delete(year)
+      pending.delete(paperId)
       return {}
     })
-  pending.set(year, p)
+  pending.set(paperId, p)
   return p
 }
 
