@@ -96,7 +96,6 @@ def polish_text(s):
     # 中文引号
     s = re.sub(r'"([^"\n]{1,60})"', r"“\1”", s)
     # 「：当然」这类把分号读成冒号的过渡语
-    s = s.replace("：当然", "；当然")
     s = s.replace("：再如", "；再如")
     # 英文缩写与汉字之间的多余空格
     s = re.sub(r"(?<=[A-Za-z]) +(?=[\u4e00-\u9fff])", "", s)
@@ -192,12 +191,14 @@ def group_fragments(merged, skip_idx):
     return out
 
 
-Q_GLUE = re.compile(r"(?<=[\u4e00-\u9fff）】”…。，、；：0-9A-Za-z])\s*(\d{2})[.．]\s*(?=[\u4e00-\u9fff【（(])")
+Q_GLUE = re.compile(r"(?<=[\u4e00-\u9fff）】”…。，、；：0-9A-Za-z])\s*(\d{2})[.．]\s*(?=[\u4e00-\u9fffA-Za-z【（(])")
 OPT_GLUE = re.compile(r"(?<=[\u4e00-\u9fff）】”])\s*([A-D])[.．]\s*(?=[\u4e00-\u9fff0-9A-Za-z])")
 # 选项按两列排时同一行会粘成「A. … B. …」，在空格处拆开
 OPT_COL = re.compile(r"\s+([B-D])[.．]\s*(?=[\u4e00-\u9fff0-9A-Za-z])")
 # 罗马序号项粘在一起：「…直接交互II.批处理系统…」
-ROMAN_GLUE = re.compile(r"(?<=[\u4e00-\u9fff0-9A-Za-z）】”])\s*(?=(?:II|III|IV|I)[.．][\u4e00-\u9fff])")
+ROMAN_GLUE = re.compile(r"(?<=[\u4e00-\u9fff0-9）】”])\s*(?=(?:III|IV|II|I)[.．][\u4e00-\u9fff])")
+# 罗马序号丢了点和空格：「…特点II需要实现…」
+ROMAN_NODOT = re.compile(r"(?<=[\u4e00-\u9fff])\s*(?=(?:III|IV|II|I)(?=[\u4e00-\u9fff]))")
 
 
 ANS_GLUE = re.compile(r"^(\d{2})\.\s*([A-D])\s*(?=[\u4e00-\u9fff])")
@@ -209,7 +210,7 @@ def split_glued(text):
     if m:
         return [f"{m.group(1)}. {m.group(2)}", text[m.end():].strip()]
     pieces = [text]
-    for pat in (Q_GLUE, OPT_GLUE, OPT_COL, ROMAN_GLUE):
+    for pat in (Q_GLUE, OPT_GLUE, OPT_COL, ROMAN_GLUE, ROMAN_NODOT):
         nxt = []
         for p in pieces:
             start = 0
@@ -288,8 +289,8 @@ def polish_blocks(lines):
     return group_fragments(split, set())
 
 
-ROMAN = {"I": 1, "II": 2, "III": 3, "IV": 4}
-ROMAN_RE = re.compile(r"^(I{1,3}|IV)[.．]")
+ROMAN = {"I": 1, "II": 2, "III": 3, "IV": 4, "V": 5, "VI": 6}
+ROMAN_RE = re.compile(r"^(I{1,3}|IV|VI|V)[.．]")
 
 
 def roman_sort(bs):
@@ -315,13 +316,63 @@ def roman_sort(bs):
 
 LABEL_RE = re.compile(r"^（[1-9]）[^。，；：！？]{2,12}$")
 
-OPT_RE = re.compile(r"^([A-D]|I{1,3}|IV)[.．]\s*")
+OPT_RE = re.compile(r"^([A-D]|I{1,3}|IV|VI|V)[.．]\s*")
+EMPTY_OPT = re.compile(r"^([A-Da-d]|I{1,3}|IV|VI|V)[.．]$")
 LETTER_ORD = ["A", "B", "C", "D"]
+
+
+def _fix_option_labels(bs):
+    """OCR 把选项字母单独成行、把正文落到下一行时并回去；小写字母统一为大写。"""
+    out, i = [], 0
+    while i < len(bs):
+        b = bs[i]
+        t = b[0].strip() if len(b) == 1 else ""
+        m = EMPTY_OPT.match(t) if t else None
+        if m and i + 1 < len(bs):
+            nxt = bs[i + 1]
+            nt = nxt[0].strip()
+            if not EMPTY_OPT.match(nt) and not HEAD_RE.match(nt):
+                out.append([f"{m.group(1).upper()}. {nt}"])
+                if len(nxt) > 1:
+                    out.append(nxt[1:])
+                i += 2
+                continue
+        if t and re.match(r"^[a-d][.．]", t):
+            out.append([t[0].upper() + t[1:]])
+            i += 1
+            continue
+        if t and re.match(r"^(I{1,3}|IV|VI|V)(?=[\u4e00-\u9fff])", t):
+            out.append([re.match(r"^(I{1,3}|IV|VI|V)", t).group(1) + ". " +
+                        t[re.match(r"^(I{1,3}|IV|VI|V)", t).end():]])
+            i += 1
+            continue
+        out.append(b)
+        i += 1
+    return out
+
+
+def join_option_paragraphs(lines):
+    """连着排的选项各自成段时，把它们之间的空行去掉，交给 pack_options 合成一块。"""
+    out = []
+    for l in lines:
+        t = l.strip()
+        if not t:
+            out.append(l)
+            continue
+        if OPT_RE.match(t):
+            k = len(out) - 1
+            while k >= 0 and not out[k].strip():
+                k -= 1
+            if k >= 0 and OPT_RE.match(out[k].strip()) and k < len(out) - 1:
+                del out[k + 1:]
+        out.append(l)
+    return out
 
 
 def pack_options(lines):
     """选择题选项（A./B./C./D.）与罗马序号项：先按原序号排正，再合成一个紧凑块。"""
     bs = blocks(lines)
+    bs = _fix_option_labels(bs)
     out, i = [], 0
     while i < len(bs):
         t = bs[i][0].strip() if len(bs[i]) == 1 else ""
@@ -479,6 +530,143 @@ def bold_terms(lines):
     return out
 
 
+def split_outline(lines):
+    """考纲里并列的子项在原书各自换行，恢复成独立段落。"""
+    out = []
+    for l in lines:
+        t = l.strip()
+        if t.startswith("CPU运行模式") and "程序的链接与装入" in t:
+            for p in re.split(r"(?=中断和异常的处理|程序的链接与装入)", t):
+                if p.strip():
+                    out.extend([p.strip(), ""])
+            continue
+        out.append(l)
+    return out
+
+
+# 原书有、OCR 整行缺失的句子（已对照 PDF 逐字核对，只补不缺）
+TEXT_PATCHES = [
+    ("解释执行作业说明书",
+     "解释执行作业说明书上的命令，从而间接地控制作业的运行。脱机命令接口可以这样理解："
+     "“雇主”将要“工人”做的事写在清单上，“工人”按照清单命令逐条完成这些事，这就是批处理。",
+     "这就是批处理"),
+]
+
+# 整行替换（已对照原书 PDF 逐行核对）
+EXACT_LINE = {
+    "I. 机床控制IV. AutoCAD": "III. 机床控制  \nIV. AutoCAD",
+    "I.机床控制IV. AutoCAD": "III. 机床控制  \nIV. AutoCAD",
+    "A. I、Ⅱ和ⅢI": "A. I、II和III",
+    "A. I、II和IIII": "A. I、II和III",
+    "B. I、II和IV": "B. I、III和IV",
+    "D. I、II和VI": "D. I、III和VI",
+    # 5.2 第 34 题：带圈序号被 OCR 读成数字，选项整行按原书改
+    "③启动I/O设备④将抽象要求转化为具体要求": "③启动I/O设备  \n④将抽象要求转化为具体要求",
+    "检查设备的状态": "⑤检查设备的状态",
+    "A. 04523": "A. ①④⑤②③",
+    "B. 40623": "B. ④①⑤②③",
+    "C. 00263": "C. ①④②⑤③",
+    "D. 40253": "D. ④①②⑤③",
+    # 1.2 第 18、19 题：罗马数字被 OCR 混读/带圈序号错位
+    "A. 仅I、IⅢI": "A. 仅I、III",
+    "C. 仅IⅡ、ⅢI": "C. 仅I、II、III",
+    "D. I、II、II": "D. I、II、III",
+    "I. 具有并发和并行的特点II需要实现对共享资源白为保护":
+        "I. 具有并发和并行的特点  \nII. 需要实现对共享资源的保护",
+    "I. 具有并发和并行的特点II需要实现对共享资源的保护":
+        "I. 具有并发和并行的特点  \nII. 需要实现对共享资源的保护",
+    # 1.2 第 17 题选项
+    "A. 仅II、ⅢI": "A. 仅II、III",
+    "C. 仅I、IⅡ": "C. 仅I、II",
+    "D. 仅、II": "D. 仅III",
+    "在学习本节时，请读者思考以下问题：1当处理机和外部设备的速度差距较大时，有什么办法可以解决问题？":
+        "在学习本节时，请读者思考以下问题：  \n1）当处理机和外部设备的速度差距较大时，有什么办法可以解决问题？",
+}
+
+
+def content_patches(lines):
+    out = []
+    for l in lines:
+        t = l.strip()
+        if t in EXACT_LINE:
+            out.append(EXACT_LINE[t])
+            continue
+        for old, new, mark in TEXT_PATCHES:
+            if old in l and mark not in l:
+                l = l.replace(old, new, 1)
+        # 第 13 题的 II/III 两项被 OCR 互换了内容，按原书换回来
+        if re.match(r"(II|III)[.．]", t) and "处理机与" in t:
+            l = (l.replace("处理机与通道", "\x01").replace("处理机与设备", "\x02")
+                 .replace("\x01", "处理机与设备").replace("\x02", "处理机与通道"))
+        out.append(l)
+    return out
+
+
+
+
+
+
+# 拼装后（选项块成形之后）才出现的整块更正
+POST_FIX = [
+    ("I. 机床控制IV. AutoCAD", "III. 机床控制  \nIV. AutoCAD"),
+    ("I. 机床控制 IV. AutoCAD", "III. 机床控制  \nIV. AutoCAD"),
+    ("目的主要如下：1缓和CPU", "目的主要如下：  \n1）缓和CPU"),
+    ("目的主要如下：1 缓和CPU", "目的主要如下：  \n1）缓和CPU"),
+]
+
+
+DROP_HEADINGS = {"### 4.3.4 J"}
+
+
+def dedupe_headings(lines):
+    """同一个标题在图表旁被 OCR 重复读一次时，去掉后面那个。"""
+    out, seen = [], set()
+    for idx, l in enumerate(lines):
+        m = HEAD_RE.match(l.strip())
+        if m:
+            txt = m.group(2).strip()
+            j = idx + 1
+            while j < len(lines) and not lines[j].strip():
+                j += 1
+            nxt = lines[j].strip() if j < len(lines) else ""
+            if l.strip() in DROP_HEADINGS:
+                continue
+            if txt in seen:
+                continue
+            seen.add(txt)
+        out.append(l)
+    return out
+
+
+def drop_leadin_heading(lines):
+    """「在学习本节时…」这类节导语前面的重复小节标题是 OCR 噪声，去掉。"""
+    out = []
+    i = 0
+    while i < len(lines):
+        l = lines[i]
+        m = HEAD_RE.match(l.strip())
+        if m:
+            j = i + 1
+            while j < len(lines) and not lines[j].strip():
+                j += 1
+            if j < len(lines) and lines[j].strip().startswith("在学习本节时"):
+                i = j
+                continue
+        out.append(l)
+        i += 1
+    return out
+
+
+def final_patches(lines):
+    out = []
+    for l in lines:
+        for old, new in POST_FIX:
+            if old in l and new not in l:
+                l = l.replace(old, new, 1)
+        out.append(l)
+    return out
+
+
 def polish_document(lines):
     out = []
     for l in lines:
@@ -493,10 +681,15 @@ def polish_document(lines):
             out.append(polish_text(l))
     out = polish_blocks(out)
     out = join_broken(out)
+    out = content_patches(out)
     out = shape_quiz(out)
+    out = split_outline(out)
     out = pack_options(out)
+    out = final_patches(out)
     out = promote_labels(out)
     out = bold_terms(out)
+    out = drop_leadin_heading(out)
+    out = dedupe_headings(out)
     out = normalize_headings(out)
     # 压掉多余空行
     squeezed = []
