@@ -1,3 +1,4 @@
+@import './fonts.css';
 @import './tokens.css';
 
 * { box-sizing: border-box; }
@@ -423,7 +424,7 @@ body:not(.ink-pen-lock) .table tr:hover td { background: var(--bg-2); }
     padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px;
     background: var(--bg-2); color: var(--text-2);
   }
-  .more-item .more-name { font-size: 13.5px; color: var(--text-1); }
+  .more-item .more-name { font-size: 13.5px; color: var(--text); }
   .more-item .more-desc { grid-column: 2; font-size: 10.5px; color: var(--text-3); }
   .more-item.router-link-active { border-color: var(--mint); }
 }

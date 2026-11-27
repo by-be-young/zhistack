@@ -1,0 +1,13 @@
+/* 中文标题字：仓耳今楷 01 W04（个人自用；子集由 scripts/build-heading-font.py 生成）
+   原字体 18 MB，这里只保留常用字与站内标题用字，约 2 MB，font-display: swap 不阻塞首屏。 */
+@font-face {
+  font-family: 'CangErJinKai';
+  src:
+    local('仓耳今楷01 W04'),
+    local('TsangerJinKai01-W04'),
+    local('TsangerJinKai01 W04'),
+    url('../assets/fonts/canger-jinkai-subset.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

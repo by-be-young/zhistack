@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { noteById, noteGroups, notes } from '../data/notes/index.js'
 import AppIcon from '../components/AppIcon.vue'
+import { prepareDocHtml, watchTheme } from '../core/reading.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -12,7 +13,9 @@ const groupName = computed(() => noteGroups.find(g => g.id === n.value?.group)?.
 const groupColor = computed(() => noteGroups.find(g => g.id === n.value?.group)?.color || 'var(--mint)')
 
 const html = ref('')
+const rawHtml = ref('')
 const toc = ref([])
+const shift = ref(0)
 const loading = ref(false)
 const failed = ref(false)
 const bodyRef = ref(null)
@@ -20,14 +23,23 @@ const activeId = ref('')
 
 const cache = new Map()
 
+function renderBody() {
+  const out = prepareDocHtml(rawHtml.value)
+  html.value = out.html
+  shift.value = out.shift
+}
+
 async function load(id) {
   if (!id) return
   html.value = ''
+  rawHtml.value = ''
   toc.value = []
+  shift.value = 0
   failed.value = false
   if (cache.has(id)) {
-    html.value = cache.get(id).html
+    rawHtml.value = cache.get(id).raw
     toc.value = cache.get(id).toc
+    renderBody()
     await nextTick()
     afterMount()
     return
@@ -47,8 +59,9 @@ async function load(id) {
     }
     const data = JSON.parse(raw)
     const body = data.html.replace(/\/notes\/assets\//g, `${import.meta.env.BASE_URL}notes/assets/`)
-    cache.set(id, { html: body, toc: data.toc || [] })
-    html.value = body
+    cache.set(id, { raw: body, toc: data.toc || [] })
+    rawHtml.value = body
+    renderBody()
     toc.value = data.toc || []
     await nextTick()
     afterMount()
@@ -115,18 +128,25 @@ function onClick(e) {
   }
 }
 
+function tocLevel(t) {
+  return Math.max(1, (t.level || 3) - shift.value)
+}
+
 function tocList() {
-  return (toc.value || []).filter(t => t.level >= 3 && t.level <= 5 && t.id)
+  return (toc.value || []).filter(t => {
+    const lv = tocLevel(t)
+    return lv >= 1 && lv <= 3 && t.id
+  })
 }
 
 function tocIndent(t) {
-  return { 3: 0, 4: 12, 5: 22 }[t.level] || 0
+  return { 1: 0, 2: 12, 3: 22 }[tocLevel(t)] || 0
 }
 
 function updateActive() {
   const root = bodyRef.value
   if (!root) return
-  const hs = root.querySelectorAll('h3[id], h4[id], h5[id]')
+  const hs = root.querySelectorAll('h1[id], h2[id], h3[id]')
   let cur = ''
   for (const h of hs) {
     if (h.getBoundingClientRect().top < 140) cur = h.id
@@ -148,11 +168,19 @@ const prev = computed(() => (idx.value > 0 ? siblings.value[idx.value - 1] : nul
 const next = computed(() => (idx.value >= 0 && idx.value < siblings.value.length - 1 ? siblings.value[idx.value + 1] : null))
 
 watch(() => route.params.nid, id => load(id))
+
+let unwatchTheme = null
 onMounted(() => {
   load(route.params.nid)
   window.addEventListener('scroll', onScroll, { passive: true })
+  unwatchTheme = watchTheme(() => {
+    if (rawHtml.value) renderBody()
+  })
 })
-onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onScroll)
+  if (unwatchTheme) unwatchTheme()
+})
 </script>
 
 <template>
@@ -177,7 +205,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
           <div v-if="n.intro" class="note-intro">{{ n.intro }}</div>
         </section>
 
-        <section class="card card-pad">
+        <section class="card card-pad note-sheet">
           <div v-if="loading" class="dim" style="padding: 40px 0; text-align: center">正在载入正文…</div>
           <div v-else-if="failed" class="dim" style="padding: 40px 0; text-align: center">
             这篇还没有镜像到本地。<a :href="n.source" target="_blank" rel="noopener" style="color: var(--mint)">去原站阅读 →</a>
@@ -227,7 +255,8 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 .note-layout { display: grid; grid-template-columns: minmax(0, 1fr) 240px; gap: 16px; align-items: start; }
 .note-main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .note-side { position: sticky; top: 72px; }
-.note-intro { margin-top: 12px; padding: 12px 14px; border-left: 3px solid var(--mint); background: color-mix(in srgb, var(--mint) 6%, transparent); border-radius: 0 8px 8px 0; font-size: 13.5px; line-height: 1.8; color: var(--text-2); }
+.note-sheet { padding: 26px 30px; }
+.note-intro { margin-top: 12px; padding: 12px 14px; border-left: 3px solid var(--mint); background: color-mix(in srgb, var(--mint) 6%, transparent); border-radius: 0 8px 8px 0; font-family: var(--font-read); font-size: 14px; line-height: 1.85; color: var(--text-2); }
 .toc { max-height: calc(100vh - 96px); overflow: auto; }
 .toc-list { display: flex; flex-direction: column; gap: 1px; margin-top: 8px; }
 .toc-item { font-size: 12px; line-height: 1.5; color: var(--text-2); padding: 5px 0; border-left: 2px solid transparent; }
@@ -246,5 +275,9 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   .toc { max-height: none; }
   .toc-list { flex-direction: row; flex-wrap: wrap; gap: 6px; }
   .toc-item { border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px !important; }
+  .note-sheet { padding: 20px 18px; }
+}
+@media (max-width: 640px) {
+  .note-sheet { padding: 16px 14px; }
 }
 </style>

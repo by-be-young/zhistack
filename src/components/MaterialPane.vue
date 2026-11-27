@@ -123,7 +123,9 @@ function zoom(delta) {
 .mp-tools { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
 .mp-body {
   flex: 1; overflow-y: auto; padding: 16px;
-  line-height: 1.95; color: var(--text-2);
+  font-family: var(--font-read);
+  font-size: 15px;
+  line-height: 1.95; letter-spacing: 0.01em; color: var(--doc-ink);
   overscroll-behavior: contain;
   scrollbar-width: thin;
 }

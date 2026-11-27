@@ -145,20 +145,31 @@ const nodes = computed(() => parse(props.text || ''))
 
 <style scoped>
 .rich { white-space: pre-wrap; }
-.inline-code { font-family: var(--font-mono); font-size: 0.9em; padding: 1px 5px; border-radius: 4px; background: var(--bg-3); color: var(--mint); }
+.inline-code {
+  font-family: var(--font-mono); font-size: 0.88em; padding: 0.08em 0.36em; border-radius: 5px;
+  border: 1px solid var(--doc-rule); background: var(--doc-mark); color: var(--mint);
+}
 .codeblock {
   margin: 8px 0; padding: 12px 14px; white-space: pre-wrap; overflow-wrap: anywhere; overflow-x: auto;
-  background: var(--bg-0); border: 1px solid var(--line); border-radius: 8px;
-  font-family: var(--font-mono); font-size: 12.5px; line-height: 1.65; color: var(--text-2);
+  background: var(--doc-code-bg); border: 1px solid var(--doc-code-line); border-radius: 10px;
+  font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7; color: var(--doc-code-ink);
 }
-.inline-link { font-family: var(--font-mono); font-size: 11.5px; border-bottom: 1px dashed var(--line-strong); }
+.inline-link { font-family: var(--font-mono); font-size: 11.5px; border-bottom: 1px dashed var(--doc-rule-mid); }
 .math { white-space: normal; }
 .math.display { display: block; margin: 10px 0; padding: 6px 0; overflow-x: auto; overflow-y: hidden; }
-.md-table-wrap { display: block; margin: 8px 0; overflow-x: auto; }
-.md-table { width: 100%; border-collapse: collapse; font-size: 12px; white-space: normal; background: var(--bg-1); }
-.md-table th, .md-table td { border: 1px solid var(--line); padding: 5px 6px; text-align: center; }
-.md-table th { background: var(--bg-3); font-weight: 600; color: var(--text-1); }
-.md-table td { color: var(--text-2); }
+.md-table-wrap {
+  display: block; margin: 10px 0; overflow-x: auto;
+  border: 1px solid var(--doc-rule-mid); border-radius: 10px; background: var(--bg-1);
+}
+.md-table { width: 100%; border-collapse: collapse; font-size: 12.5px; white-space: normal; background: transparent; }
+.md-table th, .md-table td { border: 0; border-bottom: 1px solid var(--doc-rule); padding: 6px 9px; text-align: center; }
+.md-table th {
+  background: var(--doc-table-head); font-family: var(--font-display); font-weight: 400; font-synthesis: none;
+  letter-spacing: 0.02em; color: var(--doc-ink); border-bottom-color: var(--doc-rule-mid);
+}
+.md-table td { color: var(--doc-ink-soft); }
+.md-table tbody tr:nth-child(even) td { background: var(--doc-table-zebra); }
+.md-table tbody tr:last-child td { border-bottom: 0; }
 .math :deep(.katex) { font-size: 1.02em; }
 .math.display :deep(.katex-display) { margin: 0; text-align: center; }
 </style>

@@ -1,101 +1,352 @@
-/* 资料库正文排版：承接 csgraduates 页面的原始结构（Docsy/Bootstrap 语义类） */
+/* 资料库 / 书库正文排版
+   骨架取自 YoungBlog 详情页（blog-content.css），色号按知栈的深色「工业薄雾」体系重调。
+   标题统一以 h1 为顶层：蓝 → 绿 → 橙 → 紫，四级彩底；正文为衬线阅读字体。 */
 
 .note-body {
-  font-size: 14.5px;
-  line-height: 1.85;
-  color: var(--text-2);
+  font-family: var(--font-read);
+  font-size: 15.5px;
+  line-height: 1.9;
+  letter-spacing: 0.01em;
+  color: var(--doc-ink);
+  max-width: 880px;
   word-break: break-word;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
-.note-body p { margin: 10px 0; }
-.note-body strong { color: var(--text); font-weight: 600; }
-.note-body em { color: var(--text); font-style: normal; border-bottom: 1px dashed var(--line-strong); }
-.note-body a { color: var(--mint); text-decoration: none; border-bottom: 1px solid color-mix(in srgb, var(--mint) 40%, transparent); }
-.note-body a:hover { color: var(--mint-deep); }
+
+/* ==================== 标题：h1 顶层 ==================== */
+
+.note-body h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: 1.5em;
+  line-height: 1.42;
+  letter-spacing: 0.01em;
+  color: var(--doc-h1-text);
+  margin: 1.55em 0 0.8em;
+  padding: 0.62em 1.05em;
+  border-left: 5px solid var(--doc-h1-bar);
+  border-radius: 12px;
+  background: linear-gradient(100deg, var(--doc-h1-wash) 0%, transparent 72%);
+  box-shadow: var(--doc-h1-shadow);
+  scroll-margin-top: 88px;
+}
+
+.note-body h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: 1.24em;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  color: var(--doc-h2-text);
+  margin: 1.35em 0 0.7em;
+  padding: 0.58em 1em;
+  border-left: 4px solid var(--doc-h2-bar);
+  border-radius: 10px;
+  background: linear-gradient(100deg, var(--doc-h2-wash) 0%, transparent 74%);
+  box-shadow: var(--doc-h2-shadow);
+  scroll-margin-top: 84px;
+}
 
 .note-body h3 {
-  font-size: 20px; line-height: 1.4; color: var(--text); font-weight: 600;
-  margin: 30px 0 12px; padding-left: 10px; border-left: 3px solid var(--mint);
-  scroll-margin-top: 80px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: 1.08em;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: var(--doc-h3-text);
+  margin: 1.3em 0 0.65em;
+  padding: 0.52em 0.95em;
+  border-left: 4px solid var(--doc-h3-bar);
+  border-radius: 10px;
+  background: linear-gradient(100deg, var(--doc-h3-wash) 0%, transparent 76%);
+  box-shadow: var(--doc-h3-shadow);
+  scroll-margin-top: 84px;
 }
+
 .note-body h4 {
-  font-size: 16px; line-height: 1.5; color: var(--text); font-weight: 600;
-  margin: 22px 0 8px; scroll-margin-top: 80px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: 1em;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: var(--doc-h4-text);
+  margin: 1.1em 0 0.6em;
+  padding: 0.46em 0.9em;
+  border: 1px solid color-mix(in srgb, var(--doc-h4-bar) 26%, transparent);
+  border-left: 3px solid var(--doc-h4-bar);
+  border-radius: 8px;
+  background: var(--doc-h4-wash);
+  scroll-margin-top: 84px;
 }
+
+/* 更深的层级不再上彩底，避免正文被色块切碎 */
 .note-body h5 {
-  font-size: 14.5px; line-height: 1.5; color: var(--text); font-weight: 600;
-  margin: 16px 0 6px; scroll-margin-top: 80px;
+  font-size: 0.95em;
+  line-height: 1.55;
+  color: var(--doc-ink);
+  font-weight: 700;
+  margin: 1.1em 0 0.45em;
+  scroll-margin-top: 84px;
 }
-.note-body h6 { font-size: 13px; color: var(--text-2); margin: 14px 0 6px; }
-
-.note-body ul, .note-body ol { margin: 10px 0; padding-left: 24px; }
-.note-body li { margin: 4px 0; }
-.note-body li > ul, .note-body li > ol { margin: 4px 0; }
-
-.note-body code {
-  font-family: var(--font-mono); font-size: 12.5px;
-  background: color-mix(in srgb, var(--text) 8%, transparent);
-  border-radius: 4px; padding: 1px 5px; color: var(--text);
-}
-.note-body .highlight {
-  background: #f8f8f8; border: 1px solid var(--line); border-radius: 8px;
-  overflow: auto; margin: 12px 0;
-}
-.note-body .highlight pre {
-  margin: 0; padding: 12px 14px; font-size: 12.5px; line-height: 1.6;
-  background: #f8f8f8 !important; color: #1b1b1b; tab-size: 4;
-}
-.note-body .highlight code { background: transparent; padding: 0; font-size: 12.5px; color: inherit; }
-.note-body pre:not(.highlight pre) {
-  background: var(--bg-0); border: 1px solid var(--line); border-radius: 8px;
-  padding: 12px 14px; overflow: auto; font-size: 12.5px; line-height: 1.6;
+.note-body h6 {
+  font-size: 0.9em;
+  color: var(--doc-ink-soft);
+  font-weight: 700;
+  margin: 1em 0 0.4em;
 }
 
-.note-body .figure {
-  margin: 16px 0; padding: 12px; text-align: center;
-  background: #fff; border: 1px solid var(--line); border-radius: 10px;
-}
-.note-body .figure img { max-width: 100%; height: auto; display: inline-block; }
-.note-body img { max-width: 100%; height: auto; border-radius: 4px; }
+/* ==================== 正文与列表 ==================== */
 
-.note-body table {
-  width: 100%; border-collapse: collapse; margin: 14px 0;
-  font-size: 12.5px; line-height: 1.65; background: var(--bg-1);
-  border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+.note-body p {
+  margin: 0.85em 0;
+  color: var(--doc-ink);
+  text-wrap: pretty;
 }
-.note-body th, .note-body td {
-  border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top;
+
+.note-body strong { color: var(--doc-strong); font-weight: 700; }
+.note-body em { color: var(--lilac); font-style: normal; }
+.note-body a {
+  color: var(--mint);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--mint) 38%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  border-bottom: 0;
+  transition: color 180ms var(--ease);
 }
-.note-body th { background: var(--bg-2); color: var(--text); font-weight: 600; }
-.note-body td { color: var(--text-2); }
+.note-body a:hover { color: var(--mint-deep); text-decoration-color: color-mix(in srgb, var(--mint-deep) 52%, transparent); }
+
+.note-body ul, .note-body ol { margin: 0.7em 0 0.95em; }
+.note-body ul { padding-left: 1.4em; }
+.note-body ol { padding-left: 1.7em; }
+.note-body li { margin-bottom: 0.3em; line-height: 1.85; }
+.note-body li > ul, .note-body li > ol { margin: 0.3em 0; }
+.note-body ul li::marker { content: '• '; color: var(--doc-h2-bar); }
+.note-body ol li::marker { color: var(--doc-h1-bar); font-variant-numeric: tabular-nums; }
+
+/* 正文首块不留大上边距 */
+.note-body h1:first-of-type { margin-top: 0.2em; }
+
+/* ==================== 引用 ==================== */
 
 .note-body blockquote {
-  margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--lilac);
-  background: color-mix(in srgb, var(--lilac) 6%, transparent); border-radius: 0 8px 8px 0;
+  position: relative;
+  margin: 1.4em 0;
+  padding: 1em 1.4em 1em 1.55em;
+  border: 1px solid var(--doc-rule);
+  border-radius: 10px;
+  background: var(--doc-quote-bg);
+  color: var(--doc-ink-soft);
+  line-height: 1.88;
 }
-.note-body hr { border: 0; border-top: 1px dashed var(--line); margin: 22px 0; }
+.note-body blockquote::before {
+  content: '';
+  position: absolute;
+  top: 12px; bottom: 12px; left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(180deg, var(--rose) 0%, var(--mint) 55%, var(--amber) 100%);
+  opacity: 0.75;
+}
+.note-body blockquote p { margin: 0.35em 0; color: inherit; }
+.note-body blockquote p:first-child { margin-top: 0; }
+.note-body blockquote p:last-child { margin-bottom: 0; }
+.note-body blockquote p:first-child strong { color: var(--amber); }
 
-/* 标签页 */
+/* ==================== 分隔线 ==================== */
+
+.note-body hr {
+  position: relative;
+  width: min(100%, 420px);
+  height: 1px;
+  margin: 2.1em auto;
+  border: 0;
+  background: linear-gradient(90deg, transparent, var(--doc-rule-mid), transparent);
+}
+.note-body hr::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 0.42em; height: 0.42em;
+  background: var(--amber);
+  opacity: 0.7;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* ==================== 图片与图示 ==================== */
+
+.note-body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.3em auto;
+  padding: 6px;
+  border: 1px solid var(--doc-rule-mid);
+  border-radius: 12px;
+  background: var(--bg-2);
+  box-shadow: var(--doc-h1-shadow);
+}
+.note-body .figure {
+  margin: 1.3em 0;
+  padding: 12px;
+  text-align: center;
+  border: 1px solid var(--doc-rule-mid);
+  border-radius: 12px;
+  background: var(--bg-2);
+}
+.note-body .figure img { margin: 0 auto; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.note-body .figure figcaption,
+.note-body p.caption {
+  margin-top: 8px;
+  font-family: var(--font-sans);
+  font-size: 0.78em;
+  letter-spacing: 0.03em;
+  color: var(--doc-ink-faint);
+  text-align: center;
+}
+
+/* ==================== 代码 ==================== */
+
+.note-body code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  padding: 0.08em 0.38em;
+  border: 1px solid var(--doc-rule);
+  border-radius: 5px;
+  background: var(--doc-mark);
+  color: var(--mint);
+}
+
+.note-body .highlight {
+  margin: 1.2em 0;
+  border: 1px solid var(--doc-code-line);
+  border-radius: 10px;
+  background: var(--doc-code-bg);
+  overflow: auto;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+.note-body .highlight pre,
+.note-body pre {
+  margin: 0;
+  padding: 0.9em 1.05em;
+  background: transparent !important;
+  color: var(--doc-code-ink);
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  line-height: 1.72;
+  tab-size: 4;
+  overflow-x: auto;
+}
+.note-body .highlight code {
+  padding: 0; border: 0; border-radius: 0; background: transparent; color: inherit;
+  font-size: inherit; line-height: inherit;
+}
+.note-body pre:not(.highlight pre) {
+  border: 1px solid var(--doc-code-line);
+  border-radius: 10px;
+  background: var(--doc-code-bg);
+}
+
+/* ==================== 表格 ==================== */
+
+.note-body .doc-table {
+  margin: 1.15em 0;
+  border: 1px solid var(--doc-rule-mid);
+  border-radius: 10px;
+  background: var(--bg-1);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--doc-rule-mid) transparent;
+}
+.note-body .doc-table::-webkit-scrollbar { height: 7px; }
+.note-body .doc-table::-webkit-scrollbar-thumb { background: var(--doc-rule-mid); border-radius: 999px; }
+
+.note-body .doc-table table {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: transparent;
+  font-size: 0.92em;
+  line-height: 1.7;
+}
+.note-body th, .note-body td {
+  padding: 0.6em 0.95em;
+  text-align: left;
+  vertical-align: top;
+  border: 0;
+  border-bottom: 1px solid var(--doc-rule);
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+.note-body th {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-synthesis: none;
+  font-size: 0.96em;
+  letter-spacing: 0.02em;
+  color: var(--doc-ink);
+  background: var(--doc-table-head);
+  border-bottom-color: var(--doc-rule-mid);
+  white-space: nowrap;
+}
+.note-body td { color: var(--doc-ink-soft); }
+.note-body th + th, .note-body td + td { border-left: 1px solid var(--doc-rule); }
+.note-body tbody tr:nth-child(even) td { background: var(--doc-table-zebra); }
+.note-body tbody tr:hover td { background: var(--doc-table-hover); }
+.note-body tbody tr:last-child td { border-bottom: 0; }
+.note-body td:first-child { color: var(--doc-table-first); font-weight: 600; }
+.note-body table caption {
+  padding: 0.6em 0.95em 0.5em;
+  border-bottom: 1px solid var(--doc-rule);
+  color: var(--doc-ink-faint);
+  font-family: var(--font-sans);
+  font-size: 0.78em;
+  letter-spacing: 0.03em;
+  text-align: left;
+}
+
+/* ==================== 标签页 ==================== */
+
 .note-body .nav-tabs, .note-body .nav {
-  display: flex; flex-wrap: wrap; gap: 6px; margin: 16px 0 0;
-  border-bottom: 1px solid var(--line); padding-bottom: 8px;
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 1.1em 0 0;
+  border-bottom: 1px solid var(--doc-rule); padding-bottom: 8px;
 }
 .note-body .nav-item { list-style: none; }
 .note-body .nav-link {
-  font: inherit; font-size: 12.5px; line-height: 1; padding: 7px 10px;
-  border: 1px solid var(--line); border-radius: 6px; background: var(--bg-1);
-  color: var(--text-2); cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.78em; line-height: 1; padding: 7px 10px;
+  border: 1px solid var(--doc-rule); border-radius: 7px; background: var(--bg-2);
+  color: var(--doc-ink-soft); cursor: pointer;
 }
-.note-body .nav-link.active { border-color: var(--mint); color: var(--mint); background: color-mix(in srgb, var(--mint) 8%, transparent); }
+.note-body .nav-link.active {
+  border-color: color-mix(in srgb, var(--mint) 45%, transparent);
+  color: var(--mint);
+  background: color-mix(in srgb, var(--mint) 9%, transparent);
+}
 .note-body .tab-content { padding-top: 4px; }
 .note-body .tab-pane { display: none; }
 .note-body .tab-pane.active, .note-body .tab-pane.show { display: block; }
 
-/* 真题/视频折叠 */
-.note-body .kp-bar { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+/* ==================== 真题 / 视频折叠 ==================== */
+
+.note-body .kp-bar { display: flex; flex-wrap: wrap; gap: 8px; margin: 1em 0; }
 .note-body .kp-fold {
-  display: inline-block; border: 1px solid color-mix(in srgb, var(--amber) 35%, var(--line));
-  border-radius: 8px; background: color-mix(in srgb, var(--amber) 5%, transparent);
-  font-size: 12.5px; vertical-align: top;
+  display: inline-block;
+  border: 1px solid color-mix(in srgb, var(--amber) 32%, var(--doc-rule));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--amber) 5%, transparent);
+  font-family: var(--font-sans);
+  font-size: 0.78em;
+  vertical-align: top;
 }
 .note-body .kp-fold summary {
   cursor: pointer; padding: 6px 10px; color: var(--amber); list-style: none; user-select: none;
@@ -105,38 +356,75 @@
 .note-body .kp-fold[open] summary::before { content: "▾ "; }
 .note-body .kp-panel-inner { padding: 4px 10px 10px; display: flex; flex-direction: column; gap: 6px; }
 .note-body .kp-group { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
-.note-body .kp-group-label, .note-body .kp-section-label { font-size: 11.5px; color: var(--text-3); }
+.note-body .kp-group-label, .note-body .kp-section-label { font-size: 0.74em; color: var(--doc-ink-faint); font-family: var(--font-sans); }
 .note-body .kp-links { display: inline-flex; flex-wrap: wrap; gap: 5px; }
 .note-body .kp-link {
-  font-size: 11.5px; font-family: var(--font-mono); padding: 2px 6px; border-radius: 4px;
-  border: 1px solid var(--line); color: var(--text-2); background: var(--bg-1);
-  text-decoration: none; border-bottom: 1px solid var(--line);
+  font-size: 0.74em; font-family: var(--font-mono); padding: 2px 6px; border-radius: 5px;
+  border: 1px solid var(--doc-rule); color: var(--doc-ink-soft); background: var(--bg-2);
+  text-decoration: none;
 }
-.note-body .kp-link:hover { border-color: var(--mint); color: var(--mint); }
-.note-body .kp-video-link { border-color: color-mix(in srgb, var(--sky) 40%, var(--line)); color: var(--sky); font-family: inherit; }
+.note-body .kp-link:hover { border-color: color-mix(in srgb, var(--mint) 45%, transparent); color: var(--mint); }
+.note-body .kp-video-link { border-color: color-mix(in srgb, var(--sky) 40%, var(--doc-rule)); color: var(--sky); font-family: var(--font-sans); }
 .note-body .kp-section-group { margin: 8px 0; }
 
-/* 注意/提示块 */
+/* ==================== 注意 / 提示块 ==================== */
+
 .note-body .region {
-  margin: 16px 0; border: 1px solid color-mix(in srgb, var(--amber) 30%, var(--line));
-  border-radius: 10px; background: color-mix(in srgb, var(--amber) 5%, transparent); overflow: hidden;
+  margin: 1.2em 0;
+  border: 1px solid color-mix(in srgb, var(--amber) 26%, var(--doc-rule));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--amber) 5%, transparent);
+  overflow: hidden;
 }
 .note-body .region-heading {
-  display: flex; align-items: center; gap: 6px; padding: 8px 14px; font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+  font-family: var(--font-sans); font-size: 0.78em; font-weight: 600;
   color: var(--amber); background: color-mix(in srgb, var(--amber) 10%, transparent);
 }
 .note-body .region-content { padding: 10px 14px; }
-.note-body .region-content p { margin: 6px 0; }
+.note-body .region-content p { margin: 0.4em 0; }
 
-/* 页内锚点 */
-.note-body .anchored-text { cursor: pointer; border-bottom: 1px dashed var(--line-strong); }
+/* ==================== 页内锚点 ==================== */
 
-/* 数学公式 */
-.note-body .katex { font-size: 1.02em; }
-.note-body .katex-display { margin: 12px 0; overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+.note-body .anchored-text {
+  cursor: pointer;
+  border-bottom: 1px dashed color-mix(in srgb, var(--doc-ink-soft) 42%, transparent);
+}
 
+/* ==================== 数学公式 ==================== */
+
+.note-body .katex { font-size: 1.03em; }
+.note-body .katex-display { margin: 1em 0; overflow-x: auto; overflow-y: hidden; padding: 0.2em 0; }
+
+/* ==================== 书库专用 ==================== */
+
+.note-body .pgmark {
+  font-family: var(--font-mono);
+  font-size: 0.66em;
+  color: var(--doc-ink-faint);
+  text-align: right;
+  margin: 0.6em 0 -0.2em;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+}
+.note-body .tip {
+  background: color-mix(in srgb, var(--amber) 6%, transparent);
+  border-left: 3px solid var(--amber);
+  padding: 0.5em 0.9em;
+  border-radius: 6px;
+  font-size: 0.94em;
+}
+
+/* ==================== 响应式 ==================== */
+
+@media (max-width: 900px) {
+  .note-body { font-size: 15px; line-height: 1.85; }
+}
 @media (max-width: 700px) {
-  .note-body { font-size: 14px; }
-  .note-body h3 { font-size: 18px; }
-  .note-body table { font-size: 12px; }
+  .note-body { font-size: 14.8px; }
+  .note-body h1 { font-size: 1.38em; padding: 0.55em 0.9em; }
+  .note-body h2 { font-size: 1.2em; padding: 0.52em 0.86em; }
+  .note-body h3 { font-size: 1.06em; }
+  .note-body .doc-table table { font-size: 0.88em; }
+  .note-body th, .note-body td { padding: 0.5em 0.7em; }
 }

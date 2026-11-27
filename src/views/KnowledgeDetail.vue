@@ -203,11 +203,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.k-summary { font-size: 15px; line-height: 1.8; color: var(--text-2); margin: 10px 0 0; }
+.k-summary { font-family: var(--font-read); font-size: 15px; line-height: 1.9; letter-spacing: 0.01em; color: var(--doc-ink-soft); margin: 10px 0 0; }
 .chapter-path { display: flex; align-items: center; gap: 6px; margin-top: 14px; }
 .sec-h { font-size: 13px; letter-spacing: .08em; color: var(--text-3); margin: 26px 0 10px; font-weight: 500; }
 .points { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
-.points li { display: flex; gap: 12px; font-size: 14px; line-height: 1.75; }
+.points li { display: flex; gap: 12px; font-family: var(--font-read); font-size: 14.5px; line-height: 1.9; letter-spacing: 0.01em; color: var(--doc-ink); }
 .idx { color: var(--mint); font-size: 11px; padding-top: 3px; flex: 0 0 auto; }
 .pitfall { margin-top: 22px; padding: 14px 16px; border: 1px solid color-mix(in srgb, var(--rose) 26%, var(--line)); border-radius: 10px; background: color-mix(in srgb, var(--rose) 5%, transparent); }
 .pitfall ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.7; color: var(--text-2); }
