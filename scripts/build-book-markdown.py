@@ -15,6 +15,10 @@ _spec = importlib.util.spec_from_file_location("booktext", os.path.join(HERE, "b
 B = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(B)
 
+import sys
+sys.path.insert(0, HERE)
+import mdpolish as P
+
 CAP_TABLE = re.compile(r"^表\s*\d+(?:[.．]\d+)?")
 CAP_FIG = re.compile(r"^图\s*\d+(?:[.．]\d+)?")
 BAND_GAP = 22
@@ -150,6 +154,7 @@ def build_section_md(items, sub_by_y, out, sub_id=None):
     buf = []
     prev = [None]
     force_join = [False]
+    outline = [False]
     used_subs = set()
     used_ids = set()
 
@@ -259,16 +264,32 @@ def build_section_md(items, sub_by_y, out, sub_id=None):
         p = prev[0]
         left, charw, body = ln.get("_l", LEFT[0]), ln.get("_c", CHARW[0]), ln.get("_b", BODY[0])
         indent = (ln["x0"] - left) >= charw * 1.3
+        gap = ((ln["y0"] - p["y1"]) / max(1.0, p["y1"] - p["y0"])) if p is not None else 0
+        p_end = p["text"].rstrip()[-1:] if p is not None else ""
+        # 【考纲内容】区块是知识点罗列，OCR 常把「（抢占式/非抢占｜式）」拦腰截断，
+        # 除条目起始行外一律接在同一段里。
+        if t.startswith("【"):
+            outline[0] = t.startswith("【考纲内容】")
+        elif B.is_heading(t) or CAP_FIG.match(t) or CAP_TABLE.match(t):
+            outline[0] = False
+        item_start = bool(re.match(r"^[（(]\s*[一二三四五六七八九十\d]+\s*[）)]|^[一二三四五六七八九十]+、", t))
+        p_label = bool(p is not None and len(p["text"].strip()) <= 18
+                       and re.match(r"^[（(]\s*[一二三四五六七八九十\d]+\s*[）)]|^[一二三四五六七八九十]+、|^【", p["text"].strip()))
         new_para = (
             p is None
             or (ln["x0"] - left) >= charw * 1.9
-            or (p["text"][-1:] in "。！？…" and (indent or B.line_w(p) < body * 0.9))
-            or B.line_w(p) < body * 0.55
-            or re.match(r"^[（(]\s*[一二三四五六七八九十\d]+\s*[）)]", t)
-            or re.match(r"^[一二三四五六七八九十]+、", t)
+            or item_start
             or t.startswith("【")
             or t[:1] in "，·•"
+            # 上一行是「（一）／一、／【…】」这类短条目，下一行必须另起
+            or p_label
+            # 句末标点 + 首行缩进 / 行没写满 / 行间空隙大 → 真的段落结束
+            or (p_end in "。！？…" and (indent or B.line_w(p) < body * 0.92 or gap >= 1.05))
+            # 行间空隙明显大（正文行距的 1.45 倍以上）→ 换段，但上一行以逗号收尾时仍算同一段
+            or (gap >= 1.45 and p_end not in "，、；：")
         )
+        if outline[0] and p is not None and not item_start and not t.startswith("【") and not p_label:
+            new_para = False
         if force_join[0]:
             new_para = False
             force_join[0] = False
@@ -389,6 +410,7 @@ def main():
             frag = [f"# {sec['no']} {fix_dup(sec['no'], sec['title'])}".replace("  ", " "), ""]
             sub_y.sort(key=lambda x: x[0])
             build_section_md(items, sub_y, frag, sub_id=sub_ids)
+            frag = P.polish_document(frag)
 
             chars = count_chars(frag[2:])
             total_chars += chars
