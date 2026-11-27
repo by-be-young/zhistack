@@ -225,6 +225,7 @@ onBeforeUnmount(() => {
         :material="current.material"
         :reset-key="current.material.key || qid"
         :focus="current.material.autoFocus ? current.number : 0"
+        :allow-math="current.subject !== 'en'"
         @close="materialOpen = false"
       />
 
@@ -296,7 +297,7 @@ onBeforeUnmount(() => {
             <span class="chip" :class="gradeRatio(q.id) >= 0.6 ? 'active' : 'rose'">{{ Math.round(gradeRatio(q.id) * 100) }}%</span>
           </div>
           <div v-if="refHtml(q)" class="grade-ref katex-html-block" v-html="refHtml(q)" />
-          <div v-else class="grade-ref"><RichText :text="q.referenceAnswer" /></div>
+          <div v-else class="grade-ref"><RichText :text="q.referenceAnswer" :allow-math="q.subject !== 'en'" /></div>
           <div class="grade-actions">
             <button
               v-for="p in [0, 20, 40, 60, 80, 100]" :key="p"

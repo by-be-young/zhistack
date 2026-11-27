@@ -118,7 +118,7 @@ function onSelect(key) {
     </div>
 
     <div v-if="qHtml?.stemHtml" class="stem katex-html-block" v-html="qHtml.stemHtml" />
-    <div v-else class="stem"><RichText :text="q.stem" /></div>
+    <div v-else class="stem"><RichText :text="q.stem" :allow-math="!isEn" /></div>
 
     <div v-if="q.figureNote" class="figure-note tiny dim">
       <AppIcon name="image" :size="13" />
@@ -169,7 +169,7 @@ function onSelect(key) {
         <span class="key">{{ q.type === 'judge' ? (o.key === 'T' ? '✓' : '✕') : o.key }}</span>
         <span class="otext">
           <span v-if="o.html" v-html="o.html" />
-          <RichText v-else :text="o.text" />
+          <RichText v-else :text="o.text" :allow-math="!isEn" />
         </span>
         <span v-if="showResult && (q.answer || []).includes(o.key)" class="mark"><AppIcon name="check" :size="14" /></span>
         <span v-else-if="showResult && (result?.keys || []).includes(o.key)" class="mark wrong"><AppIcon name="x" :size="14" /></span>
@@ -183,7 +183,7 @@ function onSelect(key) {
         <summary>回顾材料原文（{{ q.material.blocks?.length || 1 }} 段）</summary>
         <div v-for="(b, i) in q.material.blocks" :key="i" class="mr-block">
           <div v-if="q.material.blocks.length > 1" class="tiny dim">{{ b.label }}</div>
-          <RichText :text="b.text" />
+          <RichText :text="b.text" :allow-math="!isEn" />
         </div>
       </details>
     </div>
@@ -197,7 +197,7 @@ function onSelect(key) {
       <div class="my-answer small">{{ result?.text || '未作答' }}</div>
       <div class="tiny dim" style="margin: 14px 0 4px">参考答案</div>
       <div v-if="qHtml?.referenceHtml" class="ref-answer small katex-html-block" v-html="qHtml.referenceHtml" />
-      <div v-else class="ref-answer small"><RichText :text="q.referenceAnswer || '暂无参考答案'" /></div>
+      <div v-else class="ref-answer small"><RichText :text="q.referenceAnswer || '暂无参考答案'" :allow-math="!isEn" /></div>
       <div v-if="q.rubric?.length" class="rubric">
         <div class="tiny dim" style="margin-bottom: 6px">评分要点（自评时逐条对照）</div>
         <div v-for="(r, i) in q.rubric" :key="i" class="rubric-row">
@@ -222,7 +222,7 @@ function onSelect(key) {
         <span class="mono tiny dim">正确答案 {{ (q.answer || []).join(' / ') }}</span>
       </div>
       <div v-if="qHtml?.explainHtml" class="small muted katex-html-block" v-html="qHtml.explainHtml" />
-      <div v-else class="small muted"><RichText :text="q.explain" /></div>
+      <div v-else class="small muted"><RichText :text="q.explain" :allow-math="!isEn" /></div>
       <div v-if="knowledges.length" class="kp-links mt-8">
         <span class="tiny dim">知识点</span>
         <router-link

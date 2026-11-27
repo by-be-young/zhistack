@@ -6,7 +6,8 @@ import AppIcon from './AppIcon.vue'
 const props = defineProps({
   material: { type: Object, required: true },
   resetKey: { type: String, default: '' },
-  focus: { type: Number, default: 0 }
+  focus: { type: Number, default: 0 },
+  allowMath: { type: Boolean, default: true }
 })
 const emit = defineEmits(['close'])
 
@@ -99,7 +100,7 @@ function zoom(delta) {
         class="mp-block"
         :data-ink-anchor="`m-${material.key || 'mat'}-${i}`"
       >
-        <RichText :text="b.text" />
+        <RichText :text="b.text" :allow-math="allowMath" />
       </article>
     </div>
 

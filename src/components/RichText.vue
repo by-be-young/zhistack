@@ -2,7 +2,11 @@
 import { computed } from 'vue'
 import katex from 'katex'
 
-const props = defineProps({ text: { type: String, default: '' }, query: { type: String, default: '' } })
+const props = defineProps({
+  text: { type: String, default: '' },
+  query: { type: String, default: '' },
+  allowMath: { type: Boolean, default: true }
+})
 
 const INLINE = /(\*\*[^*]+\*\*|`[^`]+`|\^\{[^}]+\}|_\{[^}]+\}|\[\[[^\]]+\]\]|~~[^~]+~~)/g
 const MATH = /(\$\$[\s\S]*?\$\$|\$[^\$\n]+?\$)/g
@@ -40,6 +44,10 @@ function parseInline(line, nodes) {
 }
 
 function parseText(chunk, nodes) {
+  if (!props.allowMath) {
+    splitLines(chunk, nodes)
+    return
+  }
   let last = 0
   let m
   MATH.lastIndex = 0
