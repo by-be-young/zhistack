@@ -2,7 +2,7 @@
 export default {
  "book": "os-wd2025",
  "title": "2025 操作系统考研复习指导",
- "chars": 355334,
+ "chars": 334626,
  "fmt": "markdown",
  "chapters": [
   {

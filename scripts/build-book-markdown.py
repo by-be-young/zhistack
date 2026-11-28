@@ -411,7 +411,7 @@ def main():
             frag = [f"# {sec['no']} {fix_dup(sec['no'], sec['title'])}".replace("  ", " "), ""]
             sub_y.sort(key=lambda x: x[0])
             build_section_md(items, sub_y, frag, sub_id=sub_ids)
-            frag = P.polish_document(frag)
+            frag = P.polish_document(frag, sec=sid)
 
             chars = count_chars(frag[2:])
             total_chars += chars

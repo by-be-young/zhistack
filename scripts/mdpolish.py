@@ -708,10 +708,7 @@ def figures_to_images(lines):
 
 
 BOLD_LEADS = [
-    "在信息化时代，软件是计算机系统的灵魂，而作为软件核心的操作系统，已与现代计算机系统密不可分、融为一体。",
-    "硬件如中央处理器、内存、输入/输出设备等，提供基本的计算资源。",
     "综上所述，操作系统（Operating System，OS）是指控制和管理整个计算机系统的硬件与软件资源，合理地组织、调度计算机的工作与资源的分配，进而为用户和其他软件提供方便接口与环境的程序集合。",
-    "操作系统是一种系统软件，但与其他系统软件和应用软件有很大的不同，它有自己的特殊性即基本特征。",
     "并发是指两个或多个事件在同一时间间隔内发生。",
     "并行性是指系统具有同时进行运算或操作的特性，在同一时刻能完成两种或两种以上的工作。",
     "资源共享即共享，是指系统中的资源可供内存中多个并发执行的进程共同使用。",
@@ -730,6 +727,14 @@ BOLD_LEADS = [
     "没有任何软件支持的计算机称为裸机，它仅构成计算机系统的物质基础，而实际呈现在用户面前的计算机系统是经过若干层软件改造的计算机。",
     "并发和共享是操作系统两个最基本的特征，两者之间互为存在的条件：",
 ]
+# 句中出现也算关键结论的短语（只加一次，且不加在句首）
+BOLD_PHRASES = [
+    "操作系统是计算机系统中最基本的系统软件。",
+]
+TRACK_EXTRA = {
+    "并行性的定义及分析（2009）": 1,
+    "操作系统为应用程序提供的接口（2010）": 2,
+}
 
 
 def bold_leads(lines):
@@ -741,6 +746,9 @@ def bold_leads(lines):
             if s0.startswith(s) and not s0.startswith(("**", "<strong")):
                 l = l.replace(s, f"<strong>{s}</strong>", 1)
                 break
+        for s in BOLD_PHRASES:
+            if s in l and f"<strong>{s}</strong>" not in l and not l.startswith(">"):
+                l = l.replace(s, f"<strong>{s}</strong>", 1)
         out.append(l)
     return out
 
@@ -755,7 +763,105 @@ def final_patches(lines):
     return out
 
 
-def polish_document(lines):
+def _outline_card(items, label):
+    """【考纲内容】这类清单做成卡片：> **标签** + 两级列表。"""
+    lines = ["", f"> **{label}**", ">"]
+    for t in items:
+        if re.match(r"^（[一二三四五六七八九十]+）", t):
+            lines.append(f"> - {t}")
+        else:
+            lines.append(f">   - {t}")
+    return lines
+
+
+def _trail_review(lines, i):
+    """【复习提示】下面那一段话一起放进卡片。"""
+    j = i + 1
+    while j < len(lines) and not lines[j].strip():
+        j += 1
+    body = []
+    while j < len(lines) and lines[j].strip():
+        body.append(lines[j])
+        j += 1
+    out = ["", "> **复习提示**", ">"]
+    out += [f"> {b}" for b in body]
+    return out, j
+
+
+def _merge_track(lines, i, n):
+    """命题追踪：把紧跟其后的 n 段解析并入引用块，而不是只留一个标题。"""
+    head = lines[i]
+    paras, j, got = [], i + 1, 0
+    while j < len(lines) and got < n:
+        while j < len(lines) and not lines[j].strip():
+            j += 1
+        if j >= len(lines) or HEAD_RE.match(lines[j]) or lines[j].startswith(">"):
+            break
+        block = []
+        while j < len(lines) and lines[j].strip():
+            block.append(lines[j])
+            j += 1
+        paras.append(block)
+        got += 1
+    if not paras:
+        return [head], i + 1
+    out = [head]
+    for bi, block in enumerate(paras):
+        out.append(">")
+        out += [f"> {p}" for p in block]
+    return out, j
+
+
+def style_section(lines, sec=None):
+    """按节做版式增强：考纲内容/复习提示做成卡片，命题追踪连解析一起入引用块。"""
+    out = []
+    i = 0
+    while i < len(lines):
+        l = lines[i]
+        if l.strip() == "【考纲内容】":
+            items = []
+            j = i + 1
+            while (j < len(lines) and lines[j].strip() != "【复习提示】"
+                   and not HEAD_RE.match(lines[j]) and j - i <= 30):
+                if lines[j].strip():
+                    items.append(lines[j].strip())
+                j += 1
+            if not items:
+                out.append(l)
+                i += 1
+                continue
+            out += _outline_card(items, "考纲内容")
+            i = j
+            continue
+        if l.strip() == "【复习提示】":
+            card, j = _trail_review(lines, i)
+            out += card
+            i = j
+            continue
+        if l.startswith("> **命题追踪**"):
+            n = 1
+            for k, v in TRACK_EXTRA.items():
+                if k in l:
+                    n = v
+            merged, j = _merge_track(lines, i, n)
+            out += merged
+            i = j
+            continue
+        if l.strip().startswith("①这两个考点将在"):
+            out.append(f"<small>{l.strip()}</small>")
+            i += 1
+            continue
+        m = re.match(r"^### (\d{2})\. 【解答】$", l.strip())
+        if m:
+            out.append(f"**{m.group(1)}. 【解答】**")
+            i += 1
+            continue
+        out.append(l)
+        i += 1
+    return out
+
+
+def polish_document(lines, sec=None):
     out = []
     for l in lines:
         if HEAD_RE.match(l):
@@ -780,6 +886,7 @@ def polish_document(lines):
     out = dedupe_headings(out)
     out = figures_to_images(out)
     out = bold_leads(out)
+    out = style_section(out, sec)
     out = normalize_headings(out)
     # 压掉多余空行
     squeezed = []

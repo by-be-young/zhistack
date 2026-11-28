@@ -9,7 +9,7 @@ import { prepareDocHtml, watchTheme } from '../core/reading.js'
 
 const md = new MarkdownIt({ html: true, linkify: false, typographer: false })
 // 行内只允许 <sup>/<sub>/<b>/<i> 这类排版标签，其余原始 HTML 直接转义
-const ALLOWED_INLINE = /^(sup|sub|b|i|em|strong|br|code)$/i
+const ALLOWED_INLINE = /^(sup|sub|b|i|em|strong|br|code|small)$/i
 const defaultHtmlInline = md.renderer.rules.html_inline || ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options))
 md.renderer.rules.html_inline = (tokens, idx, options, env, self) => {
   const tag = /^<\s*(\/?)\s*([a-z0-9]+)/i.exec(tokens[idx].content)

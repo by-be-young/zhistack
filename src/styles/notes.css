@@ -157,7 +157,17 @@
 .note-body blockquote p { margin: 0.35em 0; color: inherit; }
 .note-body blockquote p:first-child { margin-top: 0; }
 .note-body blockquote p:last-child { margin-bottom: 0; }
-.note-body blockquote p:first-child strong { color: var(--amber); }
+.note-body blockquote p:first-child strong:first-of-type { color: var(--amber); }
+/* 引用块里的清单（考纲内容这类卡片） */
+.note-body blockquote ul,
+.note-body blockquote ol { margin: 0.45em 0 0.1em; padding-left: 1.15em; }
+.note-body blockquote li { margin-bottom: 0.12em; line-height: 1.9; }
+.note-body blockquote ul li::marker { color: var(--doc-h2-bar); }
+.note-body blockquote li > ul,
+.note-body blockquote li > ol { margin: 0.08em 0 0.2em; padding-left: 1.05em; }
+.note-body blockquote li > ul li { color: var(--doc-ink-faint); font-size: 0.94em; }
+/* 页底脚注这类小字 */
+.note-body small { font-size: 0.82em; color: var(--doc-ink-faint); letter-spacing: 0.02em; }
 
 /* ==================== 分隔线 ==================== */
 
