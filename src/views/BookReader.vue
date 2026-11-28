@@ -20,6 +20,16 @@ const defaultHtmlBlock = md.renderer.rules.html_block || ((tokens, idx, options,
 md.renderer.rules.html_block = (tokens, idx, options, env, self) => {
   return md.utils.escapeHtml(tokens[idx].content)
 }
+// 插图：正文里写 img/xxx.png，渲染时补上书库资源前缀，随 base 一起切换
+const defaultImage = md.renderer.rules.image || ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options))
+md.renderer.rules.image = (tokens, idx, options, env, self) => {
+  const src = tokens[idx].attrGet('src') || ''
+  if (src.startsWith('img/') && base.value) {
+    tokens[idx].attrSet('src', `${import.meta.env.BASE_URL}${base.value}/img/${src.slice(4)}`)
+  }
+  tokens[idx].attrSet('loading', 'lazy')
+  return defaultImage(tokens, idx, options, env, self)
+}
 
 const route = useRoute()
 const router = useRouter()

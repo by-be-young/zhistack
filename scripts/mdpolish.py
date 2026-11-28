@@ -9,6 +9,8 @@
 5. 「考纲内容」区块里被 OCR 读成冒号的分号改回「；」；
 6. 上一段以「，、；」收尾说明是被硬换行切断的段落，与下一段接回。
 """
+import json
+import pathlib
 import re
 
 CJK = r"\u4e00-\u9fff"
@@ -657,6 +659,92 @@ def drop_leadin_heading(lines):
     return out
 
 
+FIG_MAP_PATH = pathlib.Path(__file__).resolve().parent / "figures.json"
+
+
+def _fig_map():
+    try:
+        return json.loads(FIG_MAP_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def figures_to_images(lines):
+    """把 OCR 拼出来的图碎片换回原书插图：图题及其上方的一串 > 碎片整体换成图片 + 图题。"""
+    fmap = _fig_map()
+    if not fmap:
+        return lines
+    cap_re = re.compile(r"^>\s*图\s*(\d+)\s*\.\s*(\d+)")
+    out = []
+    skip_text = None
+    for l in lines:
+        if skip_text is not None and not l.strip():
+            continue
+        if skip_text is not None and l.strip():
+            if l.strip() == skip_text:
+                skip_text = None
+                continue
+            skip_text = None
+        m = cap_re.match(l.strip()) if l.startswith(">") else None
+        if m:
+            info = fmap.get(f"图{m.group(1)}.{m.group(2)}")
+            if info:
+                while out:
+                    prev = out[-1]
+                    if prev.startswith(">"):
+                        out.pop()
+                        continue
+                    if not prev.strip() and len(out) > 1 and out[-2].startswith(">"):
+                        out.pop()
+                        continue
+                    break
+                cap = re.sub(r"^(图\s*\d+\.\d+)\s*", r"\1 ", info["caption"])
+                out.extend(["", f"![{cap}](img/{info['file']})", "", f"*{cap}*", ""])
+                # 图题被拆成两行时，后半截常作为正文段落又出现一次，这里记下待删
+                skip_text = re.sub(r"^图\s*\d+\.\d+\s*", "", cap) or None
+                continue
+        out.append(l)
+    return out
+
+
+BOLD_LEADS = [
+    "在信息化时代，软件是计算机系统的灵魂，而作为软件核心的操作系统，已与现代计算机系统密不可分、融为一体。",
+    "硬件如中央处理器、内存、输入/输出设备等，提供基本的计算资源。",
+    "综上所述，操作系统（Operating System，OS）是指控制和管理整个计算机系统的硬件与软件资源，合理地组织、调度计算机的工作与资源的分配，进而为用户和其他软件提供方便接口与环境的程序集合。",
+    "操作系统是一种系统软件，但与其他系统软件和应用软件有很大的不同，它有自己的特殊性即基本特征。",
+    "并发是指两个或多个事件在同一时间间隔内发生。",
+    "并行性是指系统具有同时进行运算或操作的特性，在同一时刻能完成两种或两种以上的工作。",
+    "资源共享即共享，是指系统中的资源可供内存中多个并发执行的进程共同使用。",
+    "虚拟是指将一个物理上的实体变为若干逻辑上的对应物。",
+    "多道程序环境允许多个程序并发执行，但由于资源有限，进程的执行并不是一贯到底的，而是走走停停的，它以不可预知的速度向前推进，这就是进程的异步性。",
+    "为了给多道程序提供良好的运行环境，操作系统应具有以下几方面的功能：处理机管理、存储器管理、设备管理和文件管理。",
+    "在多道程序环境下，处理机的分配和运行都以进程（或线程）为基本单位，因而对处理机的管理可归结为对进程的管理。",
+    "存储器管理是为了给多道程序的运行提供良好的环境，方便用户使用及提高内存的利用率，主要包括内存分配与回收、地址映射、内存保护与共享和内存扩充等功能。",
+    "计算机中的信息都是以文件的形式存在的，操作系统中负责文件管理的部分称为文件系统。",
+    "设备管理的主要任务是完成用户的I/O请求，方便用户使用各种设备，并提高设备的利用率，主要包括缓冲管理、设备分配、设备处理和虚拟设备等功能。",
+    "为了让用户方便、快捷、可靠地操纵计算机硬件并运行自己的程序，操作系统还提供了用户接口。",
+    "使用命令接口进行作业控制的主要方式有两种，即联机控制方式和脱机控制方式。",
+    "联机命令接口又称交互式命令接口，适用于分时或实时系统的接口。",
+    "脱机命令接口又称批处理命令接口，适用于批处理系统，它由一组作业控制命令组成。",
+    "程序接口由一组系统调用（也称广义指令）组成。",
+    "没有任何软件支持的计算机称为裸机，它仅构成计算机系统的物质基础，而实际呈现在用户面前的计算机系统是经过若干层软件改造的计算机。",
+    "并发和共享是操作系统两个最基本的特征，两者之间互为存在的条件：",
+]
+
+
+def bold_leads(lines):
+    """中心句在段首时加粗：只处理整句开局，且已加粗的不动。"""
+    out = []
+    for l in lines:
+        s0 = l.lstrip()
+        for s in BOLD_LEADS:
+            if s0.startswith(s) and not s0.startswith(("**", "<strong")):
+                l = l.replace(s, f"<strong>{s}</strong>", 1)
+                break
+        out.append(l)
+    return out
+
+
 def final_patches(lines):
     out = []
     for l in lines:
@@ -690,6 +778,8 @@ def polish_document(lines):
     out = bold_terms(out)
     out = drop_leadin_heading(out)
     out = dedupe_headings(out)
+    out = figures_to_images(out)
+    out = bold_leads(out)
     out = normalize_headings(out)
     # 压掉多余空行
     squeezed = []

@@ -210,6 +210,19 @@
   color: var(--doc-ink-faint);
   text-align: center;
 }
+/* 书库插图下的图题：图片 + 一行斜体图题 */
+.note-body p:has(> em:only-child) {
+  margin: -0.7em auto 1.3em;
+  font-family: var(--font-sans);
+  font-size: 0.8em;
+  letter-spacing: 0.03em;
+  color: var(--doc-ink-faint);
+  text-align: center;
+}
+.note-body p:has(> em:only-child) em {
+  color: inherit;
+  font-style: normal;
+}
 
 /* ==================== 代码 ==================== */
 
