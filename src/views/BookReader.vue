@@ -43,7 +43,7 @@ const loading = ref(false)
 const failed = ref(false)
 const bodyRef = ref(null)
 const cache = new Map()
-const zoom = ref(16)
+const zoom = ref(17)
 
 const sections = computed(() => {
   if (!toc.value) return []
@@ -177,9 +177,9 @@ onBeforeUnmount(() => {
       </div>
       <div style="flex: 1" />
       <div class="row" style="gap: 6px">
-        <button class="icon-btn" aria-label="缩小字号" @click="zoom = Math.max(14, zoom - 1)">−</button>
+        <button class="icon-btn" aria-label="缩小字号" @click="zoom = Math.max(15, zoom - 1)">−</button>
         <span class="tiny dim mono" style="width: 42px; text-align: center">{{ zoom }}px</span>
-        <button class="icon-btn" aria-label="放大字号" @click="zoom = Math.min(22, zoom + 1)">+</button>
+        <button class="icon-btn" aria-label="放大字号" @click="zoom = Math.min(23, zoom + 1)">+</button>
       </div>
     </div>
 

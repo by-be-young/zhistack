@@ -154,13 +154,13 @@ const nodes = computed(() => parse(props.text || ''))
 <style scoped>
 .rich { white-space: pre-wrap; }
 .inline-code {
-  font-family: var(--font-mono); font-size: 0.88em; padding: 0.08em 0.36em; border-radius: 5px;
+  font-family: var(--font-code); font-size: 0.88em; padding: 0.08em 0.36em; border-radius: 5px;
   border: 1px solid var(--doc-rule); background: var(--doc-mark); color: var(--mint);
 }
 .codeblock {
   margin: 8px 0; padding: 12px 14px; white-space: pre-wrap; overflow-wrap: anywhere; overflow-x: auto;
   background: var(--doc-code-bg); border: 1px solid var(--doc-code-line); border-radius: 10px;
-  font-family: var(--font-mono); font-size: 12.5px; line-height: 1.7; color: var(--doc-code-ink);
+  font-family: var(--font-code); font-size: 12.5px; line-height: 1.7; color: var(--doc-code-ink);
 }
 .inline-link { font-family: var(--font-mono); font-size: 11.5px; border-bottom: 1px dashed var(--doc-rule-mid); }
 .math { white-space: normal; }

@@ -11,3 +11,20 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* 代码字：Comic Mono（SIL OFL 1.1，dtinth/comic-mono-font）
+   仅基本拉丁字符，12.5 KB / 13.4 KB，用于代码块与行内代码，不参与 UI 等宽标签。 */
+@font-face {
+  font-family: 'Comic Mono';
+  src: url('../assets/fonts/comic-mono.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Comic Mono';
+  src: url('../assets/fonts/comic-mono-bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

@@ -27,7 +27,8 @@
   --font-sans: "Source Han Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", "Cascadia Code", Consolas, monospace;
   --font-display: 'CangErJinKai', 'TsangerJinKai01 W04', 'Source Han Sans SC', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --font-read: 'Times New Roman', 'Source Han Serif SC', 'Noto Serif SC', 'Songti SC', SimSun, serif;
+  --font-read: 'Times New Roman', 'Kaiti SC', 'KaiTi', '楷体', 'STKaiti', 'CangErJinKai', serif;
+  --font-code: 'Comic Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --grid: rgba(232, 237, 233, 0.035);
   color-scheme: dark;

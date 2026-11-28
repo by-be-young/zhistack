@@ -4,9 +4,9 @@
 
 .note-body {
   font-family: var(--font-read);
-  font-size: 15.5px;
-  line-height: 1.9;
-  letter-spacing: 0.01em;
+  font-size: 17px;
+  line-height: 2;
+  letter-spacing: 0.02em;
   color: var(--doc-ink);
   max-width: 880px;
   min-width: 0;
@@ -104,7 +104,7 @@
 /* ==================== 正文与列表 ==================== */
 
 .note-body p {
-  margin: 0.85em 0;
+  margin: 1.05em 0;
   color: var(--doc-ink);
   text-wrap: pretty;
 }
@@ -125,7 +125,7 @@
 .note-body ul, .note-body ol { margin: 0.7em 0 0.95em; }
 .note-body ul { padding-left: 1.4em; }
 .note-body ol { padding-left: 1.7em; }
-.note-body li { margin-bottom: 0.3em; line-height: 1.85; }
+.note-body li { margin-bottom: 0.4em; line-height: 1.95; }
 .note-body li > ul, .note-body li > ol { margin: 0.3em 0; }
 .note-body ul li::marker { content: '• '; color: var(--doc-h2-bar); }
 .note-body ol li::marker { color: var(--doc-h1-bar); font-variant-numeric: tabular-nums; }
@@ -143,7 +143,7 @@
   border-radius: 10px;
   background: var(--doc-quote-bg);
   color: var(--doc-ink-soft);
-  line-height: 1.88;
+  line-height: 1.95;
 }
 .note-body blockquote::before {
   content: '';
@@ -227,7 +227,7 @@
 /* ==================== 代码 ==================== */
 
 .note-body code {
-  font-family: var(--font-mono);
+  font-family: var(--font-code);
   font-size: 0.86em;
   padding: 0.08em 0.38em;
   border: 1px solid var(--doc-rule);
@@ -250,7 +250,7 @@
   padding: 0.9em 1.05em;
   background: transparent !important;
   color: var(--doc-code-ink);
-  font-family: var(--font-mono);
+  font-family: var(--font-code);
   font-size: 0.82em;
   line-height: 1.72;
   tab-size: 4;
@@ -455,7 +455,7 @@
   color: var(--doc-h2-bar);
 }
 .note-body p.formula {
-  font-family: var(--font-mono);
+  font-family: var(--font-code);
   font-size: 0.88em;
   line-height: 1.75;
   margin: 0.8em 0;
@@ -478,7 +478,7 @@
   background: var(--bg-2);
 }
 .note-body .fig-body {
-  font-family: var(--font-mono);
+  font-family: var(--font-code);
   font-size: 0.8em;
   line-height: 1.8;
   letter-spacing: 0.01em;
@@ -503,10 +503,10 @@
 /* ==================== 响应式 ==================== */
 
 @media (max-width: 900px) {
-  .note-body { font-size: 15px; line-height: 1.85; }
+  .note-body { font-size: 16.5px; line-height: 1.98; }
 }
 @media (max-width: 700px) {
-  .note-body { font-size: 14.8px; }
+  .note-body { font-size: 16px; }
   .note-body h1 { font-size: 1.38em; padding: 0.55em 0.9em; }
   .note-body h2 { font-size: 1.2em; padding: 0.52em 0.86em; }
   .note-body h3 { font-size: 1.06em; }
